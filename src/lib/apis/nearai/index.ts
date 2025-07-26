@@ -1,9 +1,9 @@
-import { WEBUI_BASE_URL } from '$lib/constants';
+import { NEARAI_CLOUD_API_BASE_URL } from '$lib/constants';
 
 export const getModelAttestationReport = async (
     token: string,
 	model: string,
-	url: string = `${WEBUI_BASE_URL}/api`
+	url: string = NEARAI_CLOUD_API_BASE_URL
 ) => {
 	const res = await fetch(
         `${url}/attestation/report?model=${model}`,
@@ -22,7 +22,7 @@ export const getMessageSignature = async (
     token: string,
 	chatId: string,
 	model: string,
-	url: string = `${WEBUI_BASE_URL}/api`,
+	url: string = NEARAI_CLOUD_API_BASE_URL,
 	signingAlgorithm: string = 'ecdsa'
 ) => {
 	const res = await fetch(

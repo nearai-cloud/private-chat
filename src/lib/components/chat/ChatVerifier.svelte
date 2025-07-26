@@ -77,9 +77,10 @@
 						<!-- Open Model Verifier Button -->
 						<button
 							on:click={openModelVerifier}
-							class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+							disabled={!selectedModels[0]}
+							class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"
 						>
-							Open Model Verifier
+							Verify Model
 						</button>
 					</div>
 				</div>
@@ -88,7 +89,7 @@
 				<div class="flex-1">
 					<div class="p-4">
 						<h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Message Verification</h3>
-						<MessagesVerifier {chatId} {token} {selectedModels} />
+						<MessagesVerifier {chatId} {token} />
 					</div>
 				</div>
 			</div>
@@ -97,7 +98,7 @@
 
 	<!-- Model Verifier Modal -->
 	<ModelVerifier
-		{selectedModels}
+		model={selectedModels[0]}
 		{token}
 		bind:show={showModelVerifier}
 		on:close={closeModelVerifier}

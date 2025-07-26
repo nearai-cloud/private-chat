@@ -4,9 +4,9 @@
 	import { fade, slide } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
 
+	export let model: string;
 	export let token: string;
 	export let show = false;
-	export let selectedModels: string[] = [];
 
 	const dispatch = createEventDispatcher();
 
@@ -17,30 +17,25 @@
 		gpu: false,
 		tdx: false
 	};
-	let selectedModelForVerification = '';
 
 	// Function to fetch attestation report
 	const fetchAttestationReport = async () => {
-		if (!selectedModelForVerification || !token) return;
+		if (!model || !token) return;
 
 		loading = true;
 		error = null;
 
 		try {
-			const data = await getModelAttestationReport(token, selectedModelForVerification);
+			const data = await getModelAttestationReport(token, model);
+
+			console.log('data', data);
+
 			attestationData = data;
 		} catch (err) {
 			console.error('Error fetching attestation report:', err);
 			error = err instanceof Error ? err.message : 'Failed to fetch attestation report';
 		} finally {
 			loading = false;
-		}
-	};
-
-	// Function to verify model
-	const verifyModel = async () => {
-		if (selectedModelForVerification) {
-			await fetchAttestationReport();
 		}
 	};
 
@@ -60,12 +55,16 @@
 		expandedSections = { ...expandedSections };
 	};
 
+	// Fetch data when component mounts or model changes
+	$: if (show && model && token) {
+		fetchAttestationReport();
+	}
+
 	// Reset data when modal closes
 	$: if (!show) {
 		attestationData = null;
 		error = null;
 		expandedSections = { gpu: false, tdx: false };
-		selectedModelForVerification = '';
 	}
 </script>
 
@@ -95,32 +94,10 @@
 
 			<!-- Content -->
 			<div class="p-6">
-				<!-- Model Selection -->
+				<!-- Model Info -->
 				<div class="mb-6">
-					<h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Select Model to Verify</h3>
-					<div class="mb-4">
-						<label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-							Choose a model
-						</label>
-						<select
-							bind:value={selectedModelForVerification}
-							class="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-						>
-							<option value="">Choose a model...</option>
-							{#each selectedModels as modelId}
-								<option value={modelId}>{modelId}</option>
-							{/each}
-						</select>
-					</div>
-
-					<!-- Verify Button -->
-					<button
-						on:click={verifyModel}
-						disabled={!selectedModelForVerification}
-						class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"
-					>
-						Verify Model
-					</button>
+					<h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Verifying Model</h3>
+					<p class="text-sm text-gray-600 dark:text-gray-400">{model}</p>
 				</div>
 
 				<!-- Attestation Source -->
@@ -129,19 +106,12 @@
 					<div class="flex items-center space-x-4">
 						<!-- NVIDIA Logo -->
 						<div class="flex items-center space-x-2">
-							<div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-								<svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-									<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-								</svg>
-							</div>
-							<span class="font-semibold text-gray-900 dark:text-white">NVIDIA</span>
+							<img src="/assets/images/nvidia.svg" alt="NVIDIA" class="w-20 h-8" />
+							<!-- <span class="text-gray-900 grey:text-white">and</span> -->
 						</div>
 						<!-- Intel Logo -->
 						<div class="flex items-center space-x-2">
-							<div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-								<span class="text-white text-xs font-bold">intel</span>
-							</div>
-							<span class="font-semibold text-gray-900 dark:text-white">Intel</span>
+							<img src="/assets/images/intel.svg" alt="Intel" class="w-16 h-8" />
 						</div>
 					</div>
 				</div>
@@ -152,7 +122,7 @@
 				</p>
 
 				<!-- Related Links -->
-				<div class="mb-6">
+				<!-- <div class="mb-6">
 					<h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Related Links</h3>
 					<div class="space-y-2">
 						<a
@@ -174,7 +144,7 @@
 							Host LLM in TEE
 						</a>
 					</div>
-				</div>
+				</div> -->
 
 				<!-- Loading State -->
 				{#if loading}
@@ -285,37 +255,6 @@
 													readonly
 													class="w-full h-24 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none"
 												>{attestationData.intel_quote}</textarea>
-											</div>
-										{/if}
-										{#if attestationData.all_attestations && attestationData.all_attestations.length > 0}
-											<div>
-												<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-													All Attestations
-												</label>
-												<div class="space-y-2">
-													{#each attestationData.all_attestations as attestation, index}
-														<div class="bg-white dark:bg-gray-600 rounded border border-gray-200 dark:border-gray-500 p-3">
-															<div class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-																Attestation {index + 1}
-															</div>
-															{#if attestation.signing_address}
-																<div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
-																	Signing Address: {attestation.signing_address}
-																</div>
-															{/if}
-															{#if attestation.nvidia_payload}
-																<div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
-																	NVIDIA Payload: {attestation.nvidia_payload.substring(0, 50)}...
-																</div>
-															{/if}
-															{#if attestation.intel_quote}
-																<div class="text-xs text-gray-600 dark:text-gray-400">
-																	Intel Quote: {attestation.intel_quote.substring(0, 50)}...
-																</div>
-															{/if}
-														</div>
-													{/each}
-												</div>
 											</div>
 										{/if}
 									</div>
