@@ -70,7 +70,7 @@
 			<!-- Content -->
 			<div class="h-full flex flex-col">
 				<!-- Model Verification Section -->
-				<div class="flex-1 border-b border-gray-200 dark:border-gray-700">
+				<div class="flex-shrink-0 border-b border-gray-200 dark:border-gray-700">
 					<div class="p-4">
 						<h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Model Verification</h3>
 						
@@ -86,10 +86,14 @@
 				</div>
 
 				<!-- Messages Verification Section -->
-				<div class="flex-1">
-					<div class="p-4">
-						<h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Message Verification</h3>
-						<MessagesVerifier {chatId} {token} />
+				<div class="flex-1 overflow-hidden">
+					<div class="h-full flex flex-col">
+						<div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
+							<h3 class="text-sm font-medium text-gray-900 dark:text-white">Message Verification</h3>
+						</div>
+						<div class="flex-1 overflow-y-auto p-4">
+							<MessagesVerifier {chatId} {token} model={selectedModels[0]} />
+						</div>
 					</div>
 				</div>
 			</div>

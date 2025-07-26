@@ -27,9 +27,6 @@
 
 		try {
 			const data = await getModelAttestationReport(token, model);
-
-			console.log('data', data);
-
 			attestationData = data;
 		} catch (err) {
 			console.error('Error fetching attestation report:', err);
