@@ -18,7 +18,11 @@
 		error = null;
 
 		try {
-			const data = await getMessageSignature(token, chatId, model);
+			const data = await getMessageSignature({
+				token,
+				model,
+				chatId,
+			});
 
 			console.log('message signature', data, token, chatId, model);
 

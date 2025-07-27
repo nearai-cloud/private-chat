@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { getModelAttestationReport } from '$lib/apis/nearai';
 	import { fade, slide } from 'svelte/transition';
-	import { createEventDispatcher } from 'svelte';
 
 	export let model: string;
 	export let token: string;
@@ -26,8 +25,10 @@
 		error = null;
 
 		try {
-			const data = await getModelAttestationReport(token, model);
-			attestationData = data;
+			attestationData = await getModelAttestationReport({
+				token,
+				model,
+			});
 		} catch (err) {
 			console.error('Error fetching attestation report:', err);
 			error = err instanceof Error ? err.message : 'Failed to fetch attestation report';
