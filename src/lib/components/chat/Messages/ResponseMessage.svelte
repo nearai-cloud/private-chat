@@ -51,6 +51,7 @@
 	import FollowUps from './ResponseMessage/FollowUps.svelte';
 	import { fade } from 'svelte/transition';
 	import { flyAndScale } from '$lib/utils/transitions';
+	import { removeModelPrefix } from '$lib/utils/model';
 
 	interface MessageType {
 		id: string;
@@ -615,9 +616,9 @@
 
 		<div class="flex-auto w-0 pl-1 relative">
 			<Name>
-				<Tooltip content={model?.name ?? message.model} placement="top-start">
+				<Tooltip content={removeModelPrefix(model?.name ?? message.model)} placement="top-start">
 					<span class="line-clamp-1 text-black dark:text-white">
-						{model?.name ?? message.model}
+						{removeModelPrefix(model?.name ?? message.model)}
 					</span>
 				</Tooltip>
 

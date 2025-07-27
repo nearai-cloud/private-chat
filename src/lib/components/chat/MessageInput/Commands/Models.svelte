@@ -8,6 +8,7 @@
 	import { WEBUI_BASE_URL } from '$lib/constants';
 
 	const i18n = getContext('i18n');
+	import { removeModelPrefix } from '$lib/utils/model';
 
 	export let command = '';
 	export let onSelect = (e) => {};
@@ -123,7 +124,7 @@
 									alt={model?.name ?? model.id}
 									class="rounded-full size-6 items-center mr-2"
 								/>
-								{model.name}
+								{removeModelPrefix(model.name)}
 							</div>
 						</button>
 					{/each}
