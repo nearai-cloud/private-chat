@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { getModelAttestationReport } from '$lib/apis/nearai';
+	import { getModelAttestationReport, type ModelAttestationReport } from '$lib/apis/nearai';
 	import { fade, slide } from 'svelte/transition';
 
 	export let model: string;
@@ -11,7 +11,7 @@
 
 	let loading = false;
 	let error: string | null = null;
-	let attestationData: any = null;
+	let attestationData: ModelAttestationReport | null = null;
 	let expandedSections = {
 		gpu: false,
 		tdx: false

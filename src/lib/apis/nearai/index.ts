@@ -73,6 +73,12 @@ export type GetMessageSignatureParams = {
 
 export type MessageSignature = {
 	text: string; // Format: request_body_sha256:response_body_sha256
+	signing_address: Address;
 	signature: string;
-	signing_algo: SigningAlgorithm;
+	message: string;
+	messages: {
+		id: string;
+		content: string;
+	}[];
+	algorithm: SigningAlgorithm;
 }

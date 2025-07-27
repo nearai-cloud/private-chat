@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { getMessageSignature } from '$lib/apis/nearai';
+	import { getMessageSignature, type MessageSignature } from '$lib/apis/nearai';
 
 	export let chatId: string;
 	export let token: string;
@@ -8,7 +7,7 @@
 
 	let loading = false;
 	let error: string | null = null;
-	let signatureData: any = null;
+	let signatureData: MessageSignature | null = null;
 
 	// Function to fetch message signature
 	const fetchMessageSignature = async () => {
@@ -123,7 +122,7 @@
 				{#if signatureData.signature}
 					<div>
 						<button
-							on:click={() => verifyOnEtherscan(signatureData.signature)}
+							on:click={() => signatureData ? verifyOnEtherscan(signatureData.signature) : undefined}
 							class="flex items-center text-blue-600 hover:text-blue-700 text-sm transition-colors"
 						>
 							<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
