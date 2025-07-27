@@ -4,7 +4,10 @@
 	import ModelVerifier from './ModelVerifier.svelte';
 	import MessagesVerifier from './MessagesVerifier.svelte';
 
-	export let chatId: string;
+	export let history: {
+		messages: Record<string, any>,
+		currentId: string | null;
+	};
 	export let token: string;
 	export let selectedModels: string[];
 	export let expanded = false;
@@ -92,7 +95,7 @@
 							<h3 class="text-sm font-medium text-gray-900 dark:text-white">Message Verification</h3>
 						</div>
 						<div class="flex-1 overflow-y-auto p-4">
-							<MessagesVerifier {chatId} {token} model={selectedModels[0]} />
+							<MessagesVerifier {history} {token} />
 						</div>
 					</div>
 				</div>

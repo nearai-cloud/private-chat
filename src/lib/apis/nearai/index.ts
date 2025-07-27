@@ -22,13 +22,13 @@ export const getMessageSignature = async (
 	{
 		token,
 		model,
-		chatId,
+		chatCompletionId,
         url = NEARAI_CLOUD_API_BASE_URL,
 		signingAlgorithm = 'ecdsa'
 	}: GetMessageSignatureParams
 ): Promise<MessageSignature> => {
 	const res = await fetch(
-		`${url}/signature/${chatId}?model=${model}&signing_algo=${signingAlgorithm}`,
+		`${url}/signature/${chatCompletionId}?model=${model}&signing_algo=${signingAlgorithm}`,
 		{
 			method: 'GET',
             headers: {
@@ -67,18 +67,13 @@ export type GetMessageSignatureParams = {
 	url?: string;
 	token: string,
 	model: string,
-	chatId: string,
+	chatCompletionId: string,   // chatCompletionId from LLM provider in the format of chatcmpl-7b0995f4d1674775877a0532ffe949d9
 	signingAlgorithm?: SigningAlgorithm;
 }
 
 export type MessageSignature = {
 	text: string; // Format: request_body_sha256:response_body_sha256
-	signing_address: Address;
 	signature: string;
-	message: string;
-	messages: {
-		id: string;
-		content: string;
-	}[];
-	algorithm: SigningAlgorithm;
+	signing_address: Address;
+	signing_algo: SigningAlgorithm;
 }
