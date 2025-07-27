@@ -115,7 +115,7 @@
 	let eventCallback = null;
 
 	// Chat verification state
-	let showChatVerifier = false;
+	let showChatVerifier = true;
 
 	let chatIdUnsubscriber: Unsubscriber | undefined;
 
