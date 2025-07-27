@@ -6,12 +6,15 @@
 	export let model: string;
 	export let token: string;
 	export let show = false;
+	export let autoVerify = false; // New prop for automatic verification
 
 	const dispatch = createEventDispatcher();
 
 	let loading = false;
 	let error: string | null = null;
 	let attestationData: ModelAttestationReport | null = null;
+	let nvidiaPayload: any | null = null;
+	let intelQuote: string | null = null;
 	let expandedSections = {
 		gpu: false,
 		tdx: false
@@ -29,6 +32,8 @@
 				token,
 				model,
 			});
+			nvidiaPayload = JSON.parse(attestationData?.nvidia_payload || '{}');
+			intelQuote = attestationData?.intel_quote;
 		} catch (err) {
 			console.error('Error fetching attestation report:', err);
 			error = err instanceof Error ? err.message : 'Failed to fetch attestation report';
@@ -53,8 +58,26 @@
 		expandedSections = { ...expandedSections };
 	};
 
+	// Expose verification status for parent components
+	$: verificationStatus = {
+		loading,
+		error,
+		data: attestationData,
+		isVerified: !loading && !error && attestationData !== null
+	};
+
+	// Dispatch verification status updates
+	$: if (autoVerify) {
+		dispatch('statusUpdate', verificationStatus);
+	}
+
+	// Computed values for display
+	$: evidenceListText = attestationData?.nvidia_payload 
+		? `[{"certificate": "${attestationData.nvidia_payload.substring(0, 100)}..."}]`
+		: '';
+
 	// Fetch data when component mounts or model changes
-	$: if (show && model && token) {
+	$: if ((show || autoVerify) && model && token) {
 		fetchAttestationReport();
 	}
 
@@ -107,6 +130,7 @@
 							<img src="/assets/images/nvidia.svg" alt="NVIDIA" class="w-20 h-8" />
 							<!-- <span class="text-gray-900 grey:text-white">and</span> -->
 						</div>
+						<div class="text-gray-600 dark:text-gray-400">and</div>
 						<!-- Intel Logo -->
 						<div class="flex items-center space-x-2">
 							<img src="/assets/images/intel.svg" alt="Intel" class="w-16 h-8" />
@@ -188,31 +212,108 @@
 							
 							{#if expandedSections.gpu}
 								<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600" transition:slide>
-									<div class="space-y-3">
-										{#if attestationData.nvidia_payload}
+									<div class="space-y-4">
+										<!-- NVIDIA Remote Attestation Service Info -->
+										<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+											<div class="flex items-center mb-2">
+												<img src="/assets/images/nvidia.svg" alt="NVIDIA" class="w-20 h-8 mr-2" />
+												<span class="text-sm font-medium text-blue-900 dark:text-blue-100">Remote Attestation Service</span>
+											</div>
+											<p class="text-xs text-blue-800 dark:text-blue-200 mb-3">
+												This verification uses NVIDIA's Remote Attestation Service (NRAS) to prove that your model is running on genuine NVIDIA hardware in a secure environment. You can independently verify the attestation evidence using NVIDIA's public API.
+											</p>
+											<div class="space-y-1">
+												<a href="https://docs.api.nvidia.com/attestation/reference/attestmultigpu" target="_blank" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
+													<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+														<path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+														<path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+													</svg>
+													Verify GPU attestation by yourself
+												</a>
+												<a href="https://docs.nvidia.com/attestation/index.html#overview" target="_blank" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
+													<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+														<path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+														<path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+													</svg>
+													Learn about NVIDIA Attestation
+												</a>
+											</div>
+										</div>
+
+										<!-- Nonce Section -->
+										{#if nvidiaPayload}
 											<div>
 												<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-													NVIDIA Payload
+													Nonce:
 												</label>
-												<textarea
-													readonly
-													class="w-full h-24 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none"
-												>{attestationData.nvidia_payload}</textarea>
+												<div class="relative">
+													<textarea
+														readonly
+														class="w-full h-16 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none font-mono"
+													>{nvidiaPayload?.nonce || ''}</textarea>
+													<button
+														on:click={() => nvidiaPayload && navigator.clipboard.writeText(nvidiaPayload.nonce)}
+														class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+														title="Copy nonce"
+													>
+														<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+															<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+															<path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+														</svg>
+													</button>
+												</div>
 											</div>
 										{/if}
-										{#if attestationData.signing_address}
+
+										<!-- Evidence List Section -->
+										{#if nvidiaPayload}
 											<div>
 												<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-													Signing Address
+													Evidence List:
 												</label>
+												<div class="relative">
+													<textarea
+														readonly
+														class="w-full h-32 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none font-mono"
+													>{JSON.stringify(nvidiaPayload?.evidence_list || [], null, 2)}</textarea>
+													<button
+														on:click={() => nvidiaPayload && navigator.clipboard.writeText(JSON.stringify(nvidiaPayload?.evidence_list || [], null, 2))}
+														class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+														title="Copy evidence list"
+													>
+														<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+															<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+															<path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+														</svg>
+													</button>
+												</div>
+											</div>
+										{/if}
+
+										<!-- Architecture Section -->
+										<div>
+											<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+												Architecture:
+											</label>
+											<div class="relative">
 												<input
 													type="text"
 													readonly
-													value={attestationData.signing_address}
+													value={nvidiaPayload?.arch}
 													class="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md"
 												/>
+												<button
+													on:click={() => navigator.clipboard.writeText(nvidiaPayload?.arch)}
+													class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+													title="Copy architecture"
+												>
+													<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+														<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+														<path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+													</svg>
+												</button>
 											</div>
-										{/if}
+										</div>
 									</div>
 								</div>
 							{/if}
@@ -243,16 +344,56 @@
 							
 							{#if expandedSections.tdx}
 								<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600" transition:slide>
-									<div class="space-y-3">
-										{#if attestationData.intel_quote}
+									<div class="space-y-4">
+										<!-- Intel Trust Domain Extensions Info -->
+										<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+											<div class="flex items-center mb-2">
+												<img src="/assets/images/intel.svg" alt="Intel" class="w-16 h-8 mr-2" />
+												<span class="text-sm font-medium text-blue-900 dark:text-blue-100">Trust Domain Extensions</span>
+											</div>
+											<p class="text-xs text-blue-800 dark:text-blue-200 mb-3">
+												Intel TDX (Trust Domain Extensions) provides hardware-based attestation for confidential computing. You can verify the authenticity of this TDX quote using Phala's TEE Attestation Explorer - an open source tool for analyzing Intel attestation reports.
+											</p>
+											<div class="space-y-1">
+												<a href="https://proof.t16z.com/" target="_blank" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
+													<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+														<path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+														<path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+													</svg>
+													Verify TDX quote at TEE Explorer
+												</a>
+												<a href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-trust-domain-extensions.html" target="_blank" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
+													<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+														<path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+														<path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+													</svg>
+													Learn about Intel TDX
+												</a>
+											</div>
+										</div>
+
+										<!-- Quote Section -->
+										{#if intelQuote}
 											<div>
 												<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-													Intel Quote
+													Quote:
 												</label>
-												<textarea
-													readonly
-													class="w-full h-24 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none"
-												>{attestationData.intel_quote}</textarea>
+												<div class="relative">
+													<textarea
+														readonly
+														class="w-full h-32 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none font-mono"
+													>{intelQuote}</textarea>
+													<button
+														on:click={() => intelQuote && navigator.clipboard.writeText(intelQuote)}
+														class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+														title="Copy quote"
+													>
+														<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+															<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+															<path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+														</svg>
+													</button>
+												</div>
 											</div>
 										{/if}
 									</div>
