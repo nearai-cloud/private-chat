@@ -59,7 +59,7 @@
 		>
 			<!-- Header -->
 			<div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-				<h2 class="text-lg font-semibold text-gray-900 dark:text-white">AI Verification</h2>
+				<h2 class="text-lg font-semibold text-gray-900 dark:text-white">AI Chat Verification</h2>
 				<button
 					on:click={toggleVerifier}
 					class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -75,7 +75,7 @@
 				<!-- Model Verification Section -->
 				<div class="flex-shrink-0 border-b border-gray-200 dark:border-gray-700">
 					<div class="p-4">
-						<h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Model Verification</h3>
+						<h2 class="text-md font-medium text-gray-900 dark:text-white mb-3">Model Verification</h2>
 						
 						<!-- Open Model Verifier Button -->
 						<button
@@ -92,9 +92,9 @@
 				<div class="flex-1 overflow-hidden">
 					<div class="h-full flex flex-col">
 						<div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
-							<h3 class="text-sm font-medium text-gray-900 dark:text-white">Message Verification</h3>
+							<h2 class="text-md font-medium text-gray-900 dark:text-white">Messages Verification</h2>
 						</div>
-						<div class="flex-1 overflow-y-auto p-4">
+						<div class="flex-1 overflow-y-auto">
 							<MessagesVerifier {history} {token} />
 						</div>
 					</div>
