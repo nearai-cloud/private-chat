@@ -2,6 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { getModelAttestationReport, type ModelAttestationReport } from '$lib/apis/nearai';
 	import { fade, slide } from 'svelte/transition';
+	import { removeModelPrefix } from '$lib/utils/model';
 
 	export let model: string;
 	export let token: string;
@@ -117,8 +118,8 @@
 			<div class="p-6">
 				<!-- Model Info -->
 				<div class="mb-6">
-					<h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Verifying Model</h3>
-					<p class="text-sm text-gray-600 dark:text-gray-400">{model}</p>
+					<h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Verified Model</h3>
+					<p class="text-sm text-gray-600 dark:text-gray-400">{removeModelPrefix(model)}</p>
 				</div>
 
 				<!-- Attestation Source -->
