@@ -14,6 +14,7 @@
 	import ModelItemMenu from './ModelItemMenu.svelte';
 	import EllipsisHorizontal from '$lib/components/icons/EllipsisHorizontal.svelte';
 	import { toast } from 'svelte-sonner';
+	import { removeModelPrefix } from '$lib/utils/model';
 
 	const i18n = getContext('i18n');
 
@@ -84,7 +85,7 @@
 			</div>
 
 			<div class="flex items-center">
-				<Tooltip content={`${item.label} (${item.value})`} placement="top-start">
+				<Tooltip content={`${item.label} (${removeModelPrefix(item.value)})`} placement="top-start">
 					<div class="line-clamp-1">
 						{item.label}
 					</div>
