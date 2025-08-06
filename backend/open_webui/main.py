@@ -1505,8 +1505,7 @@ async def chat_attestation(
         headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
 
         # Forward the request to the model provider
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
+        async with aiohttp.ClientSession() as session, session.get(
                 f"{base_url}/attestation/report",
                 headers=headers,
                 params={"model": model},
@@ -1517,7 +1516,22 @@ async def chat_attestation(
                         detail=f"Model provider returned error: {response.status}",
                     )
 
-                attestation_data = await response.json()
+                # Handle responses that return JSON but with text/plain content-type
+                try:
+                    attestation_data = await response.json()
+                except Exception as json_error:
+                    log.warning(f"Failed to parse response as JSON: {json_error}")
+                    # Try to read as text and parse manually
+                    text_content = await response.text()
+                    try:
+                        attestation_data = json.loads(text_content)
+                    except json.JSONDecodeError as e:
+                        log.error(f"Failed to parse response text as JSON: {e}")
+                        raise HTTPException(
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Invalid JSON response from model provider: {text_content}",
+                        )
+
                 return attestation_data
 
     except aiohttp.ClientError as e:
@@ -1525,13 +1539,13 @@ async def chat_attestation(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Unable to connect to model provider",
-        )
+        ) from e
     except Exception as e:
         log.error(f"Error getting attestation report: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error",
-        )
+        ) from e
 
 
 # Get the signature of chat
@@ -1575,8 +1589,7 @@ async def chat_signature(
         headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
 
         # Forward the request to the model provider
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
+        async with aiohttp.ClientSession() as session, session.get(
                 f"{base_url}/signature/{chat_completion_id}",
                 headers=headers,
                 params={"model": model, "signing_algo": signing_algo},
@@ -1587,7 +1600,22 @@ async def chat_signature(
                         detail=f"Model provider returned error: {response.status}",
                     )
 
-                signature_data = await response.json()
+                # Handle responses that return JSON but with text/plain content-type
+                try:
+                    signature_data = await response.json()
+                except Exception as json_error:
+                    log.warning(f"Failed to parse response as JSON: {json_error}")
+                    # Try to read as text and parse manually
+                    text_content = await response.text()
+                    try:
+                        signature_data = json.loads(text_content)
+                    except json.JSONDecodeError as e:
+                        log.error(f"Failed to parse response text as JSON: {e}")
+                        raise HTTPException(
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Invalid JSON response from model provider: {text_content}",
+                        )
+
                 return signature_data
 
     except aiohttp.ClientError as e:
@@ -1595,13 +1623,13 @@ async def chat_signature(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Unable to connect to model provider",
-        )
+        ) from e
     except Exception as e:
         log.error(f"Error getting signature: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error",
-        )
+        ) from e
 
 
 @app.post("/api/chat/actions/{action_id}")
