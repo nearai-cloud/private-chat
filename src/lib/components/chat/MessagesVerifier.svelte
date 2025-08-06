@@ -13,7 +13,6 @@
 	let selectedMessageId = '';
 	let lastCurrentId = '';
 	let containerElement: HTMLElement | undefined;
-	let parentScrollContainer: HTMLElement | undefined;
 
 	// Get verifiable messages from history
 	const getChatCompletions = (history: {
@@ -28,7 +27,7 @@
 
 	// Reactive statement to calculate chatCompletions when history changes
 	$: chatCompletions = history ? getChatCompletions(history) : [];
-	
+
 	// Set default selection to current message when component loads or history changes
 	$: if (history?.currentId && history.messages[history.currentId]?.chatCompletionId) {
 		// Auto-select only if this is a new message (currentId changed) or if no message is selected
@@ -213,7 +212,7 @@
 						<div>
 							<label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Algorithm:</label>
 							<div class="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs min-h-[24px] flex items-center">
-								{signatures[selectedMessageId].signing_algo || 'ecdsa'}
+								{signatures[selectedMessageId].signing_algo ?? ''}
 							</div>
 						</div>
 					</div>

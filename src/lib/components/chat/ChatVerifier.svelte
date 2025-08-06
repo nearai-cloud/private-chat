@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { slide } from 'svelte/transition';
 	import ModelVerifier from './ModelVerifier.svelte';
 	import MessagesVerifier from './MessagesVerifier.svelte';
 
