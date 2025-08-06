@@ -2283,21 +2283,6 @@
 								</div>
 							{/if}
 						</div>
-
-						<!-- ChatVerifier panel -->
-						{#if showChatVerifier}
-							<div class="h-full w-80 flex-shrink-0 flex-grow-0 mt-16">
-								<ChatVerifier
-									{history}
-									token={localStorage.token}
-									selectedModels={selectedModels}
-									bind:expanded={showChatVerifier}
-									on:toggle={(e) => {
-										showChatVerifier = e.detail.expanded;
-									}}
-								/>
-							</div>
-						{/if}
 					</div>
 				</Pane>
 
