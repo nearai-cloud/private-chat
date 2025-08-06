@@ -224,14 +224,14 @@
 												This verification uses NVIDIA's Remote Attestation Service (NRAS) to prove that your model is running on genuine NVIDIA hardware in a secure environment. You can independently verify the attestation evidence using NVIDIA's public API.
 											</p>
 											<div class="space-y-1">
-												<a href="https://docs.api.nvidia.com/attestation/reference/attestmultigpu" target="_blank" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
+												<a href="https://docs.api.nvidia.com/attestation/reference/attestmultigpu" target="_blank" rel="noopener noreferrer" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
 													<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
 														<path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
 														<path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
 													</svg>
 													Verify GPU attestation by yourself
 												</a>
-												<a href="https://docs.nvidia.com/attestation/index.html#overview" target="_blank" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
+												<a href="https://docs.nvidia.com/attestation/index.html#overview" target="_blank" rel="noopener noreferrer" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
 													<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
 														<path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
 														<path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
@@ -356,14 +356,14 @@
 												Intel TDX (Trust Domain Extensions) provides hardware-based attestation for confidential computing. You can verify the authenticity of this TDX quote using Phala's TEE Attestation Explorer - an open source tool for analyzing Intel attestation reports.
 											</p>
 											<div class="space-y-1">
-												<a href="https://proof.t16z.com/" target="_blank" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
+												<a href="https://proof.t16z.com/" target="_blank" rel="noopener noreferrer" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
 													<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
 														<path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
 														<path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
 													</svg>
 													Verify TDX quote at TEE Explorer
 												</a>
-												<a href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-trust-domain-extensions.html" target="_blank" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
+												<a href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-trust-domain-extensions.html" target="_blank" rel="noopener noreferrer" class="flex items-center text-red-500 hover:text-red-600 text-xs transition-colors">
 													<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
 														<path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
 														<path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />

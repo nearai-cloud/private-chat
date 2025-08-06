@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { getMessageSignature, type MessageSignature } from '$lib/apis/nearai';
+	import type { Message } from '$lib/types';
 
 	export let history: {
-		messages: Record<string, any>,
+		messages: Record<string, Message>,
 		currentId: string | null;
 	};
 	export let token: string;
@@ -16,7 +17,7 @@
 
 	// Get verifiable messages from history
 	const getChatCompletions = (history: {
-		messages: Record<string, any>,
+		messages: Record<string, Message>,
 		currentId: string | null;
 	}) => {
 		if (!history?.messages) return [];
@@ -32,14 +33,13 @@
 	$: if (history?.currentId && history.messages[history.currentId]?.chatCompletionId) {
 		// Auto-select only if this is a new message (currentId changed) or if no message is selected
 		if (history.currentId !== lastCurrentId || !selectedMessageId) {
-			selectedMessageId = history.messages[history.currentId].chatCompletionId;
+			selectedMessageId = history.messages[history.currentId].chatCompletionId!;
 		}
 		lastCurrentId = history.currentId;
 	}
 
 	// Scroll to selected message when selectedMessageId changes
 	$: if (selectedMessageId && containerElement) {
-		console.log('Selected message changed to:', selectedMessageId);
 		scrollToSelectedMessage();
 	}
 
@@ -79,8 +79,6 @@
 		setTimeout(() => {
 			const selectedElement = containerElement?.querySelector(`[data-message-id="${selectedMessageId}"]`) as HTMLElement;
 			if (selectedElement) {
-				console.log('Scrolling to message:', selectedMessageId);
-				
 				// Find the parent scroll container
 				const scrollContainer = selectedElement.closest('.overflow-y-auto') as HTMLElement;
 				if (scrollContainer) {
@@ -109,7 +107,7 @@
 
 	// Auto-fetch signatures when chatCompletions change
 	$: if (history && token && chatCompletions.length > 0) {
-		chatCompletions.forEach((message: any) => {
+		chatCompletions.forEach((message: Message) => {
 			if (message.chatCompletionId && !signatures[message.chatCompletionId]) {
 				fetchMessageSignature(message.model, message.chatCompletionId);
 			}
@@ -138,7 +136,7 @@
 			{#each chatCompletions as message, index}
 				<div 
 					class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg my-2 p-2 relative cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors {selectedMessageId === message.chatCompletionId ? 'ring-1 ring-green-500' : ''}"
-					on:click={() => selectedMessageId = message.chatCompletionId}
+					on:click={() => message.chatCompletionId && (selectedMessageId = message.chatCompletionId)}
 					title="Click to view signature details"
 					data-message-id={message.chatCompletionId}
 				>
@@ -163,9 +161,6 @@
 			<div class="space-y-3">
 				<div class="flex justify-between items-center">
 					<h3 class="text-sm font-medium text-gray-900 dark:text-white mt-4">Signature Details</h3>
-					<!-- <span class="text-xs text-gray-500 dark:text-gray-400">
-						{Object.keys(signatures).length} of {chatCompletions.length} signatures loaded
-					</span> -->
 				</div>
 				
 				{#if selectedMessageId && signatures[selectedMessageId]}
@@ -237,16 +232,6 @@
 			<p class="text-sm">No verifiable messages found for this chat.</p>
 		</div>
 	{/if}
-
-	<!-- Manual Verify Button (if needed) -->
-	<!-- {#if chatCompletions.length > 0 && Object.keys(signatures).length < chatCompletions.length}
-		<button
-			on:click={verifyAllMessageSignatures}
-			class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition-colors"
-		>
-			Load Missing Signatures ({chatCompletions.length - Object.keys(signatures).length} remaining)
-		</button>
-	{/if} -->
 	
 	<!-- Add bottom padding for better scrolling -->
 	<div class="h-10"></div>

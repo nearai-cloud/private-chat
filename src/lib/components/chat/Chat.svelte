@@ -945,8 +945,6 @@
 				autoScroll = true;
 				await tick();
 
-				console.log('loadChat: history', history);
-
 				if (history.currentId) {
 					for (const message of Object.values(history.messages)) {
 						if (message.role === 'assistant') {
@@ -1240,7 +1238,6 @@
 
 		// Store the chat completion ID if provided
 		if (id && !message.chatCompletionId) {
-			console.log('chatCompletionEventHandler: setting chatCompletionId', id);
 			message.chatCompletionId = id;
 		}
 
@@ -1378,8 +1375,7 @@
 			);
 		}
 
-		console.log('chatCompletionEventHandler: history', history);
-		console.log('chatCompletionEventHandler: data', data);
+		console.log(data);
 		await tick();
 
 		if (autoScroll) {

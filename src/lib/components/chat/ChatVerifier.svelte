@@ -2,9 +2,10 @@
 	import { createEventDispatcher } from 'svelte';
 	import ModelVerifier from './ModelVerifier.svelte';
 	import MessagesVerifier from './MessagesVerifier.svelte';
+	import type { Message } from '$lib/types';
 
 	export let history: {
-		messages: Record<string, any>,
+		messages: Record<string, Message>,
 		currentId: string | null;
 	};
 	export let token: string;
