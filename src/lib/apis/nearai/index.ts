@@ -6,7 +6,7 @@ export const getModelAttestationReport = async ({
 	url = `${WEBUI_BASE_URL}/api`
 }: GetModelAttestationReportParams): Promise<ModelAttestationReport> => {
 	const res = await fetch(
-        `${url}/attestation/report?model=${model}`,
+        `${url}/attestation/report?model=${encodeURIComponent(model)}`,
         {
             method: 'GET',
             headers: {
@@ -28,7 +28,7 @@ export const getMessageSignature = async (
 	}: GetMessageSignatureParams
 ): Promise<MessageSignature> => {
 	const res = await fetch(
-		`${url}/signature/${chatCompletionId}?model=${model}&signing_algo=${signingAlgorithm}`,
+		`${url}/signature/${encodeURIComponent(chatCompletionId)}?model=${encodeURIComponent(model)}&signing_algo=${encodeURIComponent(signingAlgorithm)}`,
 		{
 			method: 'GET',
             headers: {

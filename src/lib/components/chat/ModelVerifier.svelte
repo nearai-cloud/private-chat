@@ -3,6 +3,7 @@
 	import { getModelAttestationReport, type ModelAttestationReport } from '$lib/apis/nearai';
 	import { fade, slide } from 'svelte/transition';
 	import { removeModelPrefix } from '$lib/utils/model';
+	import { copyToClipboard } from '$lib/utils';
 
 	export let model: string;
 	export let token: string;
@@ -253,7 +254,7 @@
 														class="w-full h-16 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none font-mono"
 													>{nvidiaPayload?.nonce || ''}</textarea>
 													<button
-														on:click={() => nvidiaPayload && navigator.clipboard.writeText(nvidiaPayload.nonce)}
+														on:click={() => nvidiaPayload && copyToClipboard(nvidiaPayload.nonce)}
 														class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
 														title="Copy nonce"
 													>
@@ -278,7 +279,7 @@
 														class="w-full h-32 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none font-mono"
 													>{JSON.stringify(nvidiaPayload?.evidence_list || [], null, 2)}</textarea>
 													<button
-														on:click={() => nvidiaPayload && navigator.clipboard.writeText(JSON.stringify(nvidiaPayload?.evidence_list || [], null, 2))}
+														on:click={() => nvidiaPayload && copyToClipboard(JSON.stringify(nvidiaPayload?.evidence_list || [], null, 2))}
 														class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
 														title="Copy evidence list"
 													>
@@ -304,7 +305,7 @@
 													class="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md"
 												/>
 												<button
-													on:click={() => navigator.clipboard.writeText(nvidiaPayload?.arch)}
+													on:click={() => copyToClipboard(nvidiaPayload?.arch)}
 													class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
 													title="Copy architecture"
 												>
@@ -385,7 +386,7 @@
 														class="w-full h-32 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none font-mono"
 													>{intelQuote}</textarea>
 													<button
-														on:click={() => intelQuote && navigator.clipboard.writeText(intelQuote)}
+														on:click={() => intelQuote && copyToClipboard(intelQuote)}
 														class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
 														title="Copy quote"
 													>
