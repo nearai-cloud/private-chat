@@ -6,6 +6,7 @@
 	import Tooltip from '../common/Tooltip.svelte';
 
 	import { updateUserSettings } from '$lib/apis/users';
+	import { removeModelPrefix } from '$lib/utils/model';
 	const i18n = getContext('i18n');
 
 	export let selectedModels = [''];
@@ -55,7 +56,7 @@
 						placeholder={$i18n.t('Select a model')}
 						items={$models.map((model) => ({
 							value: model.id,
-							label: model.name,
+							label: removeModelPrefix(model.name),
 							model: model
 						}))}
 						showTemporaryChatControl={$user?.role === 'user'

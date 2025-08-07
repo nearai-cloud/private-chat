@@ -26,6 +26,7 @@
 	import FolderPlaceholder from './Placeholder/FolderPlaceholder.svelte';
 	import FolderTitle from './Placeholder/FolderTitle.svelte';
 	import { getChatList } from '$lib/apis/chats';
+	import { removeModelPrefix } from '$lib/utils/model';
 
 	const i18n = getContext('i18n');
 
@@ -146,12 +147,12 @@
 					>
 						{#if models[selectedModelIdx]?.name}
 							<Tooltip
-								content={models[selectedModelIdx]?.name}
+								content={removeModelPrefix(models[selectedModelIdx]?.name ?? '')}
 								placement="top"
 								className=" flex items-center "
 							>
 								<span class="line-clamp-1">
-									{models[selectedModelIdx]?.name}
+									{removeModelPrefix(models[selectedModelIdx]?.name ?? '')}
 								</span>
 							</Tooltip>
 						{:else}
