@@ -8,7 +8,9 @@ from open_webui.models.chats import (ChatForm, ChatImportForm, ChatModel,
 from open_webui.utils.user_encryption import (EncryptionError,
                                               UserEncryptionConfig,
                                               decrypt_chat_data,
-                                              encrypt_chat_data)
+                                              decrypt_title_data,
+                                              encrypt_chat_data,
+                                              encrypt_title_data)
 
 log = logging.getLogger(__name__)
 
@@ -34,8 +36,9 @@ class ChatTableEncryptionProxy(ChatTable):
     def _create_chat_model_from_db_record(self, db_record) -> ChatModel:
         """Create ChatModel from database record, handling encrypted data."""
         chat_data = db_record.chat
+        title_data = db_record.title
         
-        # Handle encrypted data
+        # Handle encrypted chat data
         if isinstance(chat_data, str):
             try:
                 chat_data = decrypt_chat_data(chat_data, db_record.user_id)
@@ -44,10 +47,19 @@ class ChatTableEncryptionProxy(ChatTable):
                 # Return None to indicate failure - let caller handle it
                 return None
         
+        # Handle encrypted title data (with fallback)
+        if isinstance(title_data, str):
+            try:
+                title_data = decrypt_title_data(title_data, db_record.user_id)
+            except Exception as e:
+                log.error(f"Failed to decrypt title data for {db_record.id}: {e}")
+                # Fallback to original title if decryption fails
+                title_data = db_record.title
+        
         return ChatModel(
             id=db_record.id,
             user_id=db_record.user_id,
-            title=db_record.title,
+            title=title_data,
             chat=chat_data,
             created_at=db_record.created_at,
             updated_at=db_record.updated_at,
@@ -69,6 +81,17 @@ class ChatTableEncryptionProxy(ChatTable):
         else:
             chat_record.chat = chat_data
     
+    def _store_encrypted_title(self, chat_record, title: str, user_id: str) -> None:
+        """Store title data in database record, encrypting if enabled."""
+        if self._encryption_enabled:
+            try:
+                chat_record.title = encrypt_title_data(title, user_id)
+            except EncryptionError as e:
+                log.error(f"Title encryption failed, falling back to unencrypted storage: {e}")
+                chat_record.title = title
+        else:
+            chat_record.title = title
+    
     # Override INSERT/UPDATE methods
     
     def insert_new_chat(self, user_id: str, form_data: ChatForm) -> Optional[ChatModel]:
@@ -82,19 +105,20 @@ class ChatTableEncryptionProxy(ChatTable):
             
             with get_db() as db:
                 id = str(uuid.uuid4())
+                title = form_data.chat.get("title", "New Chat")
                 
                 # Create database record
                 chat_record = Chat(
                     id=id,
                     user_id=user_id,
-                    title=form_data.chat.get("title", "New Chat"),
                     folder_id=form_data.folder_id,
                     created_at=int(time.time()),
                     updated_at=int(time.time())
                 )
                 
-                # Store encrypted chat data
+                # Store encrypted chat and title data
                 self._store_encrypted_chat(chat_record, form_data.chat, user_id)
+                self._store_encrypted_title(chat_record, title, user_id)
                 
                 db.add(chat_record)
                 db.commit()
@@ -104,7 +128,7 @@ class ChatTableEncryptionProxy(ChatTable):
                 return ChatModel(
                     id=chat_record.id,
                     user_id=chat_record.user_id,
-                    title=chat_record.title,
+                    title=title,  # Return original title (not encrypted)
                     chat=form_data.chat,
                     created_at=chat_record.created_at,
                     updated_at=chat_record.updated_at,
@@ -143,10 +167,12 @@ class ChatTableEncryptionProxy(ChatTable):
                 if not chat_item:
                     return None
                 
-                # Store encrypted chat data
-                self._store_encrypted_chat(chat_item, chat, chat_item.user_id)
+                title = chat.get("title", "New Chat")
                 
-                chat_item.title = chat.get("title", "New Chat")
+                # Store encrypted chat and title data
+                self._store_encrypted_chat(chat_item, chat, chat_item.user_id)
+                self._store_encrypted_title(chat_item, title, chat_item.user_id)
+                
                 chat_item.updated_at = int(time.time())
                 db.commit()
                 db.refresh(chat_item)
@@ -155,7 +181,7 @@ class ChatTableEncryptionProxy(ChatTable):
                 return ChatModel(
                     id=chat_item.id,
                     user_id=chat_item.user_id,
-                    title=chat_item.title,
+                    title=title,  # Return original title (not encrypted)
                     chat=chat,
                     created_at=chat_item.created_at,
                     updated_at=chat_item.updated_at,
@@ -265,16 +291,25 @@ class ChatTableEncryptionProxy(ChatTable):
         """Decrypt a list of chat models."""
         decrypted_models = []
         for model in chat_models:
+            # Decrypt chat data if needed
             if isinstance(model.chat, str):
                 try:
                     model.chat = decrypt_chat_data(model.chat, model.user_id)
-                    decrypted_models.append(model)
                 except Exception as e:
                     log.error(f"Failed to decrypt chat {model.id}: {e}")
                     # Skip corrupted chats instead of crashing
                     continue
-            else:
-                decrypted_models.append(model)
+            
+            # Decrypt title data if needed
+            if isinstance(model.title, str):
+                try:
+                    model.title = decrypt_title_data(model.title, model.user_id)
+                except Exception as e:
+                    log.error(f"Failed to decrypt title for {model.id}: {e}")
+                    # Keep original title if decryption fails
+                    pass
+            
+            decrypted_models.append(model)
         return decrypted_models
     
     def get_chat_list_by_user_id(
@@ -361,6 +396,31 @@ class ChatTableEncryptionProxy(ChatTable):
         """Override to decrypt chat data after retrieving."""
         results = super().get_chat_list_by_user_id_and_tag_name(user_id, tag_name, skip, limit)
         return self._decrypt_chat_models_list(results) if self._encryption_enabled else results
+    
+    def get_chat_title_id_list_by_user_id(
+        self,
+        user_id: str,
+        include_archived: bool = False,
+        skip: Optional[int] = None,
+        limit: Optional[int] = None,
+    ):
+        """Override to decrypt titles in the title/id list."""
+        results = super().get_chat_title_id_list_by_user_id(user_id, include_archived, skip, limit)
+        
+        if not self._encryption_enabled:
+            return results
+            
+        # Decrypt titles in the response
+        for item in results:
+            if isinstance(item.title, str):
+                try:
+                    item.title = decrypt_title_data(item.title, user_id)
+                except Exception as e:
+                    log.error(f"Failed to decrypt title for chat {item.id}: {e}")
+                    # Keep original title if decryption fails
+                    pass
+        
+        return results
     
     # Helper methods for message extraction
     def get_messages_by_chat_id(self, id: str) -> Optional[dict]:

@@ -2,6 +2,7 @@ import base64
 import json
 import logging
 import os
+import re
 import secrets
 from typing import Dict, Optional
 
@@ -67,7 +68,10 @@ class UserDataEncryptionService:
         url = f"{self.key_service_base_url}/keys/decrypt"
         payload = {"key": encrypted_key}
         response = requests.post(url, json=payload, timeout=30)
-        response.raise_for_status()
+        
+        if not response.ok:
+            error_text = response.text
+            raise Exception(f"Key service error {response.status_code}: {error_text}")
         
         data = response.json()
         if 'decryptedKey' not in data:
@@ -196,6 +200,37 @@ class UserDataEncryptionService:
     def is_encrypted(self, data: str) -> bool:
         """Check if data appears to be encrypted (not plain JSON)."""
         return not self._is_plain_json(data)
+    
+    def _is_base64_encoded(self, data: str) -> bool:
+        """Check if data appears to be base64 encoded."""
+        if not data or not isinstance(data, str):
+            return False
+        
+        data = data.strip()
+        if not data:
+            return False
+        
+        # Base64 pattern check (letters, numbers, +, /, = padding)
+        base64_pattern = re.compile(r'^[A-Za-z0-9+/]*={0,2}$')
+        if not base64_pattern.match(data):
+            return False
+        
+        # Length check - base64 encoded data should be reasonably long for encrypted content
+        # AES-GCM with 12-byte nonce + at least some data should be > 20 chars when base64 encoded
+        if len(data) < 20:
+            return False
+        
+        # Try to decode - if it fails, it's not valid base64
+        try:
+            decoded = base64.b64decode(data, validate=True)
+            # For our encryption, we expect at least 12 bytes (nonce) + some ciphertext
+            return len(decoded) >= 16
+        except Exception:
+            return False
+    
+    def is_title_encrypted(self, title: str) -> bool:
+        """Check if title appears to be encrypted."""
+        return self._is_base64_encoded(title)
 
 
 # Singleton pattern for global encryption instance
@@ -271,3 +306,68 @@ def get_user_data_encryption_key(user_id: str) -> str:
 def clear_encryption_cache(user_id: Optional[str] = None) -> None:
     """Clear cached encryption keys."""
     _get_encryption_service().clear_cache(user_id)
+
+
+def encrypt_title_data(title: str, user_id: str) -> str:
+    """
+    Convenience function to encrypt title string for a specific user.
+    
+    Args:
+        title (str): Title string to encrypt
+        user_id (str): User ID to encrypt for
+        
+    Returns:
+        str: Base64 encoded encrypted string
+        
+    Raises:
+        EncryptionError: If encryption fails
+    """
+    if not title or not isinstance(title, str):
+        return title or ""
+    
+    # Convert string to dict format for encryption
+    title_data = {"title": title}
+    return _get_encryption_service().encrypt_data(title_data, user_id)
+
+
+def decrypt_title_data(encrypted_data: str, user_id: str) -> str:
+    """
+    Convenience function to decrypt title data for a specific user.
+    
+    Args:
+        encrypted_data (str): Base64 encoded encrypted string or plain text
+        user_id (str): User ID to decrypt for
+        
+    Returns:
+        str: Decrypted title string
+    """
+    if not encrypted_data or not isinstance(encrypted_data, str):
+        return encrypted_data or ""
+    
+    encrypted_data = encrypted_data.strip()
+    if not encrypted_data:
+        return ""
+    
+    try:
+        # Try to decrypt the data
+        decrypted_data = _get_encryption_service().decrypt_data(encrypted_data, user_id)
+        return decrypted_data.get("title", "") if isinstance(decrypted_data, dict) else ""
+    except Exception:
+        # If decryption fails, return original data (it's probably not encrypted)
+        return encrypted_data
+
+
+def is_title_encrypted(title: str) -> bool:
+    """
+    Convenience function to check if title is encrypted.
+    
+    Args:
+        title (str): Title string to check
+        
+    Returns:
+        bool: True if encrypted, False otherwise
+    """
+    try:
+        return _get_encryption_service().is_title_encrypted(title)
+    except Exception:
+        return False
