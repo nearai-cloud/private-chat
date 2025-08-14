@@ -342,18 +342,105 @@ class ChatTableEncryptionProxy(ChatTable):
     
     def get_chats_by_user_id(self, user_id: str) -> list[ChatModel]:
         """Override to decrypt chat data after retrieving."""
-        results = super().get_chats_by_user_id(user_id)
-        return self._decrypt_chat_models_list(results) if self._encryption_enabled else results
+        if not self._encryption_enabled:
+            return super().get_chats_by_user_id(user_id)
+        
+        try:
+            from open_webui.internal.db import get_db
+            from open_webui.models.chats import Chat
+            
+            with get_db() as db:
+                all_chats = (
+                    db.query(Chat)
+                    .filter_by(user_id=user_id)
+                    .order_by(Chat.updated_at.desc())
+                )
+                
+                chat_models = []
+                for chat_record in all_chats:
+                    chat_model = self._create_chat_model_from_db_record(chat_record)
+                    if chat_model is not None:  # Skip corrupted/undecryptable chats
+                        chat_models.append(chat_model)
+                
+                return chat_models
+                
+        except Exception as e:
+            log.error(f"Error in get_chats_by_user_id: {e}")
+            # Fallback: try parent method but handle potential validation errors
+            try:
+                results = super().get_chats_by_user_id(user_id)
+                return self._decrypt_chat_models_list(results)
+            except Exception as fallback_error:
+                log.error(f"Fallback also failed: {fallback_error}")
+                return []
     
     def get_pinned_chats_by_user_id(self, user_id: str) -> list[ChatModel]:
         """Override to decrypt chat data after retrieving."""
-        results = super().get_pinned_chats_by_user_id(user_id)
-        return self._decrypt_chat_models_list(results) if self._encryption_enabled else results
+        if not self._encryption_enabled:
+            return super().get_pinned_chats_by_user_id(user_id)
+        
+        try:
+            from open_webui.internal.db import get_db
+            from open_webui.models.chats import Chat
+            
+            with get_db() as db:
+                all_chats = (
+                    db.query(Chat)
+                    .filter_by(user_id=user_id, pinned=True, archived=False)
+                    .order_by(Chat.updated_at.desc())
+                )
+                
+                chat_models = []
+                for chat_record in all_chats:
+                    chat_model = self._create_chat_model_from_db_record(chat_record)
+                    if chat_model is not None:  # Skip corrupted/undecryptable chats
+                        chat_models.append(chat_model)
+                
+                return chat_models
+                
+        except Exception as e:
+            log.error(f"Error in get_pinned_chats_by_user_id: {e}")
+            # Fallback: try parent method but handle potential validation errors
+            try:
+                results = super().get_pinned_chats_by_user_id(user_id)
+                return self._decrypt_chat_models_list(results)
+            except Exception as fallback_error:
+                log.error(f"Fallback also failed: {fallback_error}")
+                return []
     
     def get_archived_chats_by_user_id(self, user_id: str) -> list[ChatModel]:
         """Override to decrypt chat data after retrieving."""
-        results = super().get_archived_chats_by_user_id(user_id)
-        return self._decrypt_chat_models_list(results) if self._encryption_enabled else results
+        if not self._encryption_enabled:
+            return super().get_archived_chats_by_user_id(user_id)
+        
+        try:
+            from open_webui.internal.db import get_db
+            from open_webui.models.chats import Chat
+            
+            with get_db() as db:
+                all_chats = (
+                    db.query(Chat)
+                    .filter_by(user_id=user_id, archived=True)
+                    .order_by(Chat.updated_at.desc())
+                )
+                
+                chat_models = []
+                for chat_record in all_chats:
+                    chat_model = self._create_chat_model_from_db_record(chat_record)
+                    if chat_model is not None:  # Skip corrupted/undecryptable chats
+                        chat_models.append(chat_model)
+                
+                return chat_models
+                
+        except Exception as e:
+            log.error(f"Error in get_archived_chats_by_user_id: {e}")
+            # Fallback: try parent method but handle potential validation errors
+            try:
+                results = super().get_archived_chats_by_user_id(user_id)
+                return self._decrypt_chat_models_list(results)
+            except Exception as fallback_error:
+                log.error(f"Fallback also failed: {fallback_error}")
+                return []
     
     def get_chats_by_user_id_and_search_text(
         self,
