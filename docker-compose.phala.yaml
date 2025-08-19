@@ -1,0 +1,40 @@
+services:
+  # key service
+  key-service:
+    image: danielwpz/seal-cvm:0.5
+    container_name: key-service
+    ports:
+      - "3001:3001"
+    volumes:
+      - /var/run/tappd.sock:/var/run/tappd.sock
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # private chat
+  private-chat:
+    image: danielwpz/private-chat:0.1
+    container_name: private-chat
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      ENABLE_CHAT_ENCRYPTION: true
+      MODELS_CACHE_TTL: 300
+      KEY_SERVICE_BASE_URL: http://key-service:3001
+      DATABASE_URL: ${DATABASE_URL}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
