@@ -44,7 +44,7 @@
 
 <div class="h-screen max-h-[100dvh] text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-900 w-full max-w-full flex flex-col">
     <!-- model selector -->
-    <div class="flex flex-col w-full items-start absolute top-0 left-0 p-4">
+    <div class="flex w-full items-center justify-between absolute top-0 left-0 p-4">
         <div class="flex w-full max-w-fit">
             <div class="max-w-full m-1">
                 <Selector
@@ -58,6 +58,14 @@
                 />
             </div>
         </div>
+
+        <button
+            type="button"
+            class="bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition rounded-lg font-medium text-sm py-2.5 px-5"
+            on:click={gotoAuth}
+        >
+            Sign In
+        </button>
     </div>
 
     <div class="w-full h-full flex flex-col">
@@ -86,9 +94,8 @@
                                             rows="1"
                                             bind:value={inputValue}
                                             on:keydown={async (e) => {
-                                                const isCtrlPressed = e.ctrlKey || e.metaKey
-                                                const enterPressed = (e.key === 'Enter' || e.keyCode === 13) && isCtrlPressed
-                                                if (enterPressed) {
+                                                const enterPressed = e.key === 'Enter' || e.keyCode === 13
+                                                if (enterPressed && inputValue) {
                                                     gotoAuth()
                                                 }
                                             }}
