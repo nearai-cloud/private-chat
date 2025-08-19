@@ -1213,6 +1213,13 @@ async def chat_attestation(
 
         model_config = request.app.state.MODELS[model]
 
+        # Check if user has access to the model
+        if not BYPASS_MODEL_ACCESS_CONTROL and user.role == "user":
+            try:
+                check_model_access(user, model_config)
+            except Exception as e:
+                raise e
+
         idx = model_config.get("urlIdx")
         base_url = request.app.state.config.OPENAI_API_BASE_URLS[idx]
         key = request.app.state.config.OPENAI_API_KEYS[idx]
@@ -1296,6 +1303,13 @@ async def chat_signature(
             )
 
         model_config = request.app.state.MODELS[model]
+
+        # Check if user has access to the model
+        if not BYPASS_MODEL_ACCESS_CONTROL and user.role == "user":
+            try:
+                check_model_access(user, model_config)
+            except Exception as e:
+                raise e
 
         idx = model_config.get("urlIdx")
         base_url = request.app.state.config.OPENAI_API_BASE_URLS[idx]
