@@ -49,25 +49,23 @@ export type GetModelAttestationReportParams = {
 }
 
 export type ModelAttestationReport = {
-	signing_address: Address,
-	nvidia_payload: string,
-	intel_quote: string,
-	all_attestations: [
-		{
-			signing_address: Address,
-			nvidia_payload: string,
-			intel_quote: string,
-		}
-	],
+	signing_address: Address;
+	nvidia_payload: string;
+	intel_quote: string;
+	all_attestations: Array<{
+		signing_address: Address,
+		nvidia_payload: string,
+		intel_quote: string,
+	}>;
 }
 
 export type SigningAlgorithm = 'ecdsa';
 
 export type GetMessageSignatureParams = {
 	url?: string;
-	token: string,
-	model: string,
-	chatCompletionId: string,   // chatCompletionId from LLM provider in the format of chatcmpl-7b0995f4d1674775877a0532ffe949d9
+	token: string;
+	model: string;
+	chatCompletionId: string;   // chatCompletionId from LLM provider in the format of chatcmpl-7b0995f4d1674775877a0532ffe949d9
 	signingAlgorithm?: SigningAlgorithm;
 }
 
