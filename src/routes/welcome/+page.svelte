@@ -1,9 +1,11 @@
 <script lang="ts">
+    import { DropdownMenu } from 'bits-ui';
 	import InputMenu from "$lib/components/chat/MessageInput/InputMenu.svelte";
-	import Selector from "$lib/components/chat/ModelSelector/Selector.svelte";
 	import Tooltip from "$lib/components/common/Tooltip.svelte";
 	import Bolt from "$lib/components/icons/Bolt.svelte";
 	import Headphone from "$lib/components/icons/Headphone.svelte";
+	import NearAIIcon from "$lib/components/icons/NearAI.svelte";
+    import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import { getContext } from "svelte";
 	import Fuse from "fuse.js";
 	import { allPrompts, models } from "./data";
@@ -45,26 +47,39 @@
 <div class="h-screen max-h-[100dvh] text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-900 w-full max-w-full flex flex-col">
     <!-- model selector -->
     <div class="flex w-full items-center justify-between absolute top-0 left-0 p-4">
-        <div class="flex w-full max-w-fit">
-            <div class="max-w-full m-1">
-                <Selector
-                    placeholder={$i18n.t('Select a model')}
-                    items={models.map((model) => ({
-                        value: model.id,
-                        label: model.name,
-                        model: model
-                    }))}
-                    bind:value={selectedModel}
-                />
-            </div>
-        </div>
+        <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+                <div class="flex items-center cursor-pointer">
+                    <NearAIIcon />
+                    <ChevronDown className="ml-3 size-4.5" />
+                </div>
+            </DropdownMenu.Trigger>
+                <DropdownMenu.Content
+                    class="w-full max-w-[400px] rounded-xl p-5 border border-gray-300/30 dark:border-gray-700/50 z-50 bg-white dark:bg-gray-850 dark:text-white shadow-sm"
+                    sideOffset={10}
+                    alignOffset={10}
+                >
+                    <div class="flex flex-col gap-y-3">
+                        <h5 class="font-semibold text-lg">Chat with private AI models for free.</h5>
+                        <p>Get access to your personal AI models without worrying leaking private information.</p>
+
+                        <button
+                            type="button"
+                            class="bg-gray-700/5 font-semibold hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition rounded-lg text-sm py-2.5 px-5"
+                            on:click={gotoAuth}
+                        >
+                            Sign In & Sign Up
+                        </button>
+                    </div>
+                </DropdownMenu.Content>
+        </DropdownMenu.Root>
 
         <button
             type="button"
-            class="bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition rounded-lg font-medium text-sm py-2.5 px-5"
+            class="bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition rounded-lg font-semibold text-sm py-2.5 px-5"
             on:click={gotoAuth}
         >
-            Sign In
+            Sign In & Sign Up
         </button>
     </div>
 
