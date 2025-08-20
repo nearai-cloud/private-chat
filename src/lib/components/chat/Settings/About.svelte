@@ -48,7 +48,7 @@
 			<div class=" mb-2.5 text-sm font-medium flex space-x-2 items-center">
 				<div>
 					{$WEBUI_NAME}
-					<!-- {$i18n.t('Version')} -->
+					{$i18n.t('Version')}
 				</div>
 			</div>
 			<div class="flex w-full justify-between items-center">
@@ -58,7 +58,7 @@
 							v{WEBUI_VERSION}
 						</Tooltip>
 
-						<!-- <a
+						<a
 							href="https://github.com/open-webui/open-webui/releases/tag/v{version.latest}"
 							target="_blank"
 						>
@@ -67,27 +67,27 @@
 								: updateAvailable
 									? `(v${version.latest} ${$i18n.t('available!')})`
 									: $i18n.t('(latest)')}
-						</a> -->
+						</a>
 					</div>
 
-					<!-- <button
+					<button
 						class=" underline flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-500"
 						on:click={() => {
 							showChangelog.set(true);
 						}}
 					>
 						<div>{$i18n.t("See what's new")}</div>
-					</button> -->
+					</button>
 				</div>
 
-				<!-- <button
+				<button
 					class=" text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-lg font-medium"
 					on:click={() => {
 						checkForVersionUpdates();
 					}}
 				>
 					{$i18n.t('Check for updates')}
-				</button> -->
+				</button>
 			</div>
 		</div>
 
@@ -106,33 +106,9 @@
 
 		<hr class=" border-gray-100 dark:border-gray-850" />
 
-		<div class="flex space-x-1">
-			<a
-				href="https://x.com/near_ai"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="inline-flex items-center gap-1 rounded-lg bg-black text-white px-2 py-1 hover:opacity-80 transition"
-			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width={15}
-					height={15}
-					viewBox="0 0 24 24"
-					fill="currentColor"
-					aria-hidden="true"
-				>
-					<path d="M18.244 2H21.5l-7.19 8.21L22 22h-6.845l-5.36-7.49L3.64 22H.5l7.64-8.72L2 2h6.963l4.922 6.934L18.244 2Zm-2.395 18.25h1.807L8.06 3.64H6.117l9.732 16.61Z" />
-				</svg>
-
-				<span class="font-semibold text-sm">@near_ai</span>
-			</a>
-
-		</div>
-
-
-		<!-- {#if $config?.license_metadata}
+		{#if $config?.license_metadata}
 			<div class="mb-2 text-xs">
-				{#if !$WEBUI_NAME.includes('NEAR AI Private Chat')}
+				{#if !$WEBUI_NAME.includes('Open WebUI')}
 					<span class=" text-gray-500 dark:text-gray-300 font-medium">{$WEBUI_NAME}</span> -
 				{/if}
 
@@ -162,9 +138,9 @@
 					/>
 				</a>
 			</div>
-		{/if} -->
+		{/if}
 
-		<!-- <div class="mt-2 text-xs text-gray-400 dark:text-gray-500">
+		<div class="mt-2 text-xs text-gray-400 dark:text-gray-500">
 			Emoji graphics provided by
 			<a href="https://github.com/jdecked/twemoji" target="_blank">Twemoji</a>, licensed under
 			<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC-BY 4.0</a>.
@@ -175,35 +151,35 @@
 				class="text-xs text-gray-400 dark:text-gray-500">Copyright (c) {new Date().getFullYear()} <a
 					href="https://openwebui.com"
 					target="_blank"
-					class="underline">NEAR AI Private Chat (Timothy Jaeryang Baek)</a
+					class="underline">Open WebUI (Timothy Jaeryang Baek)</a
 				>
-					All rights reserved.
+All rights reserved.
 
-					Redistribution and use in source and binary forms, with or without
-					modification, are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
-					1. Redistributions of source code must retain the above copyright notice, this
-					list of conditions and the following disclaimer.
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
 
-					2. Redistributions in binary form must reproduce the above copyright notice,
-					this list of conditions and the following disclaimer in the documentation
-					and/or other materials provided with the distribution.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
 
-					3. Neither the name of the copyright holder nor the names of its
-					contributors may be used to endorse or promote products derived from
-					this software without specific prior written permission.
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
 
-					THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-					AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-					IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-					DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-					FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-					DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-					SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-					CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-					OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-					OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-			</pre>
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</pre>
 		</div>
 
 		<div class="mt-2 text-xs text-gray-400 dark:text-gray-500">
@@ -213,6 +189,6 @@
 				href="https://github.com/tjbck"
 				target="_blank">Timothy J. Baek</a
 			>
-		</div> -->
+		</div>
 	</div>
 </div>
