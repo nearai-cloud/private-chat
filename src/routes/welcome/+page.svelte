@@ -9,7 +9,7 @@
     import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import { getContext } from "svelte";
 	import Fuse from "fuse.js";
-	import { allPrompts, models } from "./data";
+	import { allPrompts } from "./data";
 	import { arraysEqual } from "./utils";
 	import { goto, preloadCode } from "$app/navigation";
 
@@ -19,11 +19,10 @@
         preloadCode('/auth');
     })
     
-    let selectedModel: any = models[0].id
     let inputValue = ''
 
     let filteredPrompts: any[] = [];
-    const getFilteredPrompts = (inputValue: string, model: string) => {
+    const getFilteredPrompts = (inputValue: string) => {
         const sortedPrompts = [...(allPrompts ?? [])].sort(() => Math.random() - 0.5);
 		if (inputValue.length > 500) {
 			filteredPrompts = [];
@@ -42,7 +41,7 @@
 			}
 		}
 	};
-    $: getFilteredPrompts(inputValue, selectedModel);
+    $: getFilteredPrompts(inputValue);
 
     const gotoAuth = async () => {
         await goto(`/auth`)
@@ -93,11 +92,9 @@
             <div class="w-full text-3xl text-gray-800 dark:text-gray-100 text-center flex items-center gap-4 font-primary">
                 <div class="w-full flex flex-col justify-center items-center">
                     <!-- title -->
-                    <div class="flex flex-row justify-center gap-3 items-center sm:gap-3.5 w-fit px-5 max-w-xl">
-                        <img class="size-9 sm:size-10 rounded-full border-[1px] border-gray-100 dark:border-none" src="/static/favicon.png" alt="">
-                        <div class="text-3xl sm:text-3xl line-clamp-1 flex items-center">
-                            <span class="line-clamp-1">{selectedModel}</span>
-                        </div>
+                    <div class="flex flex-col justify-center gap-3 items-center sm:gap-3.5 w-fit px-5 max-w-2xl">
+                         <h1 class="text-3xl sm:text-3xl flex items-center">NEAR AI</h1>
+                         <p class="text-base dark:text-gray-300">Chat with your personal assistant without worrying about leaking private information.</p>
                     </div>
                     <!-- input -->
                     <div class="text-base font-normal md:max-w-3xl w-full py-3">
