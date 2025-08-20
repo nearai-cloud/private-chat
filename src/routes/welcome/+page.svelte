@@ -1,5 +1,6 @@
 <script lang="ts">
     import { DropdownMenu } from 'bits-ui';
+    import { onMount } from 'svelte';
 	import InputMenu from "$lib/components/chat/MessageInput/InputMenu.svelte";
 	import Tooltip from "$lib/components/common/Tooltip.svelte";
 	import Bolt from "$lib/components/icons/Bolt.svelte";
@@ -13,6 +14,11 @@
 	import { goto } from "$app/navigation";
 
     const i18n: any = getContext('i18n');
+
+    onMount(() => {
+        import('../auth/+page.svelte')
+            .catch(err => console.log('Auth page preloading failed:', err));
+    });
     
     let selectedModel: any = models[0].id
     let inputValue = ''
