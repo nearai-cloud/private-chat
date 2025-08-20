@@ -11,14 +11,13 @@
 	import Fuse from "fuse.js";
 	import { allPrompts, models } from "./data";
 	import { arraysEqual } from "./utils";
-	import { goto } from "$app/navigation";
+	import { goto, preloadCode } from "$app/navigation";
 
     const i18n: any = getContext('i18n');
 
     onMount(() => {
-        import('../auth/+page.svelte')
-            .catch(err => console.log('Auth page preloading failed:', err));
-    });
+        preloadCode('/auth');
+    })
     
     let selectedModel: any = models[0].id
     let inputValue = ''
