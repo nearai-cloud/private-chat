@@ -195,7 +195,7 @@
 </script>
 
 <svelte:head>
-	<title>#{channel?.name ?? 'Channel'} | Open WebUI</title>
+	<title>#{channel?.name ?? 'Channel'} | NEAR AI Private Chat</title>
 </svelte:head>
 
 <div
