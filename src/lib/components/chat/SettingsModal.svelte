@@ -148,51 +148,51 @@
 				'accountpreferences'
 			]
 		},
-		{
-			id: 'audio',
-			title: 'Audio',
-			keywords: [
-				'audio',
-				'sound',
-				'soundsettings',
-				'audiocontrol',
-				'volume',
-				'speech',
-				'speechrecognition',
-				'stt',
-				'speechtotext',
-				'tts',
-				'texttospeech',
-				'playback',
-				'playbackspeed',
-				'voiceplayback',
-				'speechplayback',
-				'audiooutput',
-				'speechengine',
-				'voicecontrol',
-				'audioplayback',
-				'transcription',
-				'autotranscribe',
-				'autosend',
-				'speechsettings',
-				'audiovoice',
-				'voiceoptions',
-				'setvoice',
-				'nonlocalvoices',
-				'savesettings',
-				'audioconfig',
-				'speechconfig',
-				'voicerecognition',
-				'speechsynthesis',
-				'speechmode',
-				'voicespeed',
-				'speechrate',
-				'speechspeed',
-				'audioinput',
-				'audiofeatures',
-				'voicemodes'
-			]
-		},
+		// {
+		// 	id: 'audio',
+		// 	title: 'Audio',
+		// 	keywords: [
+		// 		'audio',
+		// 		'sound',
+		// 		'soundsettings',
+		// 		'audiocontrol',
+		// 		'volume',
+		// 		'speech',
+		// 		'speechrecognition',
+		// 		'stt',
+		// 		'speechtotext',
+		// 		'tts',
+		// 		'texttospeech',
+		// 		'playback',
+		// 		'playbackspeed',
+		// 		'voiceplayback',
+		// 		'speechplayback',
+		// 		'audiooutput',
+		// 		'speechengine',
+		// 		'voicecontrol',
+		// 		'audioplayback',
+		// 		'transcription',
+		// 		'autotranscribe',
+		// 		'autosend',
+		// 		'speechsettings',
+		// 		'audiovoice',
+		// 		'voiceoptions',
+		// 		'setvoice',
+		// 		'nonlocalvoices',
+		// 		'savesettings',
+		// 		'audioconfig',
+		// 		'speechconfig',
+		// 		'voicerecognition',
+		// 		'speechsynthesis',
+		// 		'speechmode',
+		// 		'voicespeed',
+		// 		'speechrate',
+		// 		'speechspeed',
+		// 		'audioinput',
+		// 		'audiofeatures',
+		// 		'voicemodes'
+		// 	]
+		// },
 		{
 			id: 'chats',
 			title: 'Chats',
@@ -704,13 +704,6 @@
 					/>
 				{:else if selectedTab === 'personalization'}
 					<Personalization
-						{saveSettings}
-						on:save={() => {
-							toast.success($i18n.t('Settings saved successfully!'));
-						}}
-					/>
-				{:else if selectedTab === 'audio'}
-					<Audio
 						{saveSettings}
 						on:save={() => {
 							toast.success($i18n.t('Settings saved successfully!'));
