@@ -194,7 +194,8 @@
 			});
 
 			if ($user?.role === 'admin' && ($settings?.showChangelog ?? true)) {
-				showChangelog.set($settings?.version !== $config.version);
+				// showChangelog.set($settings?.version !== $config.version);
+				showChangelog.set(false);
 			}
 
 			if ($user?.permissions?.chat?.temporary ?? true) {
