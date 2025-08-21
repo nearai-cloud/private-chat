@@ -64,7 +64,6 @@ from open_webui.config import (  # Ollama; OpenAI; Direct Connections; Tool Serv
     BYPASS_EMBEDDING_AND_RETRIEVAL,
     BYPASS_WEB_SEARCH_EMBEDDING_AND_RETRIEVAL,
     CACHE_DIR,
-    CACHE_TTL_MODELS,
     CHUNK_OVERLAP,
     CHUNK_SIZE,
     CODE_EXECUTION_ENGINE,
@@ -258,6 +257,7 @@ from open_webui.env import (
     EXTERNAL_PWA_MANIFEST_URL,
     GLOBAL_LOG_LEVEL,
     MAX_BODY_LOG_SIZE,
+    MODELS_CACHE_TTL,
     OFFLINE_MODE,
     REDIS_SENTINEL_HOSTS,
     REDIS_SENTINEL_PORT,
@@ -1018,12 +1018,10 @@ async def get_models_uncached(request: Request, user):
     return {"data": models}
 
 
-@cached(
-    ttl=CACHE_TTL_MODELS, key_builder=lambda *args, **kwargs: "user_models"
-)  # Cache for 10 minutes
+@cached(ttl=MODELS_CACHE_TTL, key_builder=lambda *args, **kwargs: "user_models")
 async def get_models_cached(request: Request, user):
     """
-    Function which calls get_models_uncached with a 10 min cache.
+    Function which calls get_models_uncached with configurable cache TTL (MODELS_CACHE_TTL).
     """
     return await get_models_uncached(request, user)
 

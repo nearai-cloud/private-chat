@@ -2691,6 +2691,3 @@ LDAP_CA_CERT_FILE = PersistentConfig(
 LDAP_CIPHERS = PersistentConfig(
     "LDAP_CIPHERS", "ldap.server.ciphers", os.environ.get("LDAP_CIPHERS", "ALL")
 )
-
-# Cache TTL constants (in seconds)
-CACHE_TTL_MODELS = 600  # 10 minutes for model-related caches

@@ -4,8 +4,8 @@ import time
 
 from aiocache import cached
 from fastapi import Request
-from open_webui.config import CACHE_TTL_MODELS, DEFAULT_ARENA_MODEL
-from open_webui.env import GLOBAL_LOG_LEVEL, SRC_LOG_LEVELS
+from open_webui.config import DEFAULT_ARENA_MODEL
+from open_webui.env import GLOBAL_LOG_LEVEL, MODELS_CACHE_TTL, SRC_LOG_LEVELS
 from open_webui.functions import get_function_models
 from open_webui.models.functions import Functions
 from open_webui.models.models import Models
@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MAIN"])
 
 
-@cached(ttl=CACHE_TTL_MODELS, key_builder=lambda *args, **kwargs: "all_base_models")
+@cached(ttl=MODELS_CACHE_TTL, key_builder=lambda *args, **kwargs: "get_all_base_models")
 async def get_all_base_models(request: Request, user: UserModel = None):
     function_models = []
     openai_models = []
@@ -50,7 +50,7 @@ async def get_all_base_models(request: Request, user: UserModel = None):
     return models
 
 
-@cached(ttl=CACHE_TTL_MODELS, key_builder=lambda *args, **kwargs: "get_all_models")
+@cached(ttl=MODELS_CACHE_TTL, key_builder=lambda *args, **kwargs: "get_all_models")
 async def get_all_models_cached(request, user: UserModel = None):
     models = await get_all_base_models(request, user=user)
 
