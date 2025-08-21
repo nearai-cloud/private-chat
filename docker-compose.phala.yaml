@@ -9,7 +9,7 @@ services:
 
   # private chat
   private-chat:
-    image: danielwpz/private-chat:0.2
+    image: danielwpz/private-chat:0.3
     container_name: private-chat
     ports:
       - "8080:8080"
