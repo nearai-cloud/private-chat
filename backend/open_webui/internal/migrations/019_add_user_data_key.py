@@ -35,20 +35,20 @@ with suppress(ImportError):
 
 def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your migrations here."""
-    
+
     # Create UserDataKey model class for migration
     class UserDataKey(pw.Model):
         user_id = pw.CharField(primary_key=True)
         encrypted_data_key = pw.TextField()
-        
+
         class Meta:
             table_name = "user_data_key"
-    
+
     # Create the table
     migrator.create_model(UserDataKey)
 
 
 def rollback(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your rollback migrations here."""
-    
+
     migrator.remove_model("user_data_key", cascade=True)

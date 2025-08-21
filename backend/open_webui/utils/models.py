@@ -104,7 +104,6 @@ async def get_all_models_cached(request, user: UserModel = None):
             ]
         models = models + arena_models
 
-
     custom_models = Models.get_all_models()
     for custom_model in custom_models:
         if custom_model.base_model_id is None:

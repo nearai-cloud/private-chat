@@ -912,9 +912,13 @@ class ChatTable:
 # Use encryption proxy for automatic chat data encryption/decryption
 try:
     from open_webui.utils.chat_encryption_proxy import ChatTableEncryptionProxy
+
     Chats = ChatTableEncryptionProxy()
 except ImportError as e:
     # Fallback to regular ChatTable if encryption modules are not available
     import logging
-    logging.getLogger(__name__).warning(f"Chat encryption not available, using regular ChatTable: {e}")
+
+    logging.getLogger(__name__).warning(
+        f"Chat encryption not available, using regular ChatTable: {e}"
+    )
     Chats = ChatTable()

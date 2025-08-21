@@ -125,14 +125,18 @@ class UsersTable:
             if result:
                 # Generate data encryption key for the new user
                 try:
-                    from open_webui.utils.user_encryption import \
-                        get_user_data_encryption_key
+                    from open_webui.utils.user_encryption import (
+                        get_user_data_encryption_key,
+                    )
+
                     get_user_data_encryption_key(id)
                     log.info(f"Generated data encryption key for new user: {id}")
                 except Exception as e:
-                    log.warning(f"Failed to generate data encryption key for user {id}: {e}")
+                    log.warning(
+                        f"Failed to generate data encryption key for user {id}: {e}"
+                    )
                     # Don't fail user creation if key generation fails
-                
+
                 return user
             else:
                 return None
