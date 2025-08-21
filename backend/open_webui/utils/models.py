@@ -30,6 +30,7 @@ log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MAIN"])
 
 
+@cached(ttl=600, key_builder=lambda *args, **kwargs: "all_base_models")
 async def get_all_base_models(request: Request, user: UserModel = None):
     function_models = []
     openai_models = []
@@ -60,7 +61,8 @@ async def get_all_base_models(request: Request, user: UserModel = None):
     return models
 
 
-async def get_all_models(request, user: UserModel = None):
+@cached(ttl=600, key_builder=lambda *args, **kwargs: "get_all_models")
+async def get_all_models_cached(request, user: UserModel = None):
     models = await get_all_base_models(request, user=user)
 
     # If there are no models, return an empty list
@@ -102,13 +104,6 @@ async def get_all_models(request, user: UserModel = None):
             ]
         models = models + arena_models
 
-    global_action_ids = [
-        function.id for function in Functions.get_global_action_functions()
-    ]
-    enabled_action_ids = [
-        function.id
-        for function in Functions.get_functions_by_type("action", active_only=True)
-    ]
 
     custom_models = Models.get_all_models()
     for custom_model in custom_models:
@@ -171,6 +166,12 @@ async def get_all_models(request, user: UserModel = None):
                 }
             )
 
+    return models
+
+
+async def get_all_models(request, user: UserModel = None):
+    models = await get_all_models_cached(request, user)
+
     # Process action_ids to get the actions
     def get_action_items_from_module(function, module):
         actions = []
@@ -203,6 +204,14 @@ async def get_all_models(request, user: UserModel = None):
         else:
             function_module, _, _ = load_function_module_by_id(function_id)
             request.app.state.FUNCTIONS[function_id] = function_module
+
+    global_action_ids = [
+        function.id for function in Functions.get_global_action_functions()
+    ]
+    enabled_action_ids = [
+        function.id
+        for function in Functions.get_functions_by_type("action", active_only=True)
+    ]
 
     for model in models:
         action_ids = [
