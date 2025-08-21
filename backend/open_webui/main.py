@@ -831,10 +831,14 @@ async def get_models_uncached(request: Request, user):
     return {"data": models}
 
 
-@cached(ttl=600)  # Cache for 10 minutes
+def models_cache_key_builder(func, *args, **kwargs):
+    return "user_models"
+
+@cached(ttl=600, key_builder=models_cache_key_builder)  # Cache for 10 minutes
 async def get_models_cached(request: Request, user):
     """
-    Function which just calls the above one with a 10 min cache
+    Function which calls get_models_uncached with a 10 min cache.
+    Cache key is based on user role and relevant configuration, not request object.
     """
     return await get_models_uncached(request, user)
 
