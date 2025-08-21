@@ -518,7 +518,7 @@
 							</div>
 
 							<div class="self-end flex space-x-1 mr-1">
-								{#if content === ''}
+								<!-- {#if content === ''}
 									<Tooltip content={$i18n.t('Record voice')}>
 										<button
 											id="voice-input-button"
@@ -562,7 +562,7 @@
 											</svg>
 										</button>
 									</Tooltip>
-								{/if}
+								{/if} -->
 
 								<div class=" flex items-center">
 									<div class=" flex items-center">
