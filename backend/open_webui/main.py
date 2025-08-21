@@ -1023,7 +1023,6 @@ async def get_models_uncached(request: Request, user):
 async def get_models_cached(request: Request, user):
     """
     Function which calls get_models_uncached with a 10 min cache.
-    Cache key is based on user role and relevant configuration, not request object.
     """
     return await get_models_uncached(request, user)
 
