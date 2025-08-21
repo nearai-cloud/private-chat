@@ -64,6 +64,7 @@ from open_webui.config import (  # Ollama; OpenAI; Direct Connections; Tool Serv
     BYPASS_EMBEDDING_AND_RETRIEVAL,
     BYPASS_WEB_SEARCH_EMBEDDING_AND_RETRIEVAL,
     CACHE_DIR,
+    CACHE_TTL_MODELS,
     CHUNK_OVERLAP,
     CHUNK_SIZE,
     CODE_EXECUTION_ENGINE,
@@ -1018,7 +1019,7 @@ async def get_models_uncached(request: Request, user):
 
 
 @cached(
-    ttl=600, key_builder=lambda *args, **kwargs: "user_models"
+    ttl=CACHE_TTL_MODELS, key_builder=lambda *args, **kwargs: "user_models"
 )  # Cache for 10 minutes
 async def get_models_cached(request: Request, user):
     """
