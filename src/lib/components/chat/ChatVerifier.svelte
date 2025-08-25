@@ -34,7 +34,7 @@
 	};
 </script>
 
-<div class="relative">
+<div class="relative z-50">
 	<!-- Toggle Button -->
 	{#if !expanded}
 		<button
