@@ -22,8 +22,8 @@ export default defineConfig({
 	plugins: [
 		nodePolyfills({
 			globals: {
-				Buffer: true,
-			},
+				Buffer: true
+			}
 		}),
 		sveltekit(),
 		viteStaticCopy({
