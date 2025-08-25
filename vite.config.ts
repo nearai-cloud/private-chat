@@ -1,6 +1,5 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
@@ -20,11 +19,6 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
 	plugins: [
-		nodePolyfills({
-			globals: {
-				Buffer: true
-			}
-		}),
 		sveltekit(),
 		viteStaticCopy({
 			targets: [
