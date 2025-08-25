@@ -2,36 +2,32 @@ import logging
 import traceback
 from typing import Collection, Union
 
-from aiohttp import (
-    TraceRequestStartParams,
-    TraceRequestEndParams,
-    TraceRequestExceptionParams,
-)
+from aiohttp import (TraceRequestEndParams, TraceRequestExceptionParams,
+                     TraceRequestStartParams)
 from chromadb.telemetry.opentelemetry.fastapi import instrument_fastapi
-from fastapi import FastAPI
-from opentelemetry.instrumentation.httpx import (
-    HTTPXClientInstrumentor,
-    RequestInfo,
-    ResponseInfo,
-)
+from fastapi import FastAPI, status
+from open_webui.env import SRC_LOG_LEVELS
+from open_webui.utils.telemetry.constants import (SPAN_REDIS_TYPE,
+                                                  SpanAttributes)
+from opentelemetry.instrumentation.aiohttp_client import \
+    AioHttpClientInstrumentor
+from opentelemetry.instrumentation.httpx import (HTTPXClientInstrumentor,
+                                                 RequestInfo, ResponseInfo)
 from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.instrumentation.redis import RedisInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
-from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
 from opentelemetry.trace import Span, StatusCode
 from redis import Redis
 from requests import PreparedRequest, Response
 from sqlalchemy import Engine
-from fastapi import status
-
-from open_webui.utils.telemetry.constants import SPAN_REDIS_TYPE, SpanAttributes
-
-from open_webui.env import SRC_LOG_LEVELS
 
 logger = logging.getLogger(__name__)
 logger.setLevel(SRC_LOG_LEVELS["MAIN"])
+
+# Enable debug logging for instrumentation
+logging.getLogger("opentelemetry.instrumentation").setLevel(logging.DEBUG)
 
 
 def requests_hook(span: Span, request: PreparedRequest):
@@ -177,23 +173,52 @@ class Instrumentor(BaseInstrumentor):
         return []
 
     def _instrument(self, **kwargs):
-        instrument_fastapi(app=self.app)
-        SQLAlchemyInstrumentor().instrument(engine=self.db_engine)
-        RedisInstrumentor().instrument(request_hook=redis_request_hook)
-        RequestsInstrumentor().instrument(
-            request_hook=requests_hook, response_hook=response_hook
-        )
-        LoggingInstrumentor().instrument()
-        HTTPXClientInstrumentor().instrument(
-            request_hook=httpx_request_hook,
-            response_hook=httpx_response_hook,
-            async_request_hook=httpx_async_request_hook,
-            async_response_hook=httpx_async_response_hook,
-        )
-        AioHttpClientInstrumentor().instrument(
-            request_hook=aiohttp_request_hook,
-            response_hook=aiohttp_response_hook,
-        )
+        logger.info("Starting instrumentation of components...")
+        
+        try:
+            logger.debug("Instrumenting FastAPI...")
+            instrument_fastapi(app=self.app)
+            logger.debug("FastAPI instrumentation completed")
+            
+            logger.debug("Instrumenting SQLAlchemy...")
+            SQLAlchemyInstrumentor().instrument(engine=self.db_engine)
+            logger.debug("SQLAlchemy instrumentation completed")
+            
+            logger.debug("Instrumenting Redis...")
+            RedisInstrumentor().instrument(request_hook=redis_request_hook)
+            logger.debug("Redis instrumentation completed")
+            
+            logger.debug("Instrumenting Requests...")
+            RequestsInstrumentor().instrument(
+                request_hook=requests_hook, response_hook=response_hook
+            )
+            logger.debug("Requests instrumentation completed")
+            
+            logger.debug("Instrumenting Logging...")
+            LoggingInstrumentor().instrument()
+            logger.debug("Logging instrumentation completed")
+            
+            logger.debug("Instrumenting HTTPX...")
+            HTTPXClientInstrumentor().instrument(
+                request_hook=httpx_request_hook,
+                response_hook=httpx_response_hook,
+                async_request_hook=httpx_async_request_hook,
+                async_response_hook=httpx_async_response_hook,
+            )
+            logger.debug("HTTPX instrumentation completed")
+            
+            logger.debug("Instrumenting AioHttp...")
+            AioHttpClientInstrumentor().instrument(
+                request_hook=aiohttp_request_hook,
+                response_hook=aiohttp_response_hook,
+            )
+            logger.debug("AioHttp instrumentation completed")
+            
+            logger.info("All instrumentation completed successfully")
+            
+        except Exception as e:
+            logger.error(f"Error during instrumentation: {e}", exc_info=True)
+            raise
 
     def _uninstrument(self, **kwargs):
         if getattr(self, "instrumentors", None) is None:
