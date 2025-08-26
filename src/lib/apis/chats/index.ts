@@ -858,35 +858,36 @@ export const deleteChatById = async (token: string, id: string) => {
 };
 
 export const getTagsById = async (token: string, id: string) => {
-	let error = null;
+	return []
+	// let error = null;
 
-	const res = await fetch(`${WEBUI_API_BASE_URL}/chats/${id}/tags`, {
-		method: 'GET',
-		headers: {
-			Accept: 'application/json',
-			'Content-Type': 'application/json',
-			...(token && { authorization: `Bearer ${token}` })
-		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.then((json) => {
-			return json;
-		})
-		.catch((err) => {
-			error = err;
+	// const res = await fetch(`${WEBUI_API_BASE_URL}/chats/${id}/tags`, {
+	// 	method: 'GET',
+	// 	headers: {
+	// 		Accept: 'application/json',
+	// 		'Content-Type': 'application/json',
+	// 		...(token && { authorization: `Bearer ${token}` })
+	// 	}
+	// })
+	// 	.then(async (res) => {
+	// 		if (!res.ok) throw await res.json();
+	// 		return res.json();
+	// 	})
+	// 	.then((json) => {
+	// 		return json;
+	// 	})
+	// 	.catch((err) => {
+	// 		error = err;
 
-			console.log(err);
-			return null;
-		});
+	// 		console.log(err);
+	// 		return null;
+	// 	});
 
-	if (error) {
-		throw error;
-	}
+	// if (error) {
+	// 	throw error;
+	// }
 
-	return res;
+	// return res;
 };
 
 export const addTagById = async (token: string, id: string, tagName: string) => {
