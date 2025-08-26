@@ -858,7 +858,7 @@ export const deleteChatById = async (token: string, id: string) => {
 };
 
 export const getTagsById = async (token: string, id: string) => {
-	return []
+	return [];
 	// let error = null;
 
 	// const res = await fetch(`${WEBUI_API_BASE_URL}/chats/${id}/tags`, {
