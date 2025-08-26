@@ -204,7 +204,7 @@
 				</div>
 
 				{#if selectedMessageId && signatures[selectedMessageId]}
-					<!-- Verify on Etherscan Link -->
+					<!-- Verify on ECDSA Signature modal -->
 					{#if signatures[selectedMessageId].signature}
 						<button
 							class="flex items-center text-blue-600 hover:text-blue-700 text-xs transition-colors mb-4"
@@ -218,7 +218,7 @@
 									d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
 								/>
 							</svg>
-							Verify the signature on Etherscan
+							Verify the ECDSA Signature
 						</button>
 					{/if}
 
