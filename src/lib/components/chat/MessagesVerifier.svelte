@@ -18,6 +18,11 @@
 
 	let showVerifySignatureDialog = false;
 	let selectedSignature: MessageSignature | null = null;
+	// let selectedSignature = {
+	// 	text: '9a183a9f731026885ed9aaf97d9e0fcb0a1a9d33dd8a56893ed24913dd59696b:12cf51b6b9c50384d0e4ec9988f4a6879edbe13883336fd3481c4262b4189795',
+	// 	signature: '0x3a43466a2249fc390c96376d80a6c6d822fc461dc168b69ac4008ce370ead0540b1e63707e9a14d0102588a1f29861645bd509272e6bef597d272d440c3df11e1c',
+	// 	signing_address: '0xa19BFF4eE0174F8EA372564FdF8CF3b57Cf905E2'
+	// };
 
 	// Get verifiable messages from history
 	const getChatCompletions = (history: {
