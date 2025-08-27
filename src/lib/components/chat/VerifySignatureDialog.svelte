@@ -27,7 +27,6 @@
 	}
 </script>
 
-
 {#if show}
 	<div
 		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
@@ -65,8 +64,12 @@
 					<div
 						class="mb-4 py-2 px-2.5 text-[#00a186] bg-[#ccf4ed] border border-[#ccf4ed] rounded-lg text-sm"
 					>
-						Message Signature Verified. The message signature has been confirmed to be signed by the address using the
-						<a href="https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm" target="_blank">ECDSA</a>
+						Message Signature Verified. The message signature has been confirmed to be signed by the
+						address using the
+						<a
+							href="https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm"
+							target="_blank">ECDSA</a
+						>
 						algorithm.
 					</div>
 				{/if}
