@@ -67,9 +67,13 @@
 						Message Signature Verified. The message signature has been confirmed to be signed by the
 						address using the
 						<a
+							class="text-blue-500 underline"
 							href="https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm"
-							target="_blank">ECDSA</a
+							rel="noopener noreferrer"
+							target="_blank"
 						>
+							ECDSA
+						</a>
 						algorithm.
 					</div>
 				{/if}
