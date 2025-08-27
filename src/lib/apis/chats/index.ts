@@ -339,34 +339,37 @@ export const getAllUserChats = async (token: string) => {
 };
 
 export const getAllTags = async (token: string) => {
-	let error = null;
+	// Always return empty array regardless of API response
+	return [];
 
-	const res = await fetch(`${WEBUI_API_BASE_URL}/chats/all/tags`, {
-		method: 'GET',
-		headers: {
-			Accept: 'application/json',
-			'Content-Type': 'application/json',
-			...(token && { authorization: `Bearer ${token}` })
-		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.then((json) => {
-			return json;
-		})
-		.catch((err) => {
-			error = err;
-			console.log(err);
-			return null;
-		});
+	// let error = null;
 
-	if (error) {
-		throw error;
-	}
+	// const res = await fetch(`${WEBUI_API_BASE_URL}/chats/all/tags`, {
+	// 	method: 'GET',
+	// 	headers: {
+	// 		Accept: 'application/json',
+	// 		'Content-Type': 'application/json',
+	// 		...(token && { authorization: `Bearer ${token}` })
+	// 	}
+	// })
+	// 	.then(async (res) => {
+	// 		if (!res.ok) throw await res.json();
+	// 		return res.json();
+	// 	})
+	// 	.then((json) => {
+	// 		return json;
+	// 	})
+	// 	.catch((err) => {
+	// 		error = err;
+	// 		console.log(err);
+	// 		return null;
+	// 	});
 
-	return res;
+	// if (error) {
+	// 	throw error;
+	// }
+
+	// return res;
 };
 
 export const getPinnedChatList = async (token: string = '') => {
