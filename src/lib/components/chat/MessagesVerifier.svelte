@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getMessageSignature, type MessageSignature } from '$lib/apis/nearai';
+	import VerifySignatureDialog from './VerifySignatureDialog.svelte';
 	import type { Message } from '$lib/types';
 
 	export let history: {
@@ -14,6 +15,9 @@
 	let selectedMessageId = '';
 	let lastCurrentId = '';
 	let containerElement: HTMLElement | undefined;
+
+	let showVerifySignatureDialog = false;
+	let selectedSignature: MessageSignature | null = null;
 
 	// Get verifiable messages from history
 	const getChatCompletions = (history: {
@@ -119,6 +123,18 @@
 			}
 		});
 	}
+
+	const openVerifySignatureDialog = () => {
+		if (!signatures[selectedMessageId]) return;
+		if (!signatures[selectedMessageId].signature) return;
+		showVerifySignatureDialog = true;
+		selectedSignature = signatures[selectedMessageId];
+	};
+
+	const closeVerifySignatureDialog = () => {
+		showVerifySignatureDialog = false;
+		selectedSignature = null;
+	};
 </script>
 
 <div class="space-y-4 h-full overflow-y-auto pb-4 px-4" bind:this={containerElement}>
@@ -188,23 +204,22 @@
 				</div>
 
 				{#if selectedMessageId && signatures[selectedMessageId]}
-					<!-- Verify on Etherscan Link -->
+					<!-- Verify on ECDSA Signature modal -->
 					{#if signatures[selectedMessageId].signature}
-						<a class="mb-3" href="https://etherscan.io/verifiedSignatures" target="_blank">
-							<button
-								class="flex items-center text-blue-600 hover:text-blue-700 text-xs transition-colors"
-							>
-								<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-									/>
-								</svg>
-								Verify the signature on Etherscan
-							</button>
-						</a>
+						<button
+							class="flex items-center text-blue-600 hover:text-blue-700 text-xs transition-colors mb-4"
+							on:click={openVerifySignatureDialog}
+						>
+							<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+								/>
+							</svg>
+							Verify the ECDSA Signature
+						</button>
 					{/if}
 
 					<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 min-h-[150px]">
@@ -284,4 +299,13 @@
 
 	<!-- Add bottom padding for better scrolling -->
 	<div class="h-10"></div>
+
+	<VerifySignatureDialog
+		bind:show={showVerifySignatureDialog}
+		on:close={closeVerifySignatureDialog}
+		address={selectedSignature?.signing_address ?? ''}
+		message={selectedSignature?.text ?? ''}
+		signature={selectedSignature?.signature ?? ''}
+		algorithm={selectedSignature?.signing_algo ?? ''}
+	/>
 </div>
