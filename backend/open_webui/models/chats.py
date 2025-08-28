@@ -8,8 +8,19 @@ from open_webui.env import SRC_LOG_LEVELS
 from open_webui.internal.db import Base, get_db
 from open_webui.models.tags import Tag, TagModel, Tags
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import (JSON, BigInteger, Boolean, Column, String, Text, and_,
-                        func, or_, select, text)
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Column,
+    String,
+    Text,
+    and_,
+    func,
+    or_,
+    select,
+    text,
+)
 from sqlalchemy.sql import exists
 
 ####################

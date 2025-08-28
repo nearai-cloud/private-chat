@@ -5,8 +5,17 @@ from typing import Optional
 
 import aiohttp
 import requests
-from fastapi import (APIRouter, Depends, FastAPI, File, Form, HTTPException,
-                     Request, UploadFile, status)
+from fastapi import (
+    APIRouter,
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    UploadFile,
+    status,
+)
 from open_webui.config import CACHE_DIR
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.env import SRC_LOG_LEVELS

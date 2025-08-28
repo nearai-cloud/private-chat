@@ -451,74 +451,8 @@ async def get_ollama_tags(
 @router.get("/api/version")
 @router.get("/api/version/{url_idx}")
 async def get_ollama_versions(request: Request, url_idx: Optional[int] = None):
-    if request.app.state.config.ENABLE_OLLAMA_API:
-        if url_idx is None:
-            # returns lowest version
-            request_tasks = []
-
-            for idx, url in enumerate(request.app.state.config.OLLAMA_BASE_URLS):
-                api_config = request.app.state.config.OLLAMA_API_CONFIGS.get(
-                    str(idx),
-                    request.app.state.config.OLLAMA_API_CONFIGS.get(
-                        url, {}
-                    ),  # Legacy support
-                )
-
-                enable = api_config.get("enable", True)
-                key = api_config.get("key", None)
-
-                if enable:
-                    request_tasks.append(
-                        send_get_request(
-                            f"{url}/api/version",
-                            key,
-                        )
-                    )
-
-            responses = await asyncio.gather(*request_tasks)
-            responses = list(filter(lambda x: x is not None, responses))
-
-            if len(responses) > 0:
-                lowest_version = min(
-                    responses,
-                    key=lambda x: tuple(
-                        map(int, re.sub(r"^v|-.*", "", x["version"]).split("."))
-                    ),
-                )
-
-                return {"version": lowest_version["version"]}
-            else:
-                raise HTTPException(
-                    status_code=500,
-                    detail=ERROR_MESSAGES.OLLAMA_NOT_FOUND,
-                )
-        else:
-            url = request.app.state.config.OLLAMA_BASE_URLS[url_idx]
-
-            r = None
-            try:
-                r = requests.request(method="GET", url=f"{url}/api/version")
-                r.raise_for_status()
-
-                return r.json()
-            except Exception as e:
-                log.exception(e)
-
-                detail = None
-                if r is not None:
-                    try:
-                        res = r.json()
-                        if "error" in res:
-                            detail = f"Ollama: {res['error']}"
-                    except Exception:
-                        detail = f"Ollama: {e}"
-
-                raise HTTPException(
-                    status_code=r.status_code if r else 500,
-                    detail=detail if detail else "Open WebUI: Server Connection Error",
-                )
-    else:
-        return {"version": False}
+    # Shortcut: Always return {"version": False}
+    return {"version": False}
 
 
 @router.get("/api/ps")
