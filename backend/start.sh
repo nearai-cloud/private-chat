@@ -18,6 +18,10 @@ KEY_FILE=.webui_secret_key
 
 PORT="${PORT:-8080}"
 HOST="${HOST:-0.0.0.0}"
+
+# Set log level to WARNING for privacy (suppresses INFO and DEBUG messages)
+export GLOBAL_LOG_LEVEL="${GLOBAL_LOG_LEVEL:-WARNING}"
+
 if test "$WEBUI_SECRET_KEY $WEBUI_JWT_SECRET_KEY" = " "; then
   echo "Loading WEBUI_SECRET_KEY from file, not provided as an environment variable."
 
