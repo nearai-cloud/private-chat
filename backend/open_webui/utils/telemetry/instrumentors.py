@@ -2,17 +2,21 @@ import logging
 import traceback
 from typing import Collection, Union
 
-from aiohttp import (TraceRequestEndParams, TraceRequestExceptionParams,
-                     TraceRequestStartParams)
+from aiohttp import (
+    TraceRequestEndParams,
+    TraceRequestExceptionParams,
+    TraceRequestStartParams,
+)
 from chromadb.telemetry.opentelemetry.fastapi import instrument_fastapi
 from fastapi import FastAPI, status
 from open_webui.env import SRC_LOG_LEVELS
-from open_webui.utils.telemetry.constants import (SPAN_REDIS_TYPE,
-                                                  SpanAttributes)
-from opentelemetry.instrumentation.aiohttp_client import \
-    AioHttpClientInstrumentor
-from opentelemetry.instrumentation.httpx import (HTTPXClientInstrumentor,
-                                                 RequestInfo, ResponseInfo)
+from open_webui.utils.telemetry.constants import SPAN_REDIS_TYPE, SpanAttributes
+from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
+from opentelemetry.instrumentation.httpx import (
+    HTTPXClientInstrumentor,
+    RequestInfo,
+    ResponseInfo,
+)
 from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.instrumentation.redis import RedisInstrumentor
@@ -174,30 +178,30 @@ class Instrumentor(BaseInstrumentor):
 
     def _instrument(self, **kwargs):
         logger.info("Starting instrumentation of components...")
-        
+
         try:
             logger.debug("Instrumenting FastAPI...")
             instrument_fastapi(app=self.app)
             logger.debug("FastAPI instrumentation completed")
-            
+
             logger.debug("Instrumenting SQLAlchemy...")
             SQLAlchemyInstrumentor().instrument(engine=self.db_engine)
             logger.debug("SQLAlchemy instrumentation completed")
-            
+
             logger.debug("Instrumenting Redis...")
             RedisInstrumentor().instrument(request_hook=redis_request_hook)
             logger.debug("Redis instrumentation completed")
-            
+
             logger.debug("Instrumenting Requests...")
             RequestsInstrumentor().instrument(
                 request_hook=requests_hook, response_hook=response_hook
             )
             logger.debug("Requests instrumentation completed")
-            
+
             logger.debug("Instrumenting Logging...")
             LoggingInstrumentor().instrument()
             logger.debug("Logging instrumentation completed")
-            
+
             logger.debug("Instrumenting HTTPX...")
             HTTPXClientInstrumentor().instrument(
                 request_hook=httpx_request_hook,
@@ -206,16 +210,16 @@ class Instrumentor(BaseInstrumentor):
                 async_response_hook=httpx_async_response_hook,
             )
             logger.debug("HTTPX instrumentation completed")
-            
+
             logger.debug("Instrumenting AioHttp...")
             AioHttpClientInstrumentor().instrument(
                 request_hook=aiohttp_request_hook,
                 response_hook=aiohttp_response_hook,
             )
             logger.debug("AioHttp instrumentation completed")
-            
+
             logger.info("All instrumentation completed successfully")
-            
+
         except Exception as e:
             logger.error(f"Error during instrumentation: {e}", exc_info=True)
             raise

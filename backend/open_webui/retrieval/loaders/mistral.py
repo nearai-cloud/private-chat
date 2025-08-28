@@ -1,11 +1,11 @@
-import requests
 import logging
 import os
 import sys
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
+import requests
 from langchain_core.documents import Document
-from open_webui.env import SRC_LOG_LEVELS, GLOBAL_LOG_LEVEL
+from open_webui.env import GLOBAL_LOG_LEVEL, SRC_LOG_LEVELS
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
@@ -75,7 +75,7 @@ class MistralLoader:
             file_id = response_data.get("id")
             if not file_id:
                 raise ValueError("File ID not found in upload response.")
-            log.info(f"File uploaded successfully. File ID: {file_id}")
+            log.debug(f"File uploaded successfully")
             return file_id
         except Exception as e:
             log.error(f"Failed to upload file: {e}")
@@ -83,7 +83,7 @@ class MistralLoader:
 
     def _get_signed_url(self, file_id: str) -> str:
         """Retrieves a temporary signed URL for the uploaded file."""
-        log.info(f"Getting signed URL for file ID: {file_id}")
+        log.debug(f"Getting signed URL for file")
         url = f"{self.BASE_API_URL}/files/{file_id}/url"
         params = {"expiry": 1}
         signed_url_headers = {**self.headers, "Accept": "application/json"}
@@ -94,7 +94,7 @@ class MistralLoader:
             signed_url = response_data.get("url")
             if not signed_url:
                 raise ValueError("Signed URL not found in response.")
-            log.info("Signed URL received.")
+            log.debug("Signed URL received.")
             return signed_url
         except Exception as e:
             log.error(f"Failed to get signed URL: {e}")
@@ -130,7 +130,7 @@ class MistralLoader:
 
     def _delete_file(self, file_id: str) -> None:
         """Deletes the file from Mistral storage."""
-        log.info(f"Deleting uploaded file ID: {file_id}")
+        log.debug(f"Deleting uploaded file")
         url = f"{self.BASE_API_URL}/files/{file_id}"
         # No specific Accept header needed, default or Authorization is usually sufficient
 

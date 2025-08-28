@@ -11,54 +11,43 @@ import re
 import time
 from typing import Optional, Union
 from urllib.parse import urlparse
+
 import aiohttp
-from aiocache import cached
 import requests
-from open_webui.models.users import UserModel
-
-from open_webui.env import (
-    ENABLE_FORWARD_USER_INFO_HEADERS,
-)
-
+from aiocache import cached
 from fastapi import (
+    APIRouter,
     Depends,
     FastAPI,
     File,
     HTTPException,
     Request,
     UploadFile,
-    APIRouter,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, ConfigDict, validator
-from starlette.background import BackgroundTask
-
-
-from open_webui.models.models import Models
-from open_webui.utils.misc import (
-    calculate_sha256,
+from open_webui.config import UPLOAD_DIR
+from open_webui.constants import ERROR_MESSAGES
+from open_webui.env import (
+    AIOHTTP_CLIENT_TIMEOUT,
+    AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST,
+    BYPASS_MODEL_ACCESS_CONTROL,
+    ENABLE_FORWARD_USER_INFO_HEADERS,
+    ENV,
+    SRC_LOG_LEVELS,
 )
+from open_webui.models.models import Models
+from open_webui.models.users import UserModel
+from open_webui.utils.access_control import has_access
+from open_webui.utils.auth import get_admin_user, get_verified_user
+from open_webui.utils.misc import calculate_sha256
 from open_webui.utils.payload import (
     apply_model_params_to_body_ollama,
     apply_model_params_to_body_openai,
     apply_model_system_prompt_to_body,
 )
-from open_webui.utils.auth import get_admin_user, get_verified_user
-from open_webui.utils.access_control import has_access
-
-
-from open_webui.config import (
-    UPLOAD_DIR,
-)
-from open_webui.env import (
-    ENV,
-    SRC_LOG_LEVELS,
-    AIOHTTP_CLIENT_TIMEOUT,
-    AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST,
-    BYPASS_MODEL_ACCESS_CONTROL,
-)
-from open_webui.constants import ERROR_MESSAGES
+from pydantic import BaseModel, ConfigDict, validator
+from starlette.background import BackgroundTask
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["OLLAMA"])
@@ -571,7 +560,7 @@ async def pull_model(
     user=Depends(get_admin_user),
 ):
     url = request.app.state.config.OLLAMA_BASE_URLS[url_idx]
-    log.info(f"url: {url}")
+    log.debug(f"Using Ollama URL index: {url_idx}")
 
     # Admin should be able to pull models from any source
     payload = {**form_data.model_dump(exclude_none=True), "insecure": True}

@@ -1,35 +1,29 @@
+import hashlib
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
 from typing import Optional, Union
 
 import requests
-import hashlib
-from concurrent.futures import ThreadPoolExecutor
-
 from huggingface_hub import snapshot_download
 from langchain.retrievers import ContextualCompressionRetriever, EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
-
-from open_webui.config import VECTOR_DB
-from open_webui.retrieval.vector.connector import VECTOR_DB_CLIENT
-
-from open_webui.models.users import UserModel
-from open_webui.models.files import Files
-
-from open_webui.retrieval.vector.main import GetResult
-
-
-from open_webui.env import (
-    SRC_LOG_LEVELS,
-    OFFLINE_MODE,
-    ENABLE_FORWARD_USER_INFO_HEADERS,
-)
 from open_webui.config import (
-    RAG_EMBEDDING_QUERY_PREFIX,
     RAG_EMBEDDING_CONTENT_PREFIX,
     RAG_EMBEDDING_PREFIX_FIELD_NAME,
+    RAG_EMBEDDING_QUERY_PREFIX,
+    VECTOR_DB,
 )
+from open_webui.env import (
+    ENABLE_FORWARD_USER_INFO_HEADERS,
+    OFFLINE_MODE,
+    SRC_LOG_LEVELS,
+)
+from open_webui.models.files import Files
+from open_webui.models.users import UserModel
+from open_webui.retrieval.vector.connector import VECTOR_DB_CLIENT
+from open_webui.retrieval.vector.main import GetResult
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["RAG"])
@@ -85,7 +79,9 @@ def query_doc(
         )
 
         if result:
-            log.info(f"query_doc:result {result.ids} {result.metadatas}")
+            log.debug(
+                f"get_doc: Found {len(result.ids[0]) if result.ids else 0} results"
+            )
 
         return result
     except Exception as e:
@@ -99,7 +95,9 @@ def get_doc(collection_name: str, user: UserModel = None):
         result = VECTOR_DB_CLIENT.get(collection_name=collection_name)
 
         if result:
-            log.info(f"query_doc:result {result.ids} {result.metadatas}")
+            log.debug(
+                f"query_doc: Found {len(result.ids[0]) if result.ids else 0} results"
+            )
 
         return result
     except Exception as e:
@@ -165,9 +163,8 @@ def query_doc_with_hybrid_search(
             "metadatas": [metadatas],
         }
 
-        log.info(
-            "query_doc_with_hybrid_search:result "
-            + f'{result["metadatas"]} {result["distances"]}'
+        log.debug(
+            f"query_doc_with_hybrid_search: Found {len(result['metadatas'][0]) if result['metadatas'] else 0} results"
         )
         return result
     except Exception as e:
