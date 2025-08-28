@@ -53,101 +53,101 @@
 				'systemparameters'
 			]
 		},
-		{
-			id: 'interface',
-			title: 'Interface',
-			keywords: [
-				'defaultmodel',
-				'selectmodel',
-				'ui',
-				'userinterface',
-				'display',
-				'layout',
-				'design',
-				'landingpage',
-				'landingpagemode',
-				'default',
-				'chat',
-				'chatbubble',
-				'chatui',
-				'username',
-				'showusername',
-				'displayusername',
-				'widescreen',
-				'widescreenmode',
-				'fullscreen',
-				'expandmode',
-				'chatdirection',
-				'lefttoright',
-				'ltr',
-				'righttoleft',
-				'rtl',
-				'notifications',
-				'toast',
-				'toastnotifications',
-				'largechunks',
-				'streamlargechunks',
-				'scroll',
-				'scrollonbranchchange',
-				'scrollbehavior',
-				'richtext',
-				'richtextinput',
-				'background',
-				'chatbackground',
-				'chatbackgroundimage',
-				'backgroundimage',
-				'uploadbackground',
-				'resetbackground',
-				'titleautogen',
-				'titleautogeneration',
-				'autotitle',
-				'chattags',
-				'autochattags',
-				'responseautocopy',
-				'clipboard',
-				'location',
-				'userlocation',
-				'userlocationaccess',
-				'haptic',
-				'hapticfeedback',
-				'vibration',
-				'voice',
-				'voicecontrol',
-				'voiceinterruption',
-				'call',
-				'emojis',
-				'displayemoji',
-				'save',
-				'interfaceoptions',
-				'interfacecustomization',
-				'alwaysonwebsearch'
-			]
-		},
-		{
-			id: 'connections',
-			title: 'Connections',
-			keywords: []
-		},
-		{
-			id: 'tools',
-			title: 'Tools',
-			keywords: []
-		},
-		{
-			id: 'personalization',
-			title: 'Personalization',
-			keywords: [
-				'personalization',
-				'memory',
-				'personalize',
-				'preferences',
-				'profile',
-				'personalsettings',
-				'customsettings',
-				'userpreferences',
-				'accountpreferences'
-			]
-		},
+		// {
+		// 	id: 'interface',
+		// 	title: 'Interface',
+		// 	keywords: [
+		// 		'defaultmodel',
+		// 		'selectmodel',
+		// 		'ui',
+		// 		'userinterface',
+		// 		'display',
+		// 		'layout',
+		// 		'design',
+		// 		'landingpage',
+		// 		'landingpagemode',
+		// 		'default',
+		// 		'chat',
+		// 		'chatbubble',
+		// 		'chatui',
+		// 		'username',
+		// 		'showusername',
+		// 		'displayusername',
+		// 		'widescreen',
+		// 		'widescreenmode',
+		// 		'fullscreen',
+		// 		'expandmode',
+		// 		'chatdirection',
+		// 		'lefttoright',
+		// 		'ltr',
+		// 		'righttoleft',
+		// 		'rtl',
+		// 		'notifications',
+		// 		'toast',
+		// 		'toastnotifications',
+		// 		'largechunks',
+		// 		'streamlargechunks',
+		// 		'scroll',
+		// 		'scrollonbranchchange',
+		// 		'scrollbehavior',
+		// 		'richtext',
+		// 		'richtextinput',
+		// 		'background',
+		// 		'chatbackground',
+		// 		'chatbackgroundimage',
+		// 		'backgroundimage',
+		// 		'uploadbackground',
+		// 		'resetbackground',
+		// 		'titleautogen',
+		// 		'titleautogeneration',
+		// 		'autotitle',
+		// 		'chattags',
+		// 		'autochattags',
+		// 		'responseautocopy',
+		// 		'clipboard',
+		// 		'location',
+		// 		'userlocation',
+		// 		'userlocationaccess',
+		// 		'haptic',
+		// 		'hapticfeedback',
+		// 		'vibration',
+		// 		'voice',
+		// 		'voicecontrol',
+		// 		'voiceinterruption',
+		// 		'call',
+		// 		'emojis',
+		// 		'displayemoji',
+		// 		'save',
+		// 		'interfaceoptions',
+		// 		'interfacecustomization',
+		// 		'alwaysonwebsearch'
+		// 	]
+		// },
+		// {
+		// 	id: 'connections',
+		// 	title: 'Connections',
+		// 	keywords: []
+		// },
+		// {
+		// 	id: 'tools',
+		// 	title: 'Tools',
+		// 	keywords: []
+		// },
+		// {
+		// 	id: 'personalization',
+		// 	title: 'Personalization',
+		// 	keywords: [
+		// 		'personalization',
+		// 		'memory',
+		// 		'personalize',
+		// 		'preferences',
+		// 		'profile',
+		// 		'personalsettings',
+		// 		'customsettings',
+		// 		'userpreferences',
+		// 		'accountpreferences'
+		// 	]
+		// },
 		// {
 		// 	id: 'audio',
 		// 	title: 'Audio',
@@ -193,78 +193,78 @@
 		// 		'voicemodes'
 		// 	]
 		// },
-		{
-			id: 'chats',
-			title: 'Chats',
-			keywords: [
-				'chat',
-				'messages',
-				'conversations',
-				'chatsettings',
-				'history',
-				'chathistory',
-				'messagehistory',
-				'messagearchive',
-				'convo',
-				'chats',
-				'conversationhistory',
-				'exportmessages',
-				'chatactivity'
-			]
-		},
-		{
-			id: 'account',
-			title: 'Account',
-			keywords: [
-				'account',
-				'profile',
-				'security',
-				'privacy',
-				'settings',
-				'login',
-				'useraccount',
-				'userdata',
-				'api',
-				'apikey',
-				'userprofile',
-				'profiledetails',
-				'accountsettings',
-				'accountpreferences',
-				'securitysettings',
-				'privacysettings'
-			]
-		},
-		{
-			id: 'admin',
-			title: 'Admin',
-			keywords: [
-				'admin',
-				'administrator',
-				'adminsettings',
-				'adminpanel',
-				'systemadmin',
-				'administratoraccess',
-				'systemcontrol',
-				'manage',
-				'management',
-				'admincontrols',
-				'adminfeatures',
-				'usercontrol',
-				'arenamodel',
-				'evaluations',
-				'websearch',
-				'database',
-				'pipelines',
-				'images',
-				'audio',
-				'documents',
-				'rag',
-				'models',
-				'ollama',
-				'openai',
-				'users'
-			]
-		},
+		// {
+		// 	id: 'chats',
+		// 	title: 'Chats',
+		// 	keywords: [
+		// 		'chat',
+		// 		'messages',
+		// 		'conversations',
+		// 		'chatsettings',
+		// 		'history',
+		// 		'chathistory',
+		// 		'messagehistory',
+		// 		'messagearchive',
+		// 		'convo',
+		// 		'chats',
+		// 		'conversationhistory',
+		// 		'exportmessages',
+		// 		'chatactivity'
+		// 	]
+		// },
+		// {
+		// 	id: 'account',
+		// 	title: 'Account',
+		// 	keywords: [
+		// 		'account',
+		// 		'profile',
+		// 		'security',
+		// 		'privacy',
+		// 		'settings',
+		// 		'login',
+		// 		'useraccount',
+		// 		'userdata',
+		// 		'api',
+		// 		'apikey',
+		// 		'userprofile',
+		// 		'profiledetails',
+		// 		'accountsettings',
+		// 		'accountpreferences',
+		// 		'securitysettings',
+		// 		'privacysettings'
+		// 	]
+		// },
+		// {
+		// 	id: 'admin',
+		// 	title: 'Admin',
+		// 	keywords: [
+		// 		'admin',
+		// 		'administrator',
+		// 		'adminsettings',
+		// 		'adminpanel',
+		// 		'systemadmin',
+		// 		'administratoraccess',
+		// 		'systemcontrol',
+		// 		'manage',
+		// 		'management',
+		// 		'admincontrols',
+		// 		'adminfeatures',
+		// 		'usercontrol',
+		// 		'arenamodel',
+		// 		'evaluations',
+		// 		'websearch',
+		// 		'database',
+		// 		'pipelines',
+		// 		'images',
+		// 		'audio',
+		// 		'documents',
+		// 		'rag',
+		// 		'models',
+		// 		'ollama',
+		// 		'openai',
+		// 		'users'
+		// 	]
+		// },
 		{
 			id: 'about',
 			title: 'About',
@@ -395,7 +395,7 @@
 				id="settings-tabs-container"
 				class="tabs flex flex-row overflow-x-auto gap-2.5 md:gap-1 md:flex-col flex-1 md:flex-none md:w-40 dark:text-gray-200 text-sm font-medium text-left mb-1 md:mb-0 -translate-y-1"
 			>
-				<div class="hidden md:flex w-full rounded-xl -mb-1 px-0.5 gap-2" id="settings-search">
+				<!-- <div class="hidden md:flex w-full rounded-xl -mb-1 px-0.5 gap-2" id="settings-search">
 					<div class="self-center rounded-l-xl bg-transparent">
 						<Search className="size-3.5" />
 					</div>
@@ -405,7 +405,7 @@
 						on:input={searchDebounceHandler}
 						placeholder={$i18n.t('Search')}
 					/>
-				</div>
+				</div> -->
 
 				{#if visibleTabs.length > 0}
 					{#each visibleTabs as tabId (tabId)}
