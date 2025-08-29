@@ -23,8 +23,6 @@
 
 	export let show = false;
 
-	const isAdminRole = $user?.role === 'admin';
-
 	interface SettingsTab {
 		id: string;
 		title: string;
@@ -126,19 +124,19 @@
 				'interfacecustomization',
 				'alwaysonwebsearch'
 			],
-			display: isAdminRole
+			display: false
 		},
 		{
 			id: 'connections',
 			title: 'Connections',
 			keywords: [],
-			display: isAdminRole
+			display: false
 		},
 		{
 			id: 'tools',
 			title: 'Tools',
 			keywords: [],
-			display: isAdminRole
+			display: false
 		},
 		{
 			id: 'personalization',
@@ -154,53 +152,54 @@
 				'userpreferences',
 				'accountpreferences'
 			],
-			display: isAdminRole
+			display: false
 		},
-		// {
-		// 	id: 'audio',
-		// 	title: 'Audio',
-		// 	keywords: [
-		// 		'audio',
-		// 		'sound',
-		// 		'soundsettings',
-		// 		'audiocontrol',
-		// 		'volume',
-		// 		'speech',
-		// 		'speechrecognition',
-		// 		'stt',
-		// 		'speechtotext',
-		// 		'tts',
-		// 		'texttospeech',
-		// 		'playback',
-		// 		'playbackspeed',
-		// 		'voiceplayback',
-		// 		'speechplayback',
-		// 		'audiooutput',
-		// 		'speechengine',
-		// 		'voicecontrol',
-		// 		'audioplayback',
-		// 		'transcription',
-		// 		'autotranscribe',
-		// 		'autosend',
-		// 		'speechsettings',
-		// 		'audiovoice',
-		// 		'voiceoptions',
-		// 		'setvoice',
-		// 		'nonlocalvoices',
-		// 		'savesettings',
-		// 		'audioconfig',
-		// 		'speechconfig',
-		// 		'voicerecognition',
-		// 		'speechsynthesis',
-		// 		'speechmode',
-		// 		'voicespeed',
-		// 		'speechrate',
-		// 		'speechspeed',
-		// 		'audioinput',
-		// 		'audiofeatures',
-		// 		'voicemodes'
-		// 	]
-		// },
+		{
+			id: 'audio',
+			title: 'Audio',
+			keywords: [
+				'audio',
+				'sound',
+				'soundsettings',
+				'audiocontrol',
+				'volume',
+				'speech',
+				'speechrecognition',
+				'stt',
+				'speechtotext',
+				'tts',
+				'texttospeech',
+				'playback',
+				'playbackspeed',
+				'voiceplayback',
+				'speechplayback',
+				'audiooutput',
+				'speechengine',
+				'voicecontrol',
+				'audioplayback',
+				'transcription',
+				'autotranscribe',
+				'autosend',
+				'speechsettings',
+				'audiovoice',
+				'voiceoptions',
+				'setvoice',
+				'nonlocalvoices',
+				'savesettings',
+				'audioconfig',
+				'speechconfig',
+				'voicerecognition',
+				'speechsynthesis',
+				'speechmode',
+				'voicespeed',
+				'speechrate',
+				'speechspeed',
+				'audioinput',
+				'audiofeatures',
+				'voicemodes'
+			],
+			display: false
+		},
 		{
 			id: 'chats',
 			title: 'Chats',
@@ -219,7 +218,7 @@
 				'exportmessages',
 				'chatactivity'
 			],
-			display: isAdminRole
+			display: false
 		},
 		{
 			id: 'account',
@@ -242,7 +241,7 @@
 				'securitysettings',
 				'privacysettings'
 			],
-			display: isAdminRole
+			display: false
 		},
 		{
 			id: 'admin',
@@ -274,7 +273,7 @@
 				'openai',
 				'users'
 			],
-			display: isAdminRole
+			display: false
 		},
 		{
 			id: 'about',
