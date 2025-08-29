@@ -121,7 +121,6 @@ class ChatTableEncryptionProxy(ChatTable):
                 chat_record = Chat(
                     id=id,
                     user_id=user_id,
-                    folder_id=form_data.folder_id,
                     created_at=int(time.time()),
                     updated_at=int(time.time()),
                 )
