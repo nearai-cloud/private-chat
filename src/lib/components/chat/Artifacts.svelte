@@ -189,14 +189,14 @@
 			<div
 				class="pointer-events-auto z-20 flex justify-between items-center p-2.5 font-primar text-gray-900 dark:text-white"
 			>
-				<button
+				<!-- <button
 					class="self-center pointer-events-auto p-1 rounded-full bg-white dark:bg-gray-850"
 					on:click={() => {
 						showArtifacts.set(false);
 					}}
 				>
 					<ArrowLeft className="size-3.5  text-gray-900 dark:text-white" />
-				</button>
+				</button> -->
 
 				<div class="flex-1 flex items-center justify-between">
 					<div class="flex items-center space-x-2">

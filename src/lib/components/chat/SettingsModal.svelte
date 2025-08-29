@@ -27,6 +27,7 @@
 		id: string;
 		title: string;
 		keywords: string[];
+		display: boolean;
 	}
 
 	const searchData: SettingsTab[] = [
@@ -51,7 +52,8 @@
 				'languageoptions',
 				'defaultparameters',
 				'systemparameters'
-			]
+			],
+			display: true
 		},
 		{
 			id: 'interface',
@@ -121,17 +123,20 @@
 				'interfaceoptions',
 				'interfacecustomization',
 				'alwaysonwebsearch'
-			]
+			],
+			display: false
 		},
 		{
 			id: 'connections',
 			title: 'Connections',
-			keywords: []
+			keywords: [],
+			display: false
 		},
 		{
 			id: 'tools',
 			title: 'Tools',
-			keywords: []
+			keywords: [],
+			display: false
 		},
 		{
 			id: 'personalization',
@@ -146,53 +151,55 @@
 				'customsettings',
 				'userpreferences',
 				'accountpreferences'
-			]
+			],
+			display: false
 		},
-		// {
-		// 	id: 'audio',
-		// 	title: 'Audio',
-		// 	keywords: [
-		// 		'audio',
-		// 		'sound',
-		// 		'soundsettings',
-		// 		'audiocontrol',
-		// 		'volume',
-		// 		'speech',
-		// 		'speechrecognition',
-		// 		'stt',
-		// 		'speechtotext',
-		// 		'tts',
-		// 		'texttospeech',
-		// 		'playback',
-		// 		'playbackspeed',
-		// 		'voiceplayback',
-		// 		'speechplayback',
-		// 		'audiooutput',
-		// 		'speechengine',
-		// 		'voicecontrol',
-		// 		'audioplayback',
-		// 		'transcription',
-		// 		'autotranscribe',
-		// 		'autosend',
-		// 		'speechsettings',
-		// 		'audiovoice',
-		// 		'voiceoptions',
-		// 		'setvoice',
-		// 		'nonlocalvoices',
-		// 		'savesettings',
-		// 		'audioconfig',
-		// 		'speechconfig',
-		// 		'voicerecognition',
-		// 		'speechsynthesis',
-		// 		'speechmode',
-		// 		'voicespeed',
-		// 		'speechrate',
-		// 		'speechspeed',
-		// 		'audioinput',
-		// 		'audiofeatures',
-		// 		'voicemodes'
-		// 	]
-		// },
+		{
+			id: 'audio',
+			title: 'Audio',
+			keywords: [
+				'audio',
+				'sound',
+				'soundsettings',
+				'audiocontrol',
+				'volume',
+				'speech',
+				'speechrecognition',
+				'stt',
+				'speechtotext',
+				'tts',
+				'texttospeech',
+				'playback',
+				'playbackspeed',
+				'voiceplayback',
+				'speechplayback',
+				'audiooutput',
+				'speechengine',
+				'voicecontrol',
+				'audioplayback',
+				'transcription',
+				'autotranscribe',
+				'autosend',
+				'speechsettings',
+				'audiovoice',
+				'voiceoptions',
+				'setvoice',
+				'nonlocalvoices',
+				'savesettings',
+				'audioconfig',
+				'speechconfig',
+				'voicerecognition',
+				'speechsynthesis',
+				'speechmode',
+				'voicespeed',
+				'speechrate',
+				'speechspeed',
+				'audioinput',
+				'audiofeatures',
+				'voicemodes'
+			],
+			display: false
+		},
 		{
 			id: 'chats',
 			title: 'Chats',
@@ -210,7 +217,8 @@
 				'conversationhistory',
 				'exportmessages',
 				'chatactivity'
-			]
+			],
+			display: false
 		},
 		{
 			id: 'account',
@@ -232,7 +240,8 @@
 				'accountpreferences',
 				'securitysettings',
 				'privacysettings'
-			]
+			],
+			display: false
 		},
 		{
 			id: 'admin',
@@ -263,7 +272,8 @@
 				'ollama',
 				'openai',
 				'users'
-			]
+			],
+			display: false
 		},
 		{
 			id: 'about',
@@ -290,13 +300,14 @@
 				// 'termsandconditions',
 				// 'contact',
 				// 'aboutpage'
-			]
+			],
+			display: true
 		}
 	];
 
 	let search = '';
-	let visibleTabs = searchData.map((tab) => tab.id);
-	let searchDebounceTimeout;
+	let visibleTabs = searchData.filter((tab) => tab.display).map((tab) => tab.id);
+	let searchDebounceTimeout: NodeJS.Timeout;
 
 	const searchSettings = (query: string): string[] => {
 		const lowerCaseQuery = query.toLowerCase().trim();
@@ -395,7 +406,7 @@
 				id="settings-tabs-container"
 				class="tabs flex flex-row overflow-x-auto gap-2.5 md:gap-1 md:flex-col flex-1 md:flex-none md:w-40 dark:text-gray-200 text-sm font-medium text-left mb-1 md:mb-0 -translate-y-1"
 			>
-				<div class="hidden md:flex w-full rounded-xl -mb-1 px-0.5 gap-2" id="settings-search">
+				<!-- <div class="hidden md:flex w-full rounded-xl -mb-1 px-0.5 gap-2" id="settings-search">
 					<div class="self-center rounded-l-xl bg-transparent">
 						<Search className="size-3.5" />
 					</div>
@@ -405,7 +416,7 @@
 						on:input={searchDebounceHandler}
 						placeholder={$i18n.t('Search')}
 					/>
-				</div>
+				</div> -->
 
 				{#if visibleTabs.length > 0}
 					{#each visibleTabs as tabId (tabId)}

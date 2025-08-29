@@ -121,7 +121,7 @@
 						</Menu>
 					{/if}
 
-					<Tooltip content={$i18n.t('Controls')}>
+					<!-- <Tooltip content={$i18n.t('Controls')}>
 						<button
 							class=" flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
 							on:click={async () => {
@@ -133,7 +133,7 @@
 								<AdjustmentsHorizontal className=" size-5" strokeWidth="0.5" />
 							</div>
 						</button>
-					</Tooltip>
+					</Tooltip> -->
 
 					<Tooltip content={$i18n.t('New Chat')}>
 						<button
