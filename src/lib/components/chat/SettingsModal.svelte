@@ -23,10 +23,13 @@
 
 	export let show = false;
 
+	const isAdminRole = $user?.role === 'admin';
+
 	interface SettingsTab {
 		id: string;
 		title: string;
 		keywords: string[];
+		display: boolean;
 	}
 
 	const searchData: SettingsTab[] = [
@@ -51,103 +54,108 @@
 				'languageoptions',
 				'defaultparameters',
 				'systemparameters'
-			]
+			],
+			display: true
 		},
-		// {
-		// 	id: 'interface',
-		// 	title: 'Interface',
-		// 	keywords: [
-		// 		'defaultmodel',
-		// 		'selectmodel',
-		// 		'ui',
-		// 		'userinterface',
-		// 		'display',
-		// 		'layout',
-		// 		'design',
-		// 		'landingpage',
-		// 		'landingpagemode',
-		// 		'default',
-		// 		'chat',
-		// 		'chatbubble',
-		// 		'chatui',
-		// 		'username',
-		// 		'showusername',
-		// 		'displayusername',
-		// 		'widescreen',
-		// 		'widescreenmode',
-		// 		'fullscreen',
-		// 		'expandmode',
-		// 		'chatdirection',
-		// 		'lefttoright',
-		// 		'ltr',
-		// 		'righttoleft',
-		// 		'rtl',
-		// 		'notifications',
-		// 		'toast',
-		// 		'toastnotifications',
-		// 		'largechunks',
-		// 		'streamlargechunks',
-		// 		'scroll',
-		// 		'scrollonbranchchange',
-		// 		'scrollbehavior',
-		// 		'richtext',
-		// 		'richtextinput',
-		// 		'background',
-		// 		'chatbackground',
-		// 		'chatbackgroundimage',
-		// 		'backgroundimage',
-		// 		'uploadbackground',
-		// 		'resetbackground',
-		// 		'titleautogen',
-		// 		'titleautogeneration',
-		// 		'autotitle',
-		// 		'chattags',
-		// 		'autochattags',
-		// 		'responseautocopy',
-		// 		'clipboard',
-		// 		'location',
-		// 		'userlocation',
-		// 		'userlocationaccess',
-		// 		'haptic',
-		// 		'hapticfeedback',
-		// 		'vibration',
-		// 		'voice',
-		// 		'voicecontrol',
-		// 		'voiceinterruption',
-		// 		'call',
-		// 		'emojis',
-		// 		'displayemoji',
-		// 		'save',
-		// 		'interfaceoptions',
-		// 		'interfacecustomization',
-		// 		'alwaysonwebsearch'
-		// 	]
-		// },
-		// {
-		// 	id: 'connections',
-		// 	title: 'Connections',
-		// 	keywords: []
-		// },
-		// {
-		// 	id: 'tools',
-		// 	title: 'Tools',
-		// 	keywords: []
-		// },
-		// {
-		// 	id: 'personalization',
-		// 	title: 'Personalization',
-		// 	keywords: [
-		// 		'personalization',
-		// 		'memory',
-		// 		'personalize',
-		// 		'preferences',
-		// 		'profile',
-		// 		'personalsettings',
-		// 		'customsettings',
-		// 		'userpreferences',
-		// 		'accountpreferences'
-		// 	]
-		// },
+		{
+			id: 'interface',
+			title: 'Interface',
+			keywords: [
+				'defaultmodel',
+				'selectmodel',
+				'ui',
+				'userinterface',
+				'display',
+				'layout',
+				'design',
+				'landingpage',
+				'landingpagemode',
+				'default',
+				'chat',
+				'chatbubble',
+				'chatui',
+				'username',
+				'showusername',
+				'displayusername',
+				'widescreen',
+				'widescreenmode',
+				'fullscreen',
+				'expandmode',
+				'chatdirection',
+				'lefttoright',
+				'ltr',
+				'righttoleft',
+				'rtl',
+				'notifications',
+				'toast',
+				'toastnotifications',
+				'largechunks',
+				'streamlargechunks',
+				'scroll',
+				'scrollonbranchchange',
+				'scrollbehavior',
+				'richtext',
+				'richtextinput',
+				'background',
+				'chatbackground',
+				'chatbackgroundimage',
+				'backgroundimage',
+				'uploadbackground',
+				'resetbackground',
+				'titleautogen',
+				'titleautogeneration',
+				'autotitle',
+				'chattags',
+				'autochattags',
+				'responseautocopy',
+				'clipboard',
+				'location',
+				'userlocation',
+				'userlocationaccess',
+				'haptic',
+				'hapticfeedback',
+				'vibration',
+				'voice',
+				'voicecontrol',
+				'voiceinterruption',
+				'call',
+				'emojis',
+				'displayemoji',
+				'save',
+				'interfaceoptions',
+				'interfacecustomization',
+				'alwaysonwebsearch'
+			],
+			display: isAdminRole
+		},
+		{
+			id: 'connections',
+			title: 'Connections',
+			keywords: [],
+			display: isAdminRole
+		},
+		{
+			id: 'tools',
+			title: 'Tools',
+			keywords: [],
+			display: isAdminRole
+		},
+		{
+			id: 'personalization',
+			title: 'Personalization',
+			keywords: [
+				'personalization',
+				'memory',
+				'personalize',
+				'preferences',
+				'profile',
+				'personalsettings',
+				'customsettings',
+				'userpreferences',
+				'accountpreferences'
+			],
+			display: isAdminRole
+		},
 		// {
 		// 	id: 'audio',
 		// 	title: 'Audio',
@@ -193,78 +201,81 @@
 		// 		'voicemodes'
 		// 	]
 		// },
-		// {
-		// 	id: 'chats',
-		// 	title: 'Chats',
-		// 	keywords: [
-		// 		'chat',
-		// 		'messages',
-		// 		'conversations',
-		// 		'chatsettings',
-		// 		'history',
-		// 		'chathistory',
-		// 		'messagehistory',
-		// 		'messagearchive',
-		// 		'convo',
-		// 		'chats',
-		// 		'conversationhistory',
-		// 		'exportmessages',
-		// 		'chatactivity'
-		// 	]
-		// },
-		// {
-		// 	id: 'account',
-		// 	title: 'Account',
-		// 	keywords: [
-		// 		'account',
-		// 		'profile',
-		// 		'security',
-		// 		'privacy',
-		// 		'settings',
-		// 		'login',
-		// 		'useraccount',
-		// 		'userdata',
-		// 		'api',
-		// 		'apikey',
-		// 		'userprofile',
-		// 		'profiledetails',
-		// 		'accountsettings',
-		// 		'accountpreferences',
-		// 		'securitysettings',
-		// 		'privacysettings'
-		// 	]
-		// },
-		// {
-		// 	id: 'admin',
-		// 	title: 'Admin',
-		// 	keywords: [
-		// 		'admin',
-		// 		'administrator',
-		// 		'adminsettings',
-		// 		'adminpanel',
-		// 		'systemadmin',
-		// 		'administratoraccess',
-		// 		'systemcontrol',
-		// 		'manage',
-		// 		'management',
-		// 		'admincontrols',
-		// 		'adminfeatures',
-		// 		'usercontrol',
-		// 		'arenamodel',
-		// 		'evaluations',
-		// 		'websearch',
-		// 		'database',
-		// 		'pipelines',
-		// 		'images',
-		// 		'audio',
-		// 		'documents',
-		// 		'rag',
-		// 		'models',
-		// 		'ollama',
-		// 		'openai',
-		// 		'users'
-		// 	]
-		// },
+		{
+			id: 'chats',
+			title: 'Chats',
+			keywords: [
+				'chat',
+				'messages',
+				'conversations',
+				'chatsettings',
+				'history',
+				'chathistory',
+				'messagehistory',
+				'messagearchive',
+				'convo',
+				'chats',
+				'conversationhistory',
+				'exportmessages',
+				'chatactivity'
+			],
+			display: isAdminRole
+		},
+		{
+			id: 'account',
+			title: 'Account',
+			keywords: [
+				'account',
+				'profile',
+				'security',
+				'privacy',
+				'settings',
+				'login',
+				'useraccount',
+				'userdata',
+				'api',
+				'apikey',
+				'userprofile',
+				'profiledetails',
+				'accountsettings',
+				'accountpreferences',
+				'securitysettings',
+				'privacysettings'
+			],
+			display: isAdminRole
+		},
+		{
+			id: 'admin',
+			title: 'Admin',
+			keywords: [
+				'admin',
+				'administrator',
+				'adminsettings',
+				'adminpanel',
+				'systemadmin',
+				'administratoraccess',
+				'systemcontrol',
+				'manage',
+				'management',
+				'admincontrols',
+				'adminfeatures',
+				'usercontrol',
+				'arenamodel',
+				'evaluations',
+				'websearch',
+				'database',
+				'pipelines',
+				'images',
+				'audio',
+				'documents',
+				'rag',
+				'models',
+				'ollama',
+				'openai',
+				'users'
+			],
+			display: isAdminRole
+		},
 		{
 			id: 'about',
 			title: 'About',
@@ -290,13 +301,14 @@
 				// 'termsandconditions',
 				// 'contact',
 				// 'aboutpage'
-			]
+			],
+			display: true
 		}
 	];
 
 	let search = '';
-	let visibleTabs = searchData.map((tab) => tab.id);
-	let searchDebounceTimeout;
+	let visibleTabs = searchData.filter((tab) => tab.display).map((tab) => tab.id);
+	let searchDebounceTimeout: NodeJS.Timeout;
 
 	const searchSettings = (query: string): string[] => {
 		const lowerCaseQuery = query.toLowerCase().trim();
