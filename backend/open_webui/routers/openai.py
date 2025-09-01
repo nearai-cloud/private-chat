@@ -592,22 +592,38 @@ async def generate_chat_completion(
     user=Depends(get_verified_user),
     bypass_filter: Optional[bool] = False,
 ):
+    import time
+    
+    start_time = time.time()
+    model_id = form_data.get("model")
+    stream_mode = form_data.get("stream", False)
+    messages_count = len(form_data.get("messages", []))
+    
+    log.info(f"🌐 OpenAI router start: model={model_id} stream={stream_mode} messages={messages_count} user={user.id}")
+    
     if BYPASS_MODEL_ACCESS_CONTROL:
         bypass_filter = True
+        log.info("🔓 Bypassing model access control")
 
     idx = 0
 
     payload = {**form_data}
     metadata = payload.pop("metadata", None)
 
-    model_id = form_data.get("model")
+    # Track model info lookup time
+    model_info_start = time.time()
     model_info = Models.get_model_by_id(model_id)
+    model_info_time = time.time() - model_info_start
+    log.info(f"📋 Model info lookup completed in {model_info_time:.3f}s")
 
     # Check model info and override the payload
+    payload_setup_start = time.time()
     if model_info:
+        log.info(f"✅ Found model info for {model_id}")
         if model_info.base_model_id:
             payload["model"] = model_info.base_model_id
             model_id = model_info.base_model_id
+            log.info(f"🔄 Using base model: {model_id}")
 
         params = model_info.params.model_dump()
         payload = apply_model_params_to_body_openai(params, payload)
@@ -615,34 +631,54 @@ async def generate_chat_completion(
 
         # Check if user has access to the model
         if not bypass_filter and user.role == "user":
+            access_check_start = time.time()
             if not (
                 user.id == model_info.user_id
                 or has_access(
                     user.id, type="read", access_control=model_info.access_control
                 )
             ):
+                access_check_time = time.time() - access_check_start
+                log.error(f"❌ Access denied for user {user.id} to model {model_id} after {access_check_time:.3f}s")
                 raise HTTPException(
                     status_code=403,
                     detail="Model not found",
                 )
+            access_check_time = time.time() - access_check_start
+            log.info(f"✅ Access check passed in {access_check_time:.3f}s")
+        else:
+            log.info("⏭️ Skipping access check (bypass_filter or admin)")
     elif not bypass_filter:
         if user.role != "admin":
+            log.error(f"❌ No model info found for {model_id} and user is not admin")
             raise HTTPException(
                 status_code=403,
                 detail="Model not found",
             )
+        log.info("⚠️ No model info but user is admin")
 
+    # Track model lookup time
+    model_lookup_start = time.time()
     await get_all_models(request, user=user)
+    model_lookup_time = time.time() - model_lookup_start
+    log.info(f"🔍 Model lookup completed in {model_lookup_time:.3f}s")
+    
     model = request.app.state.OPENAI_MODELS.get(model_id)
     if model:
         idx = model["urlIdx"]
+        log.info(f"✅ Found OpenAI model config: urlIdx={idx}")
     else:
+        log.error(f"❌ OpenAI model {model_id} not found in state")
         raise HTTPException(
             status_code=404,
             detail="Model not found",
         )
+        
+    payload_setup_time = time.time() - payload_setup_start
+    log.info(f"⚙️ Payload setup completed in {payload_setup_time:.3f}s")
 
     # Get the API config for the model
+    config_start = time.time()
     api_config = request.app.state.config.OPENAI_API_CONFIGS.get(
         str(idx),
         request.app.state.config.OPENAI_API_CONFIGS.get(
@@ -653,6 +689,7 @@ async def generate_chat_completion(
     prefix_id = api_config.get("prefix_id", None)
     if prefix_id:
         payload["model"] = payload["model"].replace(f"{prefix_id}.", "")
+        log.info(f"🔧 Removed prefix {prefix_id} from model name")
 
     # Add user info to the payload if the model is a pipeline
     if "pipeline" in model and model.get("pipeline"):
@@ -662,30 +699,45 @@ async def generate_chat_completion(
             "email": user.email,
             "role": user.role,
         }
+        log.info("🔗 Added user info to pipeline payload")
 
     url = request.app.state.config.OPENAI_API_BASE_URLS[idx]
     key = request.app.state.config.OPENAI_API_KEYS[idx]
+    
+    # Log API endpoint (without key for security)
+    log.info(f"🌐 API endpoint: {url}")
 
     # Fix: o1,o3 does not support the "max_tokens" parameter, Modify "max_tokens" to "max_completion_tokens"
     is_o1_o3 = payload["model"].lower().startswith(("o1", "o3-"))
     if is_o1_o3:
         payload = openai_o1_o3_handler(payload)
+        log.info("🤖 Applied O1/O3 model handler")
     elif "api.openai.com" not in url:
         # Remove "max_completion_tokens" from the payload for backward compatibility
         if "max_completion_tokens" in payload:
             payload["max_tokens"] = payload["max_completion_tokens"]
             del payload["max_completion_tokens"]
+            log.info("🔧 Converted max_completion_tokens to max_tokens for compatibility")
 
     if "max_tokens" in payload and "max_completion_tokens" in payload:
         del payload["max_tokens"]
+        log.info("🔧 Removed redundant max_tokens parameter")
 
     # Convert the modified body back to JSON
     if "logit_bias" in payload:
         payload["logit_bias"] = json.loads(
             convert_logit_bias_input_to_json(payload["logit_bias"])
         )
+        log.info("🎯 Processed logit_bias parameter")
+
+    # Log key payload parameters for debugging
+    payload_dict = payload if isinstance(payload, dict) else json.loads(payload)
+    log.info(f"📤 Request params: model={payload_dict.get('model')} max_tokens={payload_dict.get('max_tokens', payload_dict.get('max_completion_tokens', 'unset'))} temperature={payload_dict.get('temperature', 'unset')}")
 
     payload = json.dumps(payload)
+    
+    config_time = time.time() - config_start
+    log.info(f"⚙️ API config and payload preparation completed in {config_time:.3f}s")
 
     r = None
     session = None
@@ -693,10 +745,18 @@ async def generate_chat_completion(
     response = None
 
     try:
+        # Track session creation time
+        session_start = time.time()
         session = aiohttp.ClientSession(
             trust_env=True, timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT)
         )
+        session_time = time.time() - session_start
+        log.info(f"🔗 HTTP session created in {session_time:.3f}s")
 
+        # Track API request time - this is the main bottleneck
+        api_request_start = time.time()
+        log.info(f"🚀 Starting API request to {url}/chat/completions")
+        
         r = await session.request(
             method="POST",
             url=f"{url}/chat/completions",
@@ -724,10 +784,16 @@ async def generate_chat_completion(
                 ),
             },
         )
+        
+        api_request_time = time.time() - api_request_start
+        log.info(f"📡 API request completed in {api_request_time:.3f}s (status={r.status})")
 
         # Check if response is SSE
         if "text/event-stream" in r.headers.get("Content-Type", ""):
             streaming = True
+            total_time = time.time() - start_time
+            log.info(f"🌊 Streaming response prepared")
+            log.info(f"⏱️ Total OpenAI router time: {total_time:.3f}s (streaming=true)")
             return StreamingResponse(
                 r.content,
                 status_code=r.status,
@@ -737,16 +803,38 @@ async def generate_chat_completion(
                 ),
             )
         else:
+            # Track response parsing time
+            response_parse_start = time.time()
             try:
                 response = await r.json()
+                response_parse_time = time.time() - response_parse_start
+                log.info(f"📋 JSON response parsed in {response_parse_time:.3f}s")
+                
+                # Log usage information if available
+                if isinstance(response, dict) and "usage" in response:
+                    usage = response["usage"]
+                    log.info(f"📊 Usage: prompt_tokens={usage.get('prompt_tokens')} completion_tokens={usage.get('completion_tokens')} total_tokens={usage.get('total_tokens')}")
+                    
             except Exception as e:
-                log.error(e)
+                response_parse_time = time.time() - response_parse_start
+                log.error(f"❌ JSON parsing failed in {response_parse_time:.3f}s: {e}")
                 response = await r.text()
+                log.info(f"📄 Fallback to text response: {len(response) if response else 0} chars")
 
             r.raise_for_status()
+            total_time = time.time() - start_time
+            log.info(f"⏱️ Total OpenAI router time: {total_time:.3f}s (streaming=false)")
+            
+            # Performance warnings
+            if total_time > 5.0:
+                log.warning(f"🐌 SLOW OPENAI ROUTER: {total_time:.3f}s exceeds 5s threshold")
+            if api_request_time > 4.0:
+                log.warning(f"🐌 SLOW API REQUEST: {api_request_time:.3f}s exceeds 4s threshold")
+                
             return response
     except Exception as e:
-        log.exception(e)
+        error_time = time.time() - start_time
+        log.exception(f"❌ OpenAI router error after {error_time:.3f}s: {e}")
 
         detail = None
         if isinstance(response, dict):
@@ -760,10 +848,14 @@ async def generate_chat_completion(
             detail=detail if detail else "Open WebUI: Server Connection Error",
         )
     finally:
+        cleanup_start = time.time()
         if not streaming and session:
             if r:
                 r.close()
             await session.close()
+        cleanup_time = time.time() - cleanup_start
+        if cleanup_time > 0.001:  # Only log if cleanup takes significant time
+            log.info(f"🧹 Session cleanup completed in {cleanup_time:.3f}s")
 
 
 @router.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])

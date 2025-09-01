@@ -1047,16 +1047,34 @@ async def chat_completion(
     form_data: dict,
     user=Depends(get_verified_user),
 ):
+    import time
+    
+    # Start timing the entire function
+    start_time = time.time()
+    log.info(f"🚀 Starting chat_completion for user {user.id}, chat_id: {form_data.get('chat_id', 'N/A')}")
+    
+    # Track model loading time
+    model_load_start = time.time()
     if not request.app.state.MODELS:
+        log.info("⏳ Models not loaded, fetching all models...")
         await get_all_models(request, user=user)
+        model_load_time = time.time() - model_load_start
+        log.info(f"✅ Model loading completed in {model_load_time:.3f}s")
+    else:
+        log.info("✅ Models already loaded, skipping model fetch")
 
     model_item = form_data.pop("model_item", {})
     tasks = form_data.pop("background_tasks", None)
 
     metadata = {}
+    
+    # Track model setup and access control time
+    model_setup_start = time.time()
     try:
         if not model_item.get("direct", False):
             model_id = form_data.get("model", None)
+            log.info(f"🔍 Setting up model: {model_id}")
+            
             if model_id not in request.app.state.MODELS:
                 raise Exception("Model not found")
 
@@ -1065,13 +1083,21 @@ async def chat_completion(
 
             # Check if user has access to the model
             if not BYPASS_MODEL_ACCESS_CONTROL and user.role == "user":
+                access_check_start = time.time()
                 try:
                     check_model_access(user, model)
+                    access_check_time = time.time() - access_check_start
+                    log.info(f"✅ Model access check passed in {access_check_time:.3f}s")
                 except Exception as e:
+                    access_check_time = time.time() - access_check_start
+                    log.error(f"❌ Model access check failed in {access_check_time:.3f}s: {e}")
                     raise e
+            else:
+                log.info("⏭️ Bypassing model access control")
         else:
             model = model_item
             model_info = None
+            log.info("🔄 Using direct model configuration")
 
             request.state.direct = True
             request.state.model = model
@@ -1102,13 +1128,28 @@ async def chat_completion(
 
         request.state.metadata = metadata
         form_data["metadata"] = metadata
+        
+        model_setup_time = time.time() - model_setup_start
+        log.info(f"✅ Model setup completed in {model_setup_time:.3f}s")
 
+        # Track chat payload processing time - this is often a major bottleneck
+        payload_start = time.time()
+        log.info("⚙️ Processing chat payload (tools, files, RAG, etc.)...")
+        
+        # Log payload details for debugging
+        # log.info(f"📊 Payload details: tools={metadata.get('tool_ids', [])}, files={len(metadata.get('files', []))}, features={metadata.get('features', {})}")
+        
         form_data, metadata, events = await process_chat_payload(
             request, form_data, user, metadata, model
         )
+        
+        payload_time = time.time() - payload_start
+        log.info(f"✅ Chat payload processing completed in {payload_time:.3f}s")
 
     except Exception as e:
-        log.debug(f"Error processing chat payload: {e}")
+        total_time = time.time() - start_time
+        log.error(f"❌ Error in chat_completion setup phase after {total_time:.3f}s: {e}")
+        
         if metadata.get("chat_id") and metadata.get("message_id"):
             # Update the chat message with the error
             Chats.upsert_message_to_chat_by_id_and_message_id(
@@ -1125,12 +1166,45 @@ async def chat_completion(
         )
 
     try:
+        # Track chat completion handler time - this is the AI inference
+        completion_start = time.time()
+        log.info("🤖 Starting AI chat completion...")
+        
         response = await chat_completion_handler(request, form_data, user)
+        
+        completion_time = time.time() - completion_start
+        log.info(f"✅ AI chat completion finished in {completion_time:.3f}s")
 
-        return await process_chat_response(
+        # Track response processing time
+        response_start = time.time()
+        log.info("📤 Processing chat response...")
+        
+        result = await process_chat_response(
             request, response, form_data, user, metadata, model, events, tasks
         )
+        
+        response_time = time.time() - response_start
+        total_time = time.time() - start_time
+        
+        log.info(f"✅ Response processing completed in {response_time:.3f}s")
+        log.info(f"🎉 Total chat_completion time: {total_time:.3f}s")
+        
+        # Performance summary
+        log.info(f"📈 Performance breakdown - Setup: {model_setup_time:.3f}s, Payload: {payload_time:.3f}s, AI: {completion_time:.3f}s, Response: {response_time:.3f}s")
+        
+        # Warning for slow operations
+        if total_time > 10.0:
+            log.warning(f"🐌 SLOW OPERATION: Total time {total_time:.3f}s exceeds 10s threshold")
+        if payload_time > 3.0:
+            log.warning(f"🐌 SLOW PAYLOAD: Payload processing {payload_time:.3f}s exceeds 3s threshold")
+        if completion_time > 5.0:
+            log.warning(f"🐌 SLOW AI: AI completion {completion_time:.3f}s exceeds 5s threshold")
+            
+        return result
+        
     except Exception as e:
+        total_time = time.time() - start_time
+        log.error(f"❌ Error in chat_completion execution phase after {total_time:.3f}s: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
