@@ -25,6 +25,7 @@ from open_webui.env import (
     AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST,
     ENABLE_FORWARD_USER_INFO_HEADERS,
     BYPASS_MODEL_ACCESS_CONTROL,
+    MODELS_CACHE_TTL,
 )
 from open_webui.models.users import UserModel
 
@@ -384,7 +385,13 @@ async def get_filtered_models(models, user):
     return filtered_models
 
 
-@cached(ttl=1)
+def _build_cache_key_with_user_role(*args, **kwargs):
+    """Build cache key that differentiates admin vs non-admin users for OpenAI models"""
+    user = kwargs.get('user') or (args[1] if len(args) > 1 else None)
+    role = user.role if user else "unknown"
+    return f"openai_models_{role}"
+
+@cached(ttl=MODELS_CACHE_TTL, key_builder=_build_cache_key_with_user_role)
 async def get_all_models(request: Request, user: UserModel) -> dict[str, list]:
     log.info("get_all_models()")
 
