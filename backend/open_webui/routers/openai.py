@@ -387,9 +387,10 @@ async def get_filtered_models(models, user):
 
 def _build_cache_key_with_user_role(*args, **kwargs):
     """Build cache key that differentiates admin vs non-admin users for models"""
-    user = kwargs.get('user') or (args[1] if len(args) > 1 else None)
+    user = kwargs.get("user") or (args[1] if len(args) > 1 else None)
     role = user.role if user else "unknown"
     return f"models_{role}"
+
 
 @cached(ttl=MODELS_CACHE_TTL, key_builder=_build_cache_key_with_user_role)
 async def get_all_models(request: Request, user: UserModel) -> dict[str, list]:
