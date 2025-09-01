@@ -575,19 +575,11 @@ async def chat_image_generation_handler(
 async def chat_completion_files_handler(
     request: Request, body: dict, user: UserModel
 ) -> tuple[dict, dict[str, list]]:
-    import time
-    
-    files_handler_start_time = time.time()
     sources = []
 
     if files := body.get("metadata", {}).get("files", None):
-        log.info(f"📁 Processing {len(files)} files for RAG")
-        
-        # Generate queries for retrieval
         queries = []
-        query_gen_start = time.time()
         try:
-            log.info("🔍 Generating retrieval queries...")
             queries_response = await generate_queries(
                 request,
                 {
@@ -612,21 +604,13 @@ async def chat_completion_files_handler(
                 queries_response = {"queries": [queries_response]}
 
             queries = queries_response.get("queries", [])
-            query_gen_time = time.time() - query_gen_start
-            log.info(f"✅ Generated {len(queries)} queries in {query_gen_time:.3f}s")
-        except Exception as e:
-            query_gen_time = time.time() - query_gen_start
-            log.error(f"❌ Query generation failed after {query_gen_time:.3f}s: {e}")
+        except:
+            pass
 
         if len(queries) == 0:
             queries = [get_last_user_message(body["messages"])]
-            log.info("📝 Using user message as fallback query")
 
-        # Retrieve sources from files - this is often the slowest part
         try:
-            retrieval_start = time.time()
-            log.info(f"🔎 Retrieving sources from files with {len(queries)} queries...")
-            
             # Offload get_sources_from_files to a separate thread
             loop = asyncio.get_running_loop()
             with ThreadPoolExecutor() as executor:
@@ -647,25 +631,10 @@ async def chat_completion_files_handler(
                         full_context=request.app.state.config.RAG_FULL_CONTEXT,
                     ),
                 )
-            
-            retrieval_time = time.time() - retrieval_start
-            log.info(f"✅ Retrieved {len(sources)} sources in {retrieval_time:.3f}s")
-            
-            # Warning for slow retrieval
-            if retrieval_time > 3.0:
-                log.warning(f"🐌 SLOW RETRIEVAL: {retrieval_time:.3f}s exceeds 3s threshold")
-                
         except Exception as e:
-            retrieval_time = time.time() - retrieval_start
-            log.error(f"❌ Source retrieval failed after {retrieval_time:.3f}s")
             log.exception(e)
 
         log.debug(f"rag_contexts:sources: {sources}")
-    else:
-        log.info("📁 No files to process for RAG")
-
-    total_files_time = time.time() - files_handler_start_time
-    log.info(f"🎉 Files handler completed in {total_files_time:.3f}s")
 
     return body, {"sources": sources}
 
@@ -714,10 +683,6 @@ def apply_params_to_form_data(form_data, model):
 
 
 async def process_chat_payload(request, form_data, user, metadata, model):
-    import time
-    
-    payload_start_time = time.time()
-    log.info(f"🔧 Starting process_chat_payload for user {user.id}")
 
     form_data = apply_params_to_form_data(form_data, model)
     log.debug(f"form_data: {form_data}")
@@ -760,9 +725,6 @@ async def process_chat_payload(request, form_data, user, metadata, model):
 
     user_message = get_last_user_message(form_data["messages"])
     model_knowledge = model.get("info", {}).get("meta", {}).get("knowledge", False)
-    
-    setup_time = time.time() - payload_start_time
-    log.info(f"✅ Payload setup completed in {setup_time:.3f}s")
 
     if model_knowledge:
         await event_emitter(
@@ -805,21 +767,13 @@ async def process_chat_payload(request, form_data, user, metadata, model):
     variables = form_data.pop("variables", None)
 
     # Process the form_data through the pipeline
-    pipeline_start = time.time()
-    log.info("🔄 Processing pipeline inlet filter...")
     try:
         form_data = await process_pipeline_inlet_filter(
             request, form_data, user, models
         )
-        pipeline_time = time.time() - pipeline_start
-        log.info(f"✅ Pipeline inlet filter completed in {pipeline_time:.3f}s")
     except Exception as e:
-        pipeline_time = time.time() - pipeline_start
-        log.error(f"❌ Pipeline inlet filter failed after {pipeline_time:.3f}s: {e}")
         raise e
 
-    filter_start = time.time()
-    log.info("🔍 Processing filter functions...")
     try:
         filter_functions = [
             Functions.get_function_by_id(filter_id)
@@ -833,37 +787,22 @@ async def process_chat_payload(request, form_data, user, metadata, model):
             form_data=form_data,
             extra_params=extra_params,
         )
-        filter_time = time.time() - filter_start
-        log.info(f"✅ Filter functions completed in {filter_time:.3f}s")
     except Exception as e:
-        filter_time = time.time() - filter_start
-        log.error(f"❌ Filter functions failed after {filter_time:.3f}s: {e}")
         raise Exception(f"Error: {e}")
 
     features = form_data.pop("features", None)
     if features:
-        log.info(f"🎯 Processing features: {list(features.keys())}")
-        
         if "web_search" in features and features["web_search"]:
-            web_search_start = time.time()
-            log.info("🔍 Processing web search...")
             form_data = await chat_web_search_handler(
                 request, form_data, extra_params, user
             )
-            web_search_time = time.time() - web_search_start
-            log.info(f"✅ Web search completed in {web_search_time:.3f}s")
 
         if "image_generation" in features and features["image_generation"]:
-            image_gen_start = time.time()
-            log.info("🎨 Processing image generation...")
             form_data = await chat_image_generation_handler(
                 request, form_data, extra_params, user
             )
-            image_gen_time = time.time() - image_gen_start
-            log.info(f"✅ Image generation completed in {image_gen_time:.3f}s")
 
         if "code_interpreter" in features and features["code_interpreter"]:
-            log.info("💻 Adding code interpreter prompt...")
             form_data["messages"] = add_or_update_user_message(
                 (
                     request.app.state.config.CODE_INTERPRETER_PROMPT_TEMPLATE
@@ -879,7 +818,6 @@ async def process_chat_payload(request, form_data, user, metadata, model):
     # Remove files duplicates
     if files:
         files = list({json.dumps(f, sort_keys=True): f for f in files}.values())
-        log.info(f"📁 Processing {len(files)} files (after deduplication)")
 
     metadata = {
         **metadata,
@@ -899,8 +837,6 @@ async def process_chat_payload(request, form_data, user, metadata, model):
     tools_dict = {}
 
     if tool_ids:
-        tools_start = time.time()
-        log.info(f"🛠️ Loading {len(tool_ids)} tools...")
         tools_dict = get_tools(
             request,
             tool_ids,
@@ -912,11 +848,8 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                 "__files__": metadata.get("files", []),
             },
         )
-        tools_time = time.time() - tools_start
-        log.info(f"✅ Tools loaded in {tools_time:.3f}s")
 
     if tool_servers:
-        log.info(f"🌐 Processing {len(tool_servers)} tool servers...")
         for tool_server in tool_servers:
             tool_specs = tool_server.pop("specs", [])
 
@@ -928,9 +861,7 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                 }
 
     if tools_dict:
-        log.info(f"⚙️ Processing {len(tools_dict)} tools...")
         if metadata.get("function_calling") == "native":
-            log.info("🔧 Using native function calling")
             # If the function calling is native, then call the tools function calling handler
             metadata["tools"] = tools_dict
             form_data["tools"] = [
@@ -938,30 +869,20 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                 for tool in tools_dict.values()
             ]
         else:
-            log.info("🔧 Using custom function calling handler")
             # If the function calling is not native, then call the tools function calling handler
             try:
-                tools_handler_start = time.time()
                 form_data, flags = await chat_completion_tools_handler(
                     request, form_data, extra_params, user, models, tools_dict
                 )
                 sources.extend(flags.get("sources", []))
-                tools_handler_time = time.time() - tools_handler_start
-                log.info(f"✅ Tools handler completed in {tools_handler_time:.3f}s")
 
             except Exception as e:
                 log.exception(e)
 
-    files_handler_start = time.time()
-    log.info("📂 Processing files handler...")
     try:
         form_data, flags = await chat_completion_files_handler(request, form_data, user)
         sources.extend(flags.get("sources", []))
-        files_handler_time = time.time() - files_handler_start
-        log.info(f"✅ Files handler completed in {files_handler_time:.3f}s")
     except Exception as e:
-        files_handler_time = time.time() - files_handler_start
-        log.error(f"❌ Files handler failed after {files_handler_time:.3f}s")
         log.exception(e)
 
     # If context is not empty, insert it into the messages
@@ -1026,13 +947,6 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                 },
             }
         )
-
-    total_payload_time = time.time() - payload_start_time
-    log.info(f"🎉 process_chat_payload completed in {total_payload_time:.3f}s")
-    
-    # Performance warnings for payload processing
-    if total_payload_time > 5.0:
-        log.warning(f"🐌 SLOW PAYLOAD PROCESSING: {total_payload_time:.3f}s exceeds 5s threshold")
 
     return form_data, metadata, events
 

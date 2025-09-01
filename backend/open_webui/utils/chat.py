@@ -161,14 +161,9 @@ async def generate_chat_completion(
     user: Any,
     bypass_filter: bool = False,
 ):
-    start_time = time.time()
-    log.info(
-        f"➡️ generate_chat_completion start model={form_data.get('model')} stream={form_data.get('stream', False)} messages={len(form_data.get('messages', []))} bypass_filter={bypass_filter}"
-    )
     log.debug(f"generate_chat_completion: {form_data}")
     if BYPASS_MODEL_ACCESS_CONTROL:
         bypass_filter = True
-        log.info("bypass_filter enabled via BYPASS_MODEL_ACCESS_CONTROL")
 
     if hasattr(request.state, "metadata"):
         if "metadata" not in form_data:
@@ -184,7 +179,6 @@ async def generate_chat_completion(
             request.state.model["id"]: request.state.model,
         }
         log.debug(f"direct connection to model: {models}")
-        log.info("route=direct")
     else:
         models = request.app.state.MODELS
 
@@ -195,27 +189,18 @@ async def generate_chat_completion(
     model = models[model_id]
 
     if getattr(request.state, "direct", False):
-        provider_start = time.time()
-        try:
-            res = await generate_direct_chat_completion(
-                request, form_data, user=user, models=models
-            )
-            provider_time = time.time() - provider_start
-            log.info(f"✅ direct completion prepared in {provider_time:.3f}s")
-            return res
-        finally:
-            log.info(f"⏱️ total generate_chat_completion time={time.time() - start_time:.3f}s (route=direct)")
+        return await generate_direct_chat_completion(
+            request, form_data, user=user, models=models
+        )
     else:
         # Check if user has access to the model
         if not bypass_filter and user.role == "user":
             try:
                 check_model_access(user, model)
-                log.info("access_check=ok")
             except Exception as e:
                 raise e
 
         if model.get("owned_by") == "arena":
-            log.info("route=arena_router")
             model_ids = model.get("info", {}).get("meta", {}).get("model_ids")
             filter_mode = model.get("info", {}).get("meta", {}).get("filter_mode")
             if model_ids and filter_mode == "exclude":
@@ -237,10 +222,8 @@ async def generate_chat_completion(
                 selected_model_id = random.choice(model_ids)
 
             form_data["model"] = selected_model_id
-            log.info(f"arena selected_model_id={selected_model_id}")
 
             if form_data.get("stream") == True:
-                log.info("arena streaming=true")
 
                 async def stream_wrapper(stream):
                     yield f"data: {json.dumps({'selected_model_id': selected_model_id})}\n\n"
@@ -256,99 +239,45 @@ async def generate_chat_completion(
                     background=response.background,
                 )
             else:
-                res = await generate_chat_completion(
-                    request, form_data, user, bypass_filter=True
-                )
-                res = {**res, "selected_model_id": selected_model_id}
-                log.info("arena streaming=false")
-                log.info(
-                    f"⏱️ total generate_chat_completion time={time.time() - start_time:.3f}s (route=arena)"
-                )
-                return res
+                return {
+                    **(
+                        await generate_chat_completion(
+                            request, form_data, user, bypass_filter=True
+                        )
+                    ),
+                    "selected_model_id": selected_model_id,
+                }
 
         if model.get("pipe"):
             # Below does not require bypass_filter because this is the only route the uses this function and it is already bypassing the filter
-            log.info("route=function_pipe")
-            provider_start = time.time()
-            try:
-                res = await generate_function_chat_completion(
-                    request, form_data, user=user, models=models
-                )
-                provider_time = time.time() - provider_start
-                log.info(f"✅ function pipe completed in {provider_time:.3f}s")
-                return res
-            finally:
-                log.info(
-                    f"⏱️ total generate_chat_completion time={time.time() - start_time:.3f}s (route=function_pipe)"
-                )
+            return await generate_function_chat_completion(
+                request, form_data, user=user, models=models
+            )
         if model.get("owned_by") == "ollama":
             # Using /ollama/api/chat endpoint
-            log.info("route=ollama")
             form_data = convert_payload_openai_to_ollama(form_data)
-            provider_start = time.time()
             response = await generate_ollama_chat_completion(
                 request=request,
                 form_data=form_data,
                 user=user,
                 bypass_filter=bypass_filter,
             )
-            provider_time = time.time() - provider_start
             if form_data.get("stream"):
                 response.headers["content-type"] = "text/event-stream"
-                log.info(f"✅ ollama streaming prepared in {provider_time:.3f}s")
-                log.info(
-                    f"⏱️ total generate_chat_completion time={time.time() - start_time:.3f}s (route=ollama, streaming=true)"
-                )
                 return StreamingResponse(
                     convert_streaming_response_ollama_to_openai(response),
                     headers=dict(response.headers),
                     background=response.background,
                 )
             else:
-                log.info(f"✅ ollama non-stream response in {provider_time:.3f}s")
-                res = convert_response_ollama_to_openai(response)
-                try:
-                    usage = res.get("usage", {}) if isinstance(res, dict) else {}
-                    if usage:
-                        log.info(
-                            f"usage prompt_tokens={usage.get('prompt_tokens')} completion_tokens={usage.get('completion_tokens')} total_tokens={usage.get('total_tokens')}"
-                        )
-                except Exception:
-                    pass
-                log.info(
-                    f"⏱️ total generate_chat_completion time={time.time() - start_time:.3f}s (route=ollama, streaming=false)"
-                )
-                return res
+                return convert_response_ollama_to_openai(response)
         else:
-            log.info("route=openai")
-            provider_start = time.time()
-            response = await generate_openai_chat_completion(
+            return await generate_openai_chat_completion(
                 request=request,
                 form_data=form_data,
                 user=user,
                 bypass_filter=bypass_filter,
             )
-            provider_time = time.time() - provider_start
-            if form_data.get("stream"):
-                log.info(f"✅ openai streaming prepared in {provider_time:.3f}s")
-                log.info(
-                    f"⏱️ total generate_chat_completion time={time.time() - start_time:.3f}s (route=openai, streaming=true)"
-                )
-                return response
-            else:
-                log.info(f"✅ openai non-stream response in {provider_time:.3f}s")
-                try:
-                    usage = response.get("usage", {}) if isinstance(response, dict) else {}
-                    if usage:
-                        log.info(
-                            f"usage prompt_tokens={usage.get('prompt_tokens')} completion_tokens={usage.get('completion_tokens')} total_tokens={usage.get('total_tokens')}"
-                        )
-                except Exception:
-                    pass
-                log.info(
-                    f"⏱️ total generate_chat_completion time={time.time() - start_time:.3f}s (route=openai, streaming=false)"
-                )
-                return response
 
 
 chat_completion = generate_chat_completion
