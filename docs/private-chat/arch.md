@@ -35,29 +35,33 @@ This document describes an architecture where **the entire Open WebUI applicatio
 ## System Flow
 
 ```mermaid
-graph TD
-    A[User Input] --> B[Phala TEE Frontend]
-    B --> C[User Data Encryption]
-    C --> D[Phala TEE Backend]
-    D --> E[TEE-to-TEE Call]
-    E --> F[NEAR AI Cloud TEE]
-    F --> G[LLM Processing<br/>★ No Logging ★]
-    G --> H[Encrypted Response]
-    H --> I[TEE-to-TEE Return]
-    I --> J[Response Decryption]
-    J --> K[User Display]
-    
-    L[Multi-Sig Contract] --> M[Code Authorization]
-    M --> N[Phala DeRoT]
-    N --> O[Key Management]
-    O --> D
-    
-    P[Database<br/>★ Encrypted ★] --> D
-    
-    style F fill:#e1f5fe
-    style G fill:#e8f5e8
-    style P fill:#fff3e0
-    style L fill:#fce4ec
+sequenceDiagram
+    participant User
+    participant Frontend as Phala TEE<br/>Frontend
+    participant Backend as Phala TEE<br/>Backend
+    participant DB as Encrypted<br/>Database
+    participant KMS as Key Service<br/>(TEE)
+    participant AI as NEAR AI<br/>Cloud TEE
+    participant Gov as Multi-Sig<br/>Governance
+
+    Note over User,AI: User Chat Flow
+    User->>Frontend: Input message
+    Frontend->>Backend: Encrypted request
+    Backend->>KMS: Get encryption key
+    KMS-->>Backend: TEE-sealed key
+    Backend->>DB: Store encrypted chat
+    Backend->>AI: TEE-to-TEE call
+    Note over AI: LLM Processing<br/>★ Zero Logging ★
+    AI-->>Backend: Encrypted response
+    Backend->>DB: Update encrypted chat
+    Backend-->>Frontend: Decrypted response
+    Frontend-->>User: Display message
+
+    Note over Gov,KMS: Governance Flow
+    Gov->>Gov: Multi-sig approval
+    Gov->>KMS: Code authorization
+    KMS->>Backend: Validate attestation
+    Note over Backend: Hardware-verified<br/>code execution
 ```
 
 ## NEAR AI Cloud TEE Integration
