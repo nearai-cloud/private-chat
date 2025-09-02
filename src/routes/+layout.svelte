@@ -478,7 +478,7 @@
 		handleVisibilityChange();
 
 		// theme.set(localStorage.theme);
-		theme.set("dark");
+		theme.set('dark');
 
 		mobile.set(window.innerWidth < BREAKPOINT);
 
