@@ -46,7 +46,7 @@ sequenceDiagram
 
     Note over User,AI: User Chat Flow
     User->>Frontend: Input message
-    Frontend->>Backend: Encrypted request
+    Frontend->>Backend: HTTPS encrypted request
     Backend->>KMS: Get encryption key
     KMS-->>Backend: TEE-sealed key
     Backend->>DB: Store encrypted chat
@@ -54,7 +54,7 @@ sequenceDiagram
     Note over AI: LLM Processing<br/>★ Minimal Logging ★
     AI-->>Backend: Encrypted response
     Backend->>DB: Update encrypted chat
-    Backend-->>Frontend: Decrypted response
+    Backend-->>Frontend: HTTPS decrypted response
     Frontend-->>User: Display message
 
     Note over Gov,KMS: Governance Flow
