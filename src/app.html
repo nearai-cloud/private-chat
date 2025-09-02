@@ -37,6 +37,10 @@
 				const metaThemeColorTag = document.querySelector('meta[name="theme-color"]');
 				const prefersDarkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+				// Default: Dark
+				document.documentElement.classList.add('dark');
+				metaThemeColorTag.setAttribute('content', '#171717');
+				/*
 				if (!localStorage?.theme) {
 					localStorage.theme = 'system';
 				}
@@ -76,6 +80,7 @@
 						}
 					}
 				});
+				*/
 
 				function setSplashImage() {
 					const logo = document.getElementById('logo');

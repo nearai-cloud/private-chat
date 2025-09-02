@@ -477,7 +477,8 @@
 		// Call visibility change handler initially to set state on load
 		handleVisibilityChange();
 
-		theme.set(localStorage.theme);
+		// theme.set(localStorage.theme);
+		theme.set("dark");
 
 		mobile.set(window.innerWidth < BREAKPOINT);
 
