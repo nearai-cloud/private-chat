@@ -20,7 +20,6 @@ from open_webui.env import (
     BYPASS_MODEL_ACCESS_CONTROL,
     MODELS_CACHE_TTL,
     ENABLE_FORWARD_USER_INFO_HEADERS,
-    ENV,
     SRC_LOG_LEVELS,
 )
 from open_webui.models.models import Models
