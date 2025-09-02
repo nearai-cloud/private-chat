@@ -94,3 +94,4 @@ This fork enhances the original Open WebUI with:
 - Frontend leverages SvelteKit's full-stack capabilities
 - Privacy enhancements are designed to be non-intrusive to existing functionality
 - Encryption is opt-in via environment variables to maintain compatibility
+- remember that when running backend for local dev, always do 'conda activate open-webui'
