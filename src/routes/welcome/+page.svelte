@@ -5,7 +5,7 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Bolt from '$lib/components/icons/Bolt.svelte';
 	import Headphone from '$lib/components/icons/Headphone.svelte';
-	import NearAIIcon from '$lib/components/icons/NearAI.svelte';
+	import NearAIIcon from '$lib/components/icons/NearAIGreen.svelte';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import { getContext } from 'svelte';
 	import Fuse from 'fuse.js';
@@ -61,7 +61,7 @@
 				</div>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content
-				class="w-full max-w-[400px] rounded-xl p-5 border border-gray-300/30 dark:border-gray-700/50 z-50 bg-white dark:bg-gray-850 dark:text-white shadow-sm"
+				class="w-full max-w-[400px] rounded-xl p-5 border border-gray-300/30 dark:border-[rgba(51,51,51,0.2)] z-50 bg-white dark:bg-[rgba(51,51,51,0.2)] dark:text-white shadow-sm"
 				sideOffset={10}
 				alignOffset={10}
 			>
@@ -71,7 +71,7 @@
 
 					<button
 						type="button"
-						class="bg-gray-700/5 font-semibold hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition rounded-lg text-sm py-2.5 px-5"
+						class="bg-gray-700/5 font-semibold hover:bg-gray-700/10 dark:bg-gray-750 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition rounded-lg text-sm py-2.5 px-5"
 						on:click={gotoAuth}
 					>
 						Sign In & Sign Up
@@ -82,7 +82,7 @@
 
 		<button
 			type="button"
-			class="bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition rounded-lg font-semibold text-sm py-2.5 px-5"
+			class="bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-750 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition rounded-lg font-semibold text-sm py-2.5 px-5"
 			on:click={gotoAuth}
 		>
 			Sign In & Sign Up
@@ -99,7 +99,9 @@
 					<div
 						class="flex flex-col justify-center gap-3 items-center sm:gap-3.5 w-fit px-5 max-w-2xl"
 					>
-						<h1 class="text-3xl sm:text-3xl flex items-center">NEAR AI</h1>
+						<h1 class="text-3xl sm:text-3xl flex gap-2 items-center">
+							<NearAIIcon className="h-6" /> AI
+						</h1>
 						<p class="text-base dark:text-gray-300">
 							Chat with your personal assistant without worrying about leaking private information.
 						</p>
@@ -108,7 +110,7 @@
 					<div class="text-base font-normal md:max-w-3xl w-full py-3">
 						<div class="w-full font-primary bg-white dark:bg-gray-900 px-2.5 mx-auto inset-x-0">
 							<div
-								class="flex-1 flex flex-col relative w-full shadow-lg rounded-3xl border border-gray-50 dark:border-gray-850 hover:border-gray-100 focus-within:border-gray-100 hover:dark:border-gray-800 focus-within:dark:border-gray-800 transition px-1 bg-white/90 dark:bg-gray-400/5 dark:text-gray-100"
+								class="flex-1 flex flex-col app-chat-input relative w-full shadow-lg rounded-3xl border border-gray-50 dark:border-gray-850 hover:border-gray-100 focus-within:border-gray-100 hover:dark:border-gray-800 focus-within:dark:border-gray-800 transition px-1 bg-white/90 dark:bg-gray-400/5 dark:text-gray-100"
 							>
 								<div class="px-2.5">
 									<div

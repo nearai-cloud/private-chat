@@ -12,15 +12,16 @@ export default {
 					50: 'var(--color-gray-50, #f9f9f9)',
 					100: 'var(--color-gray-100, #ececec)',
 					200: 'var(--color-gray-200, #e3e3e3)',
-					300: 'var(--color-gray-300, #cdcdcd)',
-					400: 'var(--color-gray-400, #b4b4b4)',
+					300: 'var(--color-gray-300, #f8f8f8)',
+					400: 'var(--color-gray-400, #A1A1A1)',
 					500: 'var(--color-gray-500, #9b9b9b)',
 					600: 'var(--color-gray-600, #676767)',
 					700: 'var(--color-gray-700, #4e4e4e)',
+					750: 'var(--color-gray-750, rgba(248,248,248,0.08))',
 					800: 'var(--color-gray-800, #333)',
 					850: 'var(--color-gray-850, #262626)',
-					900: 'var(--color-gray-900, #171717)',
-					950: 'var(--color-gray-950, #0d0d0d)'
+					900: 'var(--color-gray-900, #090909)',
+					950: 'var(--color-gray-950, #0d0d0d)',
 				}
 			},
 			typography: {
