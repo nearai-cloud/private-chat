@@ -157,42 +157,37 @@
 	{:else if chatCompletions.length > 0}
 		<!-- Verifiable Messages Section -->
 		<div class="space-y-4">
-			<h3 class="text-sm mt-4 font-medium text-gray-900 dark:text-white">
+			<h3 class="text-xs mt-4 text-gray-900 uppercase dark:text-[rgba(161,161,161,1)]">
 				Verifiable Messages ({chatCompletions.length})
 			</h3>
 
 			{#each chatCompletions as message, index}
 				<div
-					class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg my-2 p-2 relative cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors {selectedMessageId ===
+					class="bg-green-50 text-xs dark:bg-[rgba(0,236,151,0.08)] border border-green-200 dark:border-[rgba(0,236,151,0.16)] rounded-lg my-2 p-2 relative cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors {selectedMessageId ===
 					message.chatCompletionId
-						? 'ring-1 ring-green-500'
+						? 'ring-1 ring-green-800'
 						: ''}"
 					on:click={() =>
 						message.chatCompletionId && (selectedMessageId = message.chatCompletionId)}
 					title="Click to view signature details"
 					data-message-id={message.chatCompletionId}
 				>
-					<!-- TEE Verified Badge -->
-					<div class="absolute top-3 right-3 flex items-center space-x-1">
-						<svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								fill-rule="evenodd"
-								d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-						<span class="text-green-700 dark:text-green-300 text-xs font-medium">TEE Verified</span>
-					</div>
-
 					<!-- Message Content -->
 					<div class="mb-3">
-						<h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-							Message {index + 1}
+						<h4
+							class="text-sm font-medium text-gray-900 flex items-center justify-between dark:text-white mb-3"
+						>
+							<span>Message {index + 1}</span>
+							<div class="flex items-center space-x-1">
+								<img src="/assets/images/verified.svg" />
+							</div>
 						</h4>
-						<p class="text-sm text-gray-700 dark:text-gray-300 mb-2 line-clamp-2">
+						<p class="text-xs text-gray-700 dark:text-[rgba(248,248,248,0.88)] mb-2 line-clamp-2">
 							{message.content}
 						</p>
-						<p class="text-xs text-gray-500 dark:text-gray-400">ID: {message.chatCompletionId}</p>
+						<p class="text-xs text-gray-500 dark:text-rgba(248,248,248,0.64)">
+							ID: {message.chatCompletionId}
+						</p>
 					</div>
 				</div>
 			{/each}
@@ -200,7 +195,9 @@
 			<!-- Signature Details Section -->
 			<div class="space-y-3">
 				<div class="flex justify-between items-center">
-					<h3 class="text-sm font-medium text-gray-900 dark:text-white mt-4">Signature Details</h3>
+					<h3 class="text-xs text-gray-900 uppercase dark:text-[rgba(161,161,161,1)] mt-4">
+						Signature Details
+					</h3>
 				</div>
 
 				{#if selectedMessageId && signatures[selectedMessageId]}
@@ -222,14 +219,14 @@
 						</button>
 					{/if}
 
-					<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 min-h-[150px]">
+					<div class="rounded-lg min-h-[150px]">
 						<!-- Signing Address -->
 						<div class="mb-2">
-							<label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+							<label class="block text-xs text-gray-700 dark:text-[rgba(161,161,161,1)] mb-1"
 								>Signing Address:</label
 							>
 							<div
-								class="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono break-all min-h-[24px] flex items-center"
+								class="px-2 py-1 bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded text-xs font-mono break-all min-h-[24px] flex items-center"
 							>
 								{signatures[selectedMessageId].signing_address ?? ''}
 							</div>
@@ -237,11 +234,11 @@
 
 						<!-- Message Hash -->
 						<div class="mb-2">
-							<label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+							<label class="block text-xs text-gray-700 dark:text-[rgba(161,161,161,1)] mb-1"
 								>Message:</label
 							>
 							<div
-								class="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono break-all min-h-[24px] flex items-center"
+								class="px-2 py-1 bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded text-xs font-mono break-all min-h-[24px] flex items-center"
 							>
 								{signatures[selectedMessageId].text ?? ''}
 							</div>
@@ -249,11 +246,11 @@
 
 						<!-- Signature -->
 						<div class="mb-2">
-							<label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+							<label class="block text-xs text-gray-700 dark:text-[rgba(161,161,161,1)] mb-1"
 								>Signature:</label
 							>
 							<div
-								class="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono break-all min-h-[24px] flex items-center"
+								class="px-2 py-1 bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded text-xs font-mono break-all min-h-[24px] flex items-center"
 							>
 								{signatures[selectedMessageId].signature ?? ''}
 							</div>
@@ -261,28 +258,24 @@
 
 						<!-- Algorithm -->
 						<div>
-							<label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+							<label class="block text-xs text-gray-700 dark:text-[rgba(161,161,161,1)] mb-1"
 								>Algorithm:</label
 							>
 							<div
-								class="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs min-h-[24px] flex items-center"
+								class="px-2 py-1 bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded text-xs min-h-[24px] flex items-center"
 							>
 								{signatures[selectedMessageId].signing_algo ?? ''}
 							</div>
 						</div>
 					</div>
 				{:else if selectedMessageId}
-					<div
-						class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 min-h-[150px] flex items-center justify-center"
-					>
+					<div class="rounded-lg min-h-[150px] flex items-center justify-center">
 						<div class="text-center py-2 text-gray-500 dark:text-gray-400">
 							<p class="text-xs">No signature data available for selected message</p>
 						</div>
 					</div>
 				{:else}
-					<div
-						class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 min-h-[150px] flex items-center justify-center"
-					>
+					<div class="rounded-lg min-h-[150px] flex items-center justify-center">
 						<div class="text-center py-2 text-gray-500 dark:text-gray-400">
 							<p class="text-xs">Click on a message above to view signature details</p>
 						</div>
