@@ -1047,26 +1047,48 @@ async def chat_completion(
     form_data: dict,
     user=Depends(get_verified_user),
 ):
+    import time
+
+    start_time = time.time()
+    log.info(f"[TIMING] /api/chat/completions - Request started at {start_time}")
+
     if not request.app.state.MODELS:
+        models_start = time.time()
         await get_all_models(request, user=user)
+        models_end = time.time()
+        log.info(
+            f"[TIMING] get_all_models took {(models_end - models_start) * 1000:.2f}ms"
+        )
 
     model_item = form_data.pop("model_item", {})
     tasks = form_data.pop("background_tasks", None)
 
     metadata = {}
     try:
+        setup_start = time.time()
         if not model_item.get("direct", False):
             model_id = form_data.get("model", None)
             if model_id not in request.app.state.MODELS:
                 raise Exception("Model not found")
 
             model = request.app.state.MODELS[model_id]
+
+            db_start = time.time()
             model_info = Models.get_model_by_id(model_id)
+            db_end = time.time()
+            log.info(
+                f"[TIMING] Models.get_model_by_id took {(db_end - db_start) * 1000:.2f}ms"
+            )
 
             # Check if user has access to the model
             if not BYPASS_MODEL_ACCESS_CONTROL and user.role == "user":
                 try:
+                    access_start = time.time()
                     check_model_access(user, model)
+                    access_end = time.time()
+                    log.info(
+                        f"[TIMING] check_model_access took {(access_end - access_start) * 1000:.2f}ms"
+                    )
                 except Exception as e:
                     raise e
         else:
@@ -1075,6 +1097,9 @@ async def chat_completion(
 
             request.state.direct = True
             request.state.model = model
+
+        setup_end = time.time()
+        log.info(f"[TIMING] Model setup took {(setup_end - setup_start) * 1000:.2f}ms")
 
         metadata = {
             "user_id": user.id,
@@ -1103,8 +1128,13 @@ async def chat_completion(
         request.state.metadata = metadata
         form_data["metadata"] = metadata
 
+        payload_start = time.time()
         form_data, metadata, events = await process_chat_payload(
             request, form_data, user, metadata, model
+        )
+        payload_end = time.time()
+        log.info(
+            f"[TIMING] process_chat_payload took {(payload_end - payload_start) * 1000:.2f}ms"
         )
 
     except Exception as e:
@@ -1125,12 +1155,33 @@ async def chat_completion(
         )
 
     try:
+        handler_start = time.time()
         response = await chat_completion_handler(request, form_data, user)
+        handler_end = time.time()
+        log.info(
+            f"[TIMING] chat_completion_handler took {(handler_end - handler_start) * 1000:.2f}ms"
+        )
 
-        return await process_chat_response(
+        response_start = time.time()
+        result = await process_chat_response(
             request, response, form_data, user, metadata, model, events, tasks
         )
+        response_end = time.time()
+        log.info(
+            f"[TIMING] process_chat_response took {(response_end - response_start) * 1000:.2f}ms"
+        )
+
+        total_time = time.time() - start_time
+        log.info(
+            f"[TIMING] /api/chat/completions - Total request took {total_time * 1000:.2f}ms"
+        )
+
+        return result
     except Exception as e:
+        total_time = time.time() - start_time
+        log.error(
+            f"[TIMING] /api/chat/completions - Request failed after {total_time * 1000:.2f}ms: {e}"
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),

@@ -6,47 +6,71 @@ from pathlib import Path
 from typing import Literal, Optional, overload
 
 import aiohttp
-from aiocache import cached
 import requests
-
-
-from fastapi import Depends, FastAPI, HTTPException, Request, APIRouter
+from aiocache import cached
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
-from pydantic import BaseModel
-from starlette.background import BackgroundTask
-
-from open_webui.models.models import Models
-from open_webui.config import (
-    CACHE_DIR,
-)
+from open_webui.config import CACHE_DIR
+from open_webui.constants import ERROR_MESSAGES
 from open_webui.env import (
     AIOHTTP_CLIENT_TIMEOUT,
     AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST,
-    ENABLE_FORWARD_USER_INFO_HEADERS,
     BYPASS_MODEL_ACCESS_CONTROL,
     MODELS_CACHE_TTL,
+    ENABLE_FORWARD_USER_INFO_HEADERS,
+    ENV,
+    SRC_LOG_LEVELS,
 )
+from open_webui.models.models import Models
 from open_webui.models.users import UserModel
-
-from open_webui.constants import ERROR_MESSAGES
-from open_webui.env import ENV, SRC_LOG_LEVELS
-
-
+from open_webui.utils.access_control import has_access
+from open_webui.utils.auth import get_admin_user, get_verified_user
+from open_webui.utils.misc import convert_logit_bias_input_to_json
 from open_webui.utils.payload import (
     apply_model_params_to_body_openai,
     apply_model_system_prompt_to_body,
 )
-from open_webui.utils.misc import (
-    convert_logit_bias_input_to_json,
-)
-
-from open_webui.utils.auth import get_admin_user, get_verified_user
-from open_webui.utils.access_control import has_access
-
+from pydantic import BaseModel
+from starlette.background import BackgroundTask
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["OPENAI"])
+
+# Global connection pool for better performance
+_http_session: Optional[aiohttp.ClientSession] = None
+
+
+async def get_http_session() -> aiohttp.ClientSession:
+    """Get or create a shared HTTP session with connection pooling."""
+    global _http_session
+    if _http_session is None or _http_session.closed:
+        # Configure connection pooling for maximum performance
+        connector = aiohttp.TCPConnector(
+            limit=100,  # Total connection pool size
+            limit_per_host=30,  # Max connections per host
+            ttl_dns_cache=300,  # DNS cache for 5 minutes
+            use_dns_cache=True,
+            keepalive_timeout=300,  # Keep connections alive for 5 minutes (max optimization)
+            enable_cleanup_closed=True,
+        )
+
+        _http_session = aiohttp.ClientSession(
+            connector=connector,
+            timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT),
+            trust_env=True,
+        )
+        log.info("[PERF] Created shared HTTP session with connection pooling")
+
+    return _http_session
+
+
+async def cleanup_http_session():
+    """Clean up the shared HTTP session."""
+    global _http_session
+    if _http_session and not _http_session.closed:
+        await _http_session.close()
+        _http_session = None
 
 
 ##########################################
@@ -57,26 +81,25 @@ log.setLevel(SRC_LOG_LEVELS["OPENAI"])
 
 
 async def send_get_request(url, key=None, user: UserModel = None):
-    timeout = aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST)
     try:
-        async with aiohttp.ClientSession(timeout=timeout, trust_env=True) as session:
-            async with session.get(
-                url,
-                headers={
-                    **({"Authorization": f"Bearer {key}"} if key else {}),
-                    **(
-                        {
-                            "X-OpenWebUI-User-Name": user.name,
-                            "X-OpenWebUI-User-Id": user.id,
-                            "X-OpenWebUI-User-Email": user.email,
-                            "X-OpenWebUI-User-Role": user.role,
-                        }
-                        if ENABLE_FORWARD_USER_INFO_HEADERS and user
-                        else {}
-                    ),
-                },
-            ) as response:
-                return await response.json()
+        session = await get_http_session()  # Use shared connection pool
+        async with session.get(
+            url,
+            headers={
+                **({"Authorization": f"Bearer {key}"} if key else {}),
+                **(
+                    {
+                        "X-OpenWebUI-User-Name": user.name,
+                        "X-OpenWebUI-User-Id": user.id,
+                        "X-OpenWebUI-User-Email": user.email,
+                        "X-OpenWebUI-User-Role": user.role,
+                    }
+                    if ENABLE_FORWARD_USER_INFO_HEADERS and user
+                    else {}
+                ),
+            },
+        ) as response:
+            return await response.json()
     except Exception as e:
         # Handle connection error here
         log.error(f"Connection error: {e}")
@@ -600,6 +623,11 @@ async def generate_chat_completion(
     user=Depends(get_verified_user),
     bypass_filter: Optional[bool] = False,
 ):
+    import time
+
+    start_time = time.time()
+    log.info(f"[TIMING] OpenAI generate_chat_completion started")
+
     if BYPASS_MODEL_ACCESS_CONTROL:
         bypass_filter = True
 
@@ -609,7 +637,13 @@ async def generate_chat_completion(
     metadata = payload.pop("metadata", None)
 
     model_id = form_data.get("model")
+
+    db_start = time.time()
     model_info = Models.get_model_by_id(model_id)
+    db_end = time.time()
+    log.info(
+        f"[TIMING] OpenAI Models.get_model_by_id took {(db_end - db_start) * 1000:.2f}ms"
+    )
 
     # Check model info and override the payload
     if model_info:
@@ -617,9 +651,14 @@ async def generate_chat_completion(
             payload["model"] = model_info.base_model_id
             model_id = model_info.base_model_id
 
+        params_start = time.time()
         params = model_info.params.model_dump()
         payload = apply_model_params_to_body_openai(params, payload)
         payload = apply_model_system_prompt_to_body(params, payload, metadata, user)
+        params_end = time.time()
+        log.info(
+            f"[TIMING] OpenAI params processing took {(params_end - params_start) * 1000:.2f}ms"
+        )
 
         # Check if user has access to the model
         if not bypass_filter and user.role == "user":
@@ -640,6 +679,7 @@ async def generate_chat_completion(
                 detail="Model not found",
             )
 
+    models_start = time.time()
     await get_all_models(request, user=user)
     model = request.app.state.OPENAI_MODELS.get(model_id)
     if model:
@@ -649,6 +689,10 @@ async def generate_chat_completion(
             status_code=404,
             detail="Model not found",
         )
+    models_end = time.time()
+    log.info(
+        f"[TIMING] OpenAI get_all_models and lookup took {(models_end - models_start) * 1000:.2f}ms"
+    )
 
     # Get the API config for the model
     api_config = request.app.state.config.OPENAI_API_CONFIGS.get(
@@ -688,12 +732,17 @@ async def generate_chat_completion(
         del payload["max_tokens"]
 
     # Convert the modified body back to JSON
+    payload_prep_start = time.time()
     if "logit_bias" in payload:
         payload["logit_bias"] = json.loads(
             convert_logit_bias_input_to_json(payload["logit_bias"])
         )
 
     payload = json.dumps(payload)
+    payload_prep_end = time.time()
+    log.info(
+        f"[TIMING] OpenAI payload preparation took {(payload_prep_end - payload_prep_start) * 1000:.2f}ms"
+    )
 
     r = None
     session = None
@@ -701,10 +750,19 @@ async def generate_chat_completion(
     response = None
 
     try:
-        session = aiohttp.ClientSession(
-            trust_env=True, timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT)
+        session_start = time.time()
+        session = await get_http_session()  # Use shared connection pool
+        session_end = time.time()
+        log.info(
+            f"[TIMING] OpenAI session retrieval took {(session_end - session_start) * 1000:.2f}ms"
         )
 
+        log.info(
+            f"[TIMING] OpenAI making request to {url}/chat/completions with payload size: {len(payload)} bytes"
+        )
+        request_start = time.time()
+
+        # This await now benefits from connection reuse and DNS caching
         r = await session.request(
             method="POST",
             url=f"{url}/chat/completions",
@@ -732,26 +790,63 @@ async def generate_chat_completion(
                 ),
             },
         )
+        request_end = time.time()
+        log.info(
+            f"[TIMING] OpenAI HTTP request took {(request_end - request_start) * 1000:.2f}ms - Status: {r.status}, Content-Type: {r.headers.get('Content-Type', 'unknown')}"
+        )
 
         # Check if response is SSE
+        response_process_start = time.time()
         if "text/event-stream" in r.headers.get("Content-Type", ""):
             streaming = True
+            response_process_end = time.time()
+            log.info(
+                f"[TIMING] OpenAI streaming response setup took {(response_process_end - response_process_start) * 1000:.2f}ms"
+            )
+
+            total_time = time.time() - start_time
+            log.info(
+                f"[TIMING] OpenAI generate_chat_completion (streaming) total took {total_time * 1000:.2f}ms"
+            )
+
             return StreamingResponse(
                 r.content,
                 status_code=r.status,
                 headers=dict(r.headers),
                 background=BackgroundTask(
-                    cleanup_response, response=r, session=session
+                    cleanup_response,
+                    response=r,
+                    session=None,  # Don't close shared session
                 ),
             )
         else:
             try:
+                json_start = time.time()
                 response = await r.json()
+                json_end = time.time()
+                log.info(
+                    f"[TIMING] OpenAI response.json() took {(json_end - json_start) * 1000:.2f}ms"
+                )
             except Exception as e:
                 log.error(e)
+                text_start = time.time()
                 response = await r.text()
+                text_end = time.time()
+                log.info(
+                    f"[TIMING] OpenAI response.text() took {(text_end - text_start) * 1000:.2f}ms"
+                )
 
             r.raise_for_status()
+            response_process_end = time.time()
+            log.info(
+                f"[TIMING] OpenAI response processing took {(response_process_end - response_process_start) * 1000:.2f}ms"
+            )
+
+            total_time = time.time() - start_time
+            log.info(
+                f"[TIMING] OpenAI generate_chat_completion (non-streaming) total took {total_time * 1000:.2f}ms"
+            )
+
             return response
     except Exception as e:
         log.exception(e)
@@ -768,10 +863,9 @@ async def generate_chat_completion(
             detail=detail if detail else "Open WebUI: Server Connection Error",
         )
     finally:
-        if not streaming and session:
-            if r:
-                r.close()
-            await session.close()
+        # Don't close shared session, only close response if non-streaming
+        if not streaming and r:
+            r.close()
 
 
 @router.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])

@@ -10,10 +10,21 @@ from urllib.parse import urlparse
 
 import redis
 import requests
-from open_webui.env import (DATA_DIR, DATABASE_URL, ENV, FRONTEND_BUILD_DIR,
-                            OFFLINE_MODE, OPEN_WEBUI_DIR, REDIS_SENTINEL_HOSTS,
-                            REDIS_SENTINEL_PORT, REDIS_URL, WEBUI_AUTH,
-                            WEBUI_FAVICON_URL, WEBUI_NAME, log)
+from open_webui.env import (
+    DATA_DIR,
+    DATABASE_URL,
+    ENV,
+    FRONTEND_BUILD_DIR,
+    OFFLINE_MODE,
+    OPEN_WEBUI_DIR,
+    REDIS_SENTINEL_HOSTS,
+    REDIS_SENTINEL_PORT,
+    REDIS_URL,
+    WEBUI_AUTH,
+    WEBUI_FAVICON_URL,
+    WEBUI_NAME,
+    log,
+)
 from open_webui.internal.db import Base, get_db
 from open_webui.utils.redis import get_redis_connection
 from pydantic import BaseModel

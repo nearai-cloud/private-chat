@@ -1,96 +1,78 @@
-import time
-import logging
-import sys
-import os
-import base64
-
+import ast
 import asyncio
-from aiocache import cached
-from typing import Any, Optional
-import random
-import json
+import base64
 import html
 import inspect
+import json
+import logging
+import os
+import random
 import re
-import ast
-
-from uuid import uuid4
+import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Optional
+from uuid import uuid4
 
-
-from fastapi import Request, HTTPException
-from starlette.responses import Response, StreamingResponse
-
-
+from aiocache import cached
+from fastapi import HTTPException, Request
+from open_webui.config import (
+    CACHE_DIR,
+    DEFAULT_CODE_INTERPRETER_PROMPT,
+    DEFAULT_TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE,
+)
+from open_webui.constants import TASKS
+from open_webui.env import (
+    BYPASS_MODEL_ACCESS_CONTROL,
+    ENABLE_REALTIME_CHAT_SAVE,
+    GLOBAL_LOG_LEVEL,
+    SRC_LOG_LEVELS,
+)
 from open_webui.models.chats import Chats
-from open_webui.models.users import Users
-from open_webui.socket.main import (
-    get_event_call,
-    get_event_emitter,
-    get_active_status_by_user_id,
-)
-from open_webui.routers.tasks import (
-    generate_queries,
-    generate_title,
-    generate_image_prompt,
-    generate_chat_tags,
-)
-from open_webui.routers.retrieval import process_web_search, SearchForm
-from open_webui.routers.images import image_generations, GenerateImageForm
+from open_webui.models.functions import Functions
+from open_webui.models.models import Models
+from open_webui.models.users import UserModel, Users
+from open_webui.retrieval.utils import get_sources_from_files
+from open_webui.routers.images import GenerateImageForm, image_generations
 from open_webui.routers.pipelines import (
     process_pipeline_inlet_filter,
     process_pipeline_outlet_filter,
 )
-
-from open_webui.utils.webhook import post_webhook
-
-
-from open_webui.models.users import UserModel
-from open_webui.models.functions import Functions
-from open_webui.models.models import Models
-
-from open_webui.retrieval.utils import get_sources_from_files
-
-
+from open_webui.routers.retrieval import SearchForm, process_web_search
+from open_webui.routers.tasks import (
+    generate_chat_tags,
+    generate_image_prompt,
+    generate_queries,
+    generate_title,
+)
+from open_webui.socket.main import (
+    get_active_status_by_user_id,
+    get_event_call,
+    get_event_emitter,
+)
+from open_webui.tasks import create_task
 from open_webui.utils.chat import generate_chat_completion
+from open_webui.utils.code_interpreter import execute_code_jupyter
+from open_webui.utils.filter import get_sorted_filter_ids, process_filter_functions
+from open_webui.utils.misc import (
+    add_or_update_system_message,
+    add_or_update_user_message,
+    convert_logit_bias_input_to_json,
+    deep_update,
+    get_last_assistant_message,
+    get_last_user_message,
+    get_message_list,
+    prepend_to_first_user_message_content,
+)
+from open_webui.utils.plugin import load_function_module_by_id
 from open_webui.utils.task import (
     get_task_model_id,
     rag_template,
     tools_function_calling_generation_template,
 )
-from open_webui.utils.misc import (
-    deep_update,
-    get_message_list,
-    add_or_update_system_message,
-    add_or_update_user_message,
-    get_last_user_message,
-    get_last_assistant_message,
-    prepend_to_first_user_message_content,
-    convert_logit_bias_input_to_json,
-)
 from open_webui.utils.tools import get_tools
-from open_webui.utils.plugin import load_function_module_by_id
-from open_webui.utils.filter import (
-    get_sorted_filter_ids,
-    process_filter_functions,
-)
-from open_webui.utils.code_interpreter import execute_code_jupyter
-
-from open_webui.tasks import create_task
-
-from open_webui.config import (
-    CACHE_DIR,
-    DEFAULT_TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE,
-    DEFAULT_CODE_INTERPRETER_PROMPT,
-)
-from open_webui.env import (
-    SRC_LOG_LEVELS,
-    GLOBAL_LOG_LEVEL,
-    BYPASS_MODEL_ACCESS_CONTROL,
-    ENABLE_REALTIME_CHAT_SAVE,
-)
-from open_webui.constants import TASKS
-
+from open_webui.utils.webhook import post_webhook
+from starlette.responses import Response, StreamingResponse
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
@@ -683,10 +665,21 @@ def apply_params_to_form_data(form_data, model):
 
 
 async def process_chat_payload(request, form_data, user, metadata, model):
+    import time
 
+    start_time = time.time()
+    log.info(f"[TIMING] process_chat_payload started")
+
+    params_start = time.time()
     form_data = apply_params_to_form_data(form_data, model)
+    params_end = time.time()
+    log.info(
+        f"[TIMING] apply_params_to_form_data took {(params_end - params_start) * 1000:.2f}ms"
+    )
+
     log.debug(f"form_data: {form_data}")
 
+    setup_start = time.time()
     event_emitter = get_event_emitter(metadata)
     event_call = get_event_call(metadata)
 
@@ -722,6 +715,10 @@ async def process_chat_payload(request, form_data, user, metadata, model):
 
     events = []
     sources = []
+    setup_end = time.time()
+    log.info(
+        f"[TIMING] Initial setup in process_chat_payload took {(setup_end - setup_start) * 1000:.2f}ms"
+    )
 
     user_message = get_last_user_message(form_data["messages"])
     model_knowledge = model.get("info", {}).get("meta", {}).get("knowledge", False)
@@ -861,6 +858,7 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                 }
 
     if tools_dict:
+        tools_start = time.time()
         if metadata.get("function_calling") == "native":
             # If the function calling is native, then call the tools function calling handler
             metadata["tools"] = tools_dict
@@ -868,6 +866,10 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                 {"type": "function", "function": tool.get("spec", {})}
                 for tool in tools_dict.values()
             ]
+            tools_end = time.time()
+            log.info(
+                f"[TIMING] Native function calling setup took {(tools_end - tools_start) * 1000:.2f}ms"
+            )
         else:
             # If the function calling is not native, then call the tools function calling handler
             try:
@@ -875,13 +877,22 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                     request, form_data, extra_params, user, models, tools_dict
                 )
                 sources.extend(flags.get("sources", []))
+                tools_end = time.time()
+                log.info(
+                    f"[TIMING] chat_completion_tools_handler took {(tools_end - tools_start) * 1000:.2f}ms"
+                )
 
             except Exception as e:
                 log.exception(e)
 
+    files_start = time.time()
     try:
         form_data, flags = await chat_completion_files_handler(request, form_data, user)
         sources.extend(flags.get("sources", []))
+        files_end = time.time()
+        log.info(
+            f"[TIMING] chat_completion_files_handler took {(files_end - files_start) * 1000:.2f}ms"
+        )
     except Exception as e:
         log.exception(e)
 
@@ -948,12 +959,20 @@ async def process_chat_payload(request, form_data, user, metadata, model):
             }
         )
 
+    total_time = time.time() - start_time
+    log.info(f"[TIMING] process_chat_payload total took {total_time * 1000:.2f}ms")
+
     return form_data, metadata, events
 
 
 async def process_chat_response(
     request, response, form_data, user, metadata, model, events, tasks
 ):
+    import time
+
+    start_time = time.time()
+    log.info(f"[TIMING] process_chat_response started")
+
     async def background_tasks_handler():
         message_map = Chats.get_messages_by_chat_id(metadata["chat_id"])
         message = message_map.get(metadata["message_id"]) if message_map else None
@@ -2255,6 +2274,12 @@ async def process_chat_response(
         task_id, _ = create_task(
             post_response_handler(response, events), id=metadata["chat_id"]
         )
+
+        total_time = time.time() - start_time
+        log.info(
+            f"[TIMING] process_chat_response (non-streaming) total took {total_time * 1000:.2f}ms"
+        )
+
         return {"status": True, "task_id": task_id}
 
     else:
@@ -2286,6 +2311,11 @@ async def process_chat_response(
 
                 if data:
                     yield data
+
+        total_time = time.time() - start_time
+        log.info(
+            f"[TIMING] process_chat_response (streaming) total took {total_time * 1000:.2f}ms"
+        )
 
         return StreamingResponse(
             stream_wrapper(response.body_iterator, events),
