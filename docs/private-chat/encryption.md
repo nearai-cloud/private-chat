@@ -2,28 +2,28 @@
 
 ## Overview
 
-This Open WebUI fork implements **end-to-end per-user data encryption** to ensure complete privacy of user conversations and sensitive data. The encryption system is designed with **zero-knowledge architecture** where even developers, cloud infrastructure providers, or the Phala Network cannot access or decrypt user chat data.
+Implements **per-user data encryption** with zero-knowledge architecture where developers, cloud providers, and Phala Network cannot access user chat data.
 
 ## Why This Implementation Protects User Data
 
 ### Core Security Principles
 
-1. **Per-User Encryption Keys**: Each user has a unique AES-256-GCM encryption key
-2. **External Key Management**: Encryption keys are managed by Phala's Trusted Execution Environment (TEE)
-3. **Zero-Knowledge Design**: No plaintext user data is stored or transmitted
-4. **Transparent Encryption**: All chat data is encrypted/decrypted transparently without user intervention
-5. **Graceful Fallback**: System maintains backward compatibility with existing unencrypted data
-6. **🔒 Complete TEE Deployment**: **CRITICAL** - The entire application stack (frontend, backend, database, key service) runs inside Phala's Trusted Execution Environment
+1. Per-User Encryption Keys (AES-256-GCM)
+2. External Key Management via Phala TEE
+3. Zero-Knowledge Design
+4. Transparent Encryption
+5. Backward Compatibility
+6. Complete TEE Deployment
 
 ### Security Guarantees
 
-- **Developers cannot access user data**: All chat content is encrypted before storage
-- **Cloud providers cannot read conversations**: Data is encrypted at the application layer
-- **Phala Network cannot steal data**: TEE-based key service operates in secure enclaves
-- **Database compromises are mitigated**: Encrypted data is useless without decryption keys
-- **Forward secrecy**: Each user's key is unique and independently managed
-- **🛡️ Frontend Protection**: Unlike traditional web applications, the frontend code itself runs in the TEE, preventing client-side compromises
-- **Hardware-Level Security**: The entire stack is protected by Intel SGX or ARM TrustZone hardware security
+- Developers cannot access user data
+- Cloud providers cannot read conversations
+- Phala Network cannot decrypt data
+- Database compromises mitigated
+- Forward secrecy maintained
+- Frontend runs in TEE
+- Hardware-level security protection
 
 ## Architecture
 
@@ -38,15 +38,8 @@ User Chat -> Application -> Encryption Layer -> Database (Encrypted)
 
 ### Components
 
-1. **Chat Encryption Proxy** (`chat_encryption_proxy.py`)
-   - Transparent wrapper around existing chat operations
-   - Handles encryption/decryption without modifying core chat logic
-   - Provides fallback mechanisms for error handling
-
-2. **User Encryption Service** (`user_encryption.py`)
-   - Core encryption/decryption functionality
-   - AES-256-GCM implementation with secure random nonces
-   - Key caching and management
+1. **Chat Encryption Proxy** (`chat_encryption_proxy.py`) - Transparent wrapper with fallback handling
+2. **User Encryption Service** (`user_encryption.py`) - AES-256-GCM implementation with key caching
 
 3. **Phala Key Service** (External TEE)
    - Secure key generation and storage
@@ -57,35 +50,21 @@ User Chat -> Application -> Encryption Layer -> Database (Encrypted)
 
 ### Encryption Specification
 
-- **Algorithm**: AES-256-GCM (Authenticated Encryption)
-- **Key Size**: 256 bits (32 bytes)
-- **Nonce Size**: 96 bits (12 bytes) - randomly generated per operation
-- **Authentication**: Built-in authentication with GCM mode
-- **Encoding**: Base64 for storage compatibility
+- **Algorithm**: AES-256-GCM
+- **Key**: 256 bits, **Nonce**: 96 bits (random)
+- **Encoding**: Base64
 
 ### Data Flow
 
-#### Encryption Process
-1. User submits chat data
-2. System retrieves/generates user's encryption key from Phala KMS
-3. Chat data is serialized to JSON
-4. AES-256-GCM encrypts data with random nonce
-5. Encrypted data (nonce + ciphertext) is base64 encoded
-6. Encrypted blob is stored in database
+**Encryption**: User data → Get/generate key from Phala KMS → JSON serialize → AES-256-GCM encrypt → Base64 encode → Store
 
-#### Decryption Process
-1. System retrieves encrypted data from database
-2. Base64 decodes the encrypted blob
-3. Extracts nonce (first 12 bytes) and ciphertext
-4. Retrieves user's decryption key from Phala KMS (with caching)
-5. AES-256-GCM decrypts data using nonce and key
-6. JSON is parsed and returned to user
+**Decryption**: Retrieve → Base64 decode → Extract nonce → Get key from KMS (cached) → AES-256-GCM decrypt → Parse JSON
 
 ### Key Management Architecture
 
 #### Phala Key Service Integration
 
-The system integrates with Phala's Trusted Execution Environment (TEE) for secure key management:
+Integrates with Phala TEE for key management:
 
 ```yaml
 # Docker Compose Configuration
@@ -126,20 +105,16 @@ class ChatTableEncryptionProxy(ChatTable):
 
 ### Security Features
 
-#### Encryption Configuration
-- **Environment Variable**: `ENABLE_CHAT_ENCRYPTION=true`
-- **Backward Compatibility**: Handles both encrypted and plaintext data
-- **Error Handling**: Graceful fallback to unencrypted storage on encryption failures
+#### Configuration
+- `ENABLE_CHAT_ENCRYPTION=true`
+- Backward compatible with plaintext data
+- Graceful fallback on encryption failures
 
-#### Data Protection
-- **Chat Content**: All message history and metadata
-- **Chat Titles**: Encrypted separately for additional privacy
-- **User Metadata**: Any sensitive user-specific information
+#### Protected Data
+- Chat content, titles, and user metadata
 
-#### Performance Optimizations
-- **Key Caching**: In-memory caching of decrypted keys
-- **Lazy Loading**: Keys are only fetched when needed
-- **Batch Operations**: Efficient handling of multiple chat operations
+#### Performance
+- In-memory key caching, lazy loading, batch operations
 
 ## Configuration
 
@@ -158,7 +133,7 @@ DATABASE_URL=postgresql://user:pass@host:port/db
 
 ### Deployment with Phala Network
 
-**🚨 CRITICAL SECURITY FEATURE**: The system is designed to run **entirely within Phala's Trusted Execution Environment (TEE)**. This is fundamentally different from traditional cloud deployments:
+System runs **entirely within Phala's TEE**, unlike traditional cloud deployments:
 
 ```yaml
 services:
@@ -177,50 +152,39 @@ services:
       KEY_SERVICE_BASE_URL: http://key-service:3001
 ```
 
-**Why TEE Deployment Matters:**
-- **Complete Isolation**: Both services run in hardware-protected enclaves
-- **Frontend Security**: Unlike web apps where frontend code runs on user devices, the entire UI runs in the TEE
-- **Zero Trust Architecture**: No component of the system is exposed to untrusted environments
-- **Hardware Attestation**: Users can cryptographically verify the code running in the TEE
-- **Memory Protection**: All application memory is encrypted and protected from host OS access
+**TEE Benefits:**
+- Hardware-protected enclaves
+- Frontend runs in TEE (not user devices)
+- Zero trust architecture
+- Cryptographic code verification
+- Host OS memory protection
 
 ## Security Considerations
 
 ### Threat Model
 
-**Protected Against:**
-- Database breaches (data is encrypted at rest)
-- Cloud provider surveillance (application-layer encryption)
-- Insider threats (zero-knowledge design)
-- Network interception (encrypted data transmission)
-- **🔒 Client-side compromises**: **UNLIKE traditional web apps**, the frontend runs in the TEE, not on user devices
-- **🔒 Host OS compromises**: TEE provides hardware isolation from the host operating system
-- **🔒 Infrastructure attacks**: The entire stack is protected by hardware security modules
+**Protected Against:** Database breaches, cloud surveillance, insider threats, network interception, client-side compromises, host OS attacks, infrastructure attacks
 
-**Minimal Attack Surface:**
-- Memory dumps while keys are cached (within TEE only)
-- Side-channel attacks on the TEE hardware (mitigated by Phala's security measures)
-- **Physical hardware attacks** (would require sophisticated nation-state capabilities)
+**Attack Surface:** Memory dumps (TEE only), side-channel attacks (mitigated), physical hardware attacks
 
 ## Privacy Guarantees
 
-This implementation ensures that:
+**Privacy Guarantees:**
+- User conversations remain private with database access
+- Developers cannot read user content
+- Cloud providers cannot access plaintext
+- Phala operators cannot decrypt data
+- Enhanced regulatory compliance
 
-- **User conversations remain private** even with full database access
-- **Developers cannot read user content** during development or debugging
-- **Cloud infrastructure providers** cannot access plaintext data
-- **Phala Network operators** cannot decrypt user data (TEE protection)
-- **Regulatory compliance** is enhanced through privacy-by-design architecture
-
-The combination of AES-256-GCM encryption, per-user keys, and TEE-based key management creates a robust privacy protection system that maintains the zero-knowledge principle throughout the entire data lifecycle.
+AES-256-GCM + per-user keys + TEE management maintains zero-knowledge throughout data lifecycle.
 
 ## Migration and Compatibility
 
-The system is designed for seamless integration:
+The system ensures seamless encryption integration:
 
-- **Backward Compatible**: Existing unencrypted chats continue to work
-- **Progressive Encryption**: New chats are automatically encrypted when enabled
-- **Graceful Degradation**: Falls back to unencrypted storage on encryption failures
-- **No User Action Required**: Encryption/decryption happens transparently
+- Backward compatibility with existing unencrypted chats
+- Automatic encryption for new chats
+- Graceful fallback on encryption failures
+- Transparent encryption/decryption
 
-This ensures that privacy-conscious users can benefit from strong encryption without disrupting existing workflows or requiring data migration.
+Privacy-conscious users benefit from strong encryption without workflow disruption.
