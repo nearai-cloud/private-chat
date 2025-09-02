@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import time
 from pathlib import Path
 from typing import Literal, Optional, overload
 
@@ -42,17 +43,19 @@ _http_session: Optional[aiohttp.ClientSession] = None
 
 
 async def get_http_session() -> aiohttp.ClientSession:
-    """Get or create a shared HTTP session with connection pooling."""
+    """Get or create a shared HTTP session with connection pooling and health management."""
     global _http_session
     if _http_session is None or _http_session.closed:
-        # Configure connection pooling for maximum performance
+        # Use standard TCPConnector with reliable settings to prevent connection resets
         connector = aiohttp.TCPConnector(
             limit=100,  # Total connection pool size
             limit_per_host=30,  # Max connections per host
             ttl_dns_cache=300,  # DNS cache for 5 minutes
             use_dns_cache=True,
-            keepalive_timeout=300,  # Keep connections alive for 5 minutes (max optimization)
-            enable_cleanup_closed=True,
+            # Connection lifecycle management to prevent stale connections
+            keepalive_timeout=120,  # Server-friendly timeout - most servers use 300s+
+            enable_cleanup_closed=True,  # Auto-cleanup closed connections
+            force_close=False,  # Allow connection reuse but prevent staleness
         )
 
         _http_session = aiohttp.ClientSession(
@@ -60,7 +63,9 @@ async def get_http_session() -> aiohttp.ClientSession:
             timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT),
             trust_env=True,
         )
-        log.info("[PERF] Created shared HTTP session with connection pooling")
+        log.debug(
+            "[CONNECTION] Created HTTP session with connection pooling and lifecycle management"
+        )
 
     return _http_session
 
@@ -626,7 +631,6 @@ async def generate_chat_completion(
     import time
 
     start_time = time.time()
-    log.info(f"[TIMING] OpenAI generate_chat_completion started")
 
     if BYPASS_MODEL_ACCESS_CONTROL:
         bypass_filter = True
@@ -638,12 +642,7 @@ async def generate_chat_completion(
 
     model_id = form_data.get("model")
 
-    db_start = time.time()
     model_info = Models.get_model_by_id(model_id)
-    db_end = time.time()
-    log.info(
-        f"[TIMING] OpenAI Models.get_model_by_id took {(db_end - db_start) * 1000:.2f}ms"
-    )
 
     # Check model info and override the payload
     if model_info:
@@ -651,14 +650,9 @@ async def generate_chat_completion(
             payload["model"] = model_info.base_model_id
             model_id = model_info.base_model_id
 
-        params_start = time.time()
         params = model_info.params.model_dump()
         payload = apply_model_params_to_body_openai(params, payload)
         payload = apply_model_system_prompt_to_body(params, payload, metadata, user)
-        params_end = time.time()
-        log.info(
-            f"[TIMING] OpenAI params processing took {(params_end - params_start) * 1000:.2f}ms"
-        )
 
         # Check if user has access to the model
         if not bypass_filter and user.role == "user":
@@ -690,7 +684,7 @@ async def generate_chat_completion(
             detail="Model not found",
         )
     models_end = time.time()
-    log.info(
+    log.debug(
         f"[TIMING] OpenAI get_all_models and lookup took {(models_end - models_start) * 1000:.2f}ms"
     )
 
@@ -732,17 +726,12 @@ async def generate_chat_completion(
         del payload["max_tokens"]
 
     # Convert the modified body back to JSON
-    payload_prep_start = time.time()
     if "logit_bias" in payload:
         payload["logit_bias"] = json.loads(
             convert_logit_bias_input_to_json(payload["logit_bias"])
         )
 
     payload = json.dumps(payload)
-    payload_prep_end = time.time()
-    log.info(
-        f"[TIMING] OpenAI payload preparation took {(payload_prep_end - payload_prep_start) * 1000:.2f}ms"
-    )
 
     r = None
     session = None
@@ -750,19 +739,11 @@ async def generate_chat_completion(
     response = None
 
     try:
-        session_start = time.time()
         session = await get_http_session()  # Use shared connection pool
-        session_end = time.time()
-        log.info(
-            f"[TIMING] OpenAI session retrieval took {(session_end - session_start) * 1000:.2f}ms"
-        )
 
-        log.info(
-            f"[TIMING] OpenAI making request to {url}/chat/completions with payload size: {len(payload)} bytes"
-        )
         request_start = time.time()
 
-        # This await now benefits from connection reuse and DNS caching
+        # Using connection pooling with lifecycle management to reduce connection resets
         r = await session.request(
             method="POST",
             url=f"{url}/chat/completions",
@@ -791,23 +772,15 @@ async def generate_chat_completion(
             },
         )
         request_end = time.time()
-        log.info(
+        log.debug(
             f"[TIMING] OpenAI HTTP request took {(request_end - request_start) * 1000:.2f}ms - Status: {r.status}, Content-Type: {r.headers.get('Content-Type', 'unknown')}"
         )
 
         # Check if response is SSE
-        response_process_start = time.time()
         if "text/event-stream" in r.headers.get("Content-Type", ""):
             streaming = True
-            response_process_end = time.time()
-            log.info(
-                f"[TIMING] OpenAI streaming response setup took {(response_process_end - response_process_start) * 1000:.2f}ms"
-            )
 
             total_time = time.time() - start_time
-            log.info(
-                f"[TIMING] OpenAI generate_chat_completion (streaming) total took {total_time * 1000:.2f}ms"
-            )
 
             return StreamingResponse(
                 r.content,
@@ -821,31 +794,14 @@ async def generate_chat_completion(
             )
         else:
             try:
-                json_start = time.time()
                 response = await r.json()
-                json_end = time.time()
-                log.info(
-                    f"[TIMING] OpenAI response.json() took {(json_end - json_start) * 1000:.2f}ms"
-                )
             except Exception as e:
                 log.error(e)
-                text_start = time.time()
                 response = await r.text()
-                text_end = time.time()
-                log.info(
-                    f"[TIMING] OpenAI response.text() took {(text_end - text_start) * 1000:.2f}ms"
-                )
 
             r.raise_for_status()
-            response_process_end = time.time()
-            log.info(
-                f"[TIMING] OpenAI response processing took {(response_process_end - response_process_start) * 1000:.2f}ms"
-            )
 
             total_time = time.time() - start_time
-            log.info(
-                f"[TIMING] OpenAI generate_chat_completion (non-streaming) total took {total_time * 1000:.2f}ms"
-            )
 
             return response
     except Exception as e:
@@ -857,10 +813,22 @@ async def generate_chat_completion(
                 detail = f"{response['error']['message'] if 'message' in response['error'] else response['error']}"
         elif isinstance(response, str):
             detail = response
+        else:
+            # Provide specific error messages for connection issues
+            if isinstance(e, aiohttp.ClientOSError):
+                detail = f"Network connection error: {str(e)}"
+            elif isinstance(
+                e, (aiohttp.ClientConnectionError, aiohttp.ServerDisconnectedError)
+            ):
+                detail = f"Server connection error: {str(e)}"
+            elif isinstance(e, asyncio.TimeoutError):
+                detail = "Request timeout - the server took too long to respond"
+            else:
+                detail = "Open WebUI: Server Connection Error"
 
         raise HTTPException(
             status_code=r.status if r else 500,
-            detail=detail if detail else "Open WebUI: Server Connection Error",
+            detail=detail,
         )
     finally:
         # Don't close shared session, only close response if non-streaming

@@ -50,8 +50,6 @@ async def generate_direct_chat_completion(
     import time
 
     start_time = time.time()
-    log.info(f"[TIMING] generate_direct_chat_completion started")
-    log.info("generate_direct_chat_completion")
 
     metadata = form_data.pop("metadata", {})
 
@@ -76,7 +74,6 @@ async def generate_direct_chat_completion(
         sio.on(channel, message_listener)
 
         # Start processing chat completion in background
-        event_start = time.time()
         res = await event_caller(
             {
                 "type": "request:chat:completion",
@@ -88,8 +85,6 @@ async def generate_direct_chat_completion(
                 },
             }
         )
-        event_end = time.time()
-        log.info(f"[TIMING] event_caller took {(event_end - event_start) * 1000:.2f}ms")
 
         log.info(f"res: {res}")
 
@@ -119,18 +114,12 @@ async def generate_direct_chat_completion(
                     pass
 
             # Return the streaming response
-            total_time = time.time() - start_time
-            log.info(
-                f"[TIMING] generate_direct_chat_completion (streaming) total took {total_time * 1000:.2f}ms"
-            )
-
             return StreamingResponse(
                 event_generator(), media_type="text/event-stream", background=background
             )
         else:
             raise Exception(str(res))
     else:
-        event_start = time.time()
         res = await event_caller(
             {
                 "type": "request:chat:completion",
@@ -142,18 +131,9 @@ async def generate_direct_chat_completion(
                 },
             }
         )
-        event_end = time.time()
-        log.info(
-            f"[TIMING] event_caller (non-streaming) took {(event_end - event_start) * 1000:.2f}ms"
-        )
 
         if "error" in res and res["error"]:
             raise Exception(res["error"])
-
-        total_time = time.time() - start_time
-        log.info(
-            f"[TIMING] generate_direct_chat_completion (non-streaming) total took {total_time * 1000:.2f}ms"
-        )
 
         return res
 
@@ -167,7 +147,6 @@ async def generate_chat_completion(
     import time
 
     start_time = time.time()
-    log.info(f"[TIMING] generate_chat_completion started")
     log.debug(f"generate_chat_completion: {form_data}")
     if BYPASS_MODEL_ACCESS_CONTROL:
         bypass_filter = True
@@ -181,7 +160,6 @@ async def generate_chat_completion(
                 **request.state.metadata,
             }
 
-    models_setup_start = time.time()
     if getattr(request.state, "direct", False) and hasattr(request.state, "model"):
         models = {
             request.state.model["id"]: request.state.model,
@@ -195,43 +173,21 @@ async def generate_chat_completion(
         raise Exception("Model not found")
 
     model = models[model_id]
-    models_setup_end = time.time()
-    log.info(
-        f"[TIMING] Models setup took {(models_setup_end - models_setup_start) * 1000:.2f}ms"
-    )
 
     if getattr(request.state, "direct", False):
-        log.info(f"[TIMING] Routing to generate_direct_chat_completion")
-        direct_start = time.time()
         result = await generate_direct_chat_completion(
             request, form_data, user=user, models=models
-        )
-        direct_end = time.time()
-        log.info(
-            f"[TIMING] generate_direct_chat_completion took {(direct_end - direct_start) * 1000:.2f}ms"
-        )
-        total_time = time.time() - start_time
-        log.info(
-            f"[TIMING] generate_chat_completion total took {total_time * 1000:.2f}ms"
         )
         return result
     else:
         # Check if user has access to the model
         if not bypass_filter and user.role == "user":
             try:
-                access_check_start = time.time()
                 check_model_access(user, model)
-                access_check_end = time.time()
-                log.info(
-                    f"[TIMING] check_model_access took {(access_check_end - access_check_start) * 1000:.2f}ms"
-                )
             except Exception as e:
                 raise e
 
         if model.get("owned_by") == "arena":
-            log.info(f"[TIMING] Routing to arena model handling")
-            arena_start = time.time()
-
             model_ids = model.get("info", {}).get("meta", {}).get("model_ids")
             filter_mode = model.get("info", {}).get("meta", {}).get("filter_mode")
             if model_ids and filter_mode == "exclude":
@@ -253,10 +209,6 @@ async def generate_chat_completion(
                 selected_model_id = random.choice(model_ids)
 
             form_data["model"] = selected_model_id
-            arena_setup_end = time.time()
-            log.info(
-                f"[TIMING] Arena model selection took {(arena_setup_end - arena_start) * 1000:.2f}ms, selected: {selected_model_id}"
-            )
 
             if form_data.get("stream") == True:
 
@@ -265,18 +217,8 @@ async def generate_chat_completion(
                     async for chunk in stream:
                         yield chunk
 
-                recursive_start = time.time()
                 response = await generate_chat_completion(
                     request, form_data, user, bypass_filter=True
-                )
-                recursive_end = time.time()
-                log.info(
-                    f"[TIMING] Arena recursive call took {(recursive_end - recursive_start) * 1000:.2f}ms"
-                )
-
-                total_time = time.time() - start_time
-                log.info(
-                    f"[TIMING] generate_chat_completion (arena stream) total took {total_time * 1000:.2f}ms"
                 )
 
                 return StreamingResponse(
@@ -285,18 +227,8 @@ async def generate_chat_completion(
                     background=response.background,
                 )
             else:
-                recursive_start = time.time()
                 result = await generate_chat_completion(
                     request, form_data, user, bypass_filter=True
-                )
-                recursive_end = time.time()
-                log.info(
-                    f"[TIMING] Arena recursive call took {(recursive_end - recursive_start) * 1000:.2f}ms"
-                )
-
-                total_time = time.time() - start_time
-                log.info(
-                    f"[TIMING] generate_chat_completion (arena) total took {total_time * 1000:.2f}ms"
                 )
 
                 return {
@@ -305,88 +237,43 @@ async def generate_chat_completion(
                 }
 
         if model.get("pipe"):
-            log.info(f"[TIMING] Routing to function/pipe model")
-            pipe_start = time.time()
             # Below does not require bypass_filter because this is the only route the uses this function and it is already bypassing the filter
             result = await generate_function_chat_completion(
                 request, form_data, user=user, models=models
             )
-            pipe_end = time.time()
-            log.info(
-                f"[TIMING] generate_function_chat_completion took {(pipe_end - pipe_start) * 1000:.2f}ms"
-            )
 
-            total_time = time.time() - start_time
-            log.info(
-                f"[TIMING] generate_chat_completion (pipe) total took {total_time * 1000:.2f}ms"
-            )
             return result
 
         if model.get("owned_by") == "ollama":
-            log.info(f"[TIMING] Routing to Ollama model")
-            ollama_start = time.time()
             # Using /ollama/api/chat endpoint
-            convert_start = time.time()
             form_data = convert_payload_openai_to_ollama(form_data)
-            convert_end = time.time()
-            log.info(
-                f"[TIMING] convert_payload_openai_to_ollama took {(convert_end - convert_start) * 1000:.2f}ms"
-            )
 
-            ollama_call_start = time.time()
             response = await generate_ollama_chat_completion(
                 request=request,
                 form_data=form_data,
                 user=user,
                 bypass_filter=bypass_filter,
             )
-            ollama_call_end = time.time()
-            log.info(
-                f"[TIMING] generate_ollama_chat_completion took {(ollama_call_end - ollama_call_start) * 1000:.2f}ms"
-            )
 
             if form_data.get("stream"):
                 response.headers["content-type"] = "text/event-stream"
-                total_time = time.time() - start_time
-                log.info(
-                    f"[TIMING] generate_chat_completion (ollama stream) total took {total_time * 1000:.2f}ms"
-                )
                 return StreamingResponse(
                     convert_streaming_response_ollama_to_openai(response),
                     headers=dict(response.headers),
                     background=response.background,
                 )
             else:
-                convert_response_start = time.time()
                 result = convert_response_ollama_to_openai(response)
-                convert_response_end = time.time()
-                log.info(
-                    f"[TIMING] convert_response_ollama_to_openai took {(convert_response_end - convert_response_start) * 1000:.2f}ms"
-                )
 
-                total_time = time.time() - start_time
-                log.info(
-                    f"[TIMING] generate_chat_completion (ollama) total took {total_time * 1000:.2f}ms"
-                )
                 return result
         else:
-            log.info(f"[TIMING] Routing to OpenAI model")
-            openai_start = time.time()
             result = await generate_openai_chat_completion(
                 request=request,
                 form_data=form_data,
                 user=user,
                 bypass_filter=bypass_filter,
             )
-            openai_end = time.time()
-            log.info(
-                f"[TIMING] generate_openai_chat_completion took {(openai_end - openai_start) * 1000:.2f}ms"
-            )
 
-            total_time = time.time() - start_time
-            log.info(
-                f"[TIMING] generate_chat_completion (openai) total took {total_time * 1000:.2f}ms"
-            )
             return result
 
 

@@ -668,18 +668,11 @@ async def process_chat_payload(request, form_data, user, metadata, model):
     import time
 
     start_time = time.time()
-    log.info(f"[TIMING] process_chat_payload started")
 
-    params_start = time.time()
     form_data = apply_params_to_form_data(form_data, model)
-    params_end = time.time()
-    log.info(
-        f"[TIMING] apply_params_to_form_data took {(params_end - params_start) * 1000:.2f}ms"
-    )
 
     log.debug(f"form_data: {form_data}")
 
-    setup_start = time.time()
     event_emitter = get_event_emitter(metadata)
     event_call = get_event_call(metadata)
 
@@ -715,10 +708,6 @@ async def process_chat_payload(request, form_data, user, metadata, model):
 
     events = []
     sources = []
-    setup_end = time.time()
-    log.info(
-        f"[TIMING] Initial setup in process_chat_payload took {(setup_end - setup_start) * 1000:.2f}ms"
-    )
 
     user_message = get_last_user_message(form_data["messages"])
     model_knowledge = model.get("info", {}).get("meta", {}).get("knowledge", False)
@@ -858,7 +847,6 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                 }
 
     if tools_dict:
-        tools_start = time.time()
         if metadata.get("function_calling") == "native":
             # If the function calling is native, then call the tools function calling handler
             metadata["tools"] = tools_dict
@@ -866,10 +854,6 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                 {"type": "function", "function": tool.get("spec", {})}
                 for tool in tools_dict.values()
             ]
-            tools_end = time.time()
-            log.info(
-                f"[TIMING] Native function calling setup took {(tools_end - tools_start) * 1000:.2f}ms"
-            )
         else:
             # If the function calling is not native, then call the tools function calling handler
             try:
@@ -877,22 +861,13 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                     request, form_data, extra_params, user, models, tools_dict
                 )
                 sources.extend(flags.get("sources", []))
-                tools_end = time.time()
-                log.info(
-                    f"[TIMING] chat_completion_tools_handler took {(tools_end - tools_start) * 1000:.2f}ms"
-                )
 
             except Exception as e:
                 log.exception(e)
 
-    files_start = time.time()
     try:
         form_data, flags = await chat_completion_files_handler(request, form_data, user)
         sources.extend(flags.get("sources", []))
-        files_end = time.time()
-        log.info(
-            f"[TIMING] chat_completion_files_handler took {(files_end - files_start) * 1000:.2f}ms"
-        )
     except Exception as e:
         log.exception(e)
 
@@ -959,9 +934,6 @@ async def process_chat_payload(request, form_data, user, metadata, model):
             }
         )
 
-    total_time = time.time() - start_time
-    log.info(f"[TIMING] process_chat_payload total took {total_time * 1000:.2f}ms")
-
     return form_data, metadata, events
 
 
@@ -971,7 +943,6 @@ async def process_chat_response(
     import time
 
     start_time = time.time()
-    log.info(f"[TIMING] process_chat_response started")
 
     async def background_tasks_handler():
         message_map = Chats.get_messages_by_chat_id(metadata["chat_id"])
@@ -2275,11 +2246,6 @@ async def process_chat_response(
             post_response_handler(response, events), id=metadata["chat_id"]
         )
 
-        total_time = time.time() - start_time
-        log.info(
-            f"[TIMING] process_chat_response (non-streaming) total took {total_time * 1000:.2f}ms"
-        )
-
         return {"status": True, "task_id": task_id}
 
     else:
@@ -2311,11 +2277,6 @@ async def process_chat_response(
 
                 if data:
                     yield data
-
-        total_time = time.time() - start_time
-        log.info(
-            f"[TIMING] process_chat_response (streaming) total took {total_time * 1000:.2f}ms"
-        )
 
         return StreamingResponse(
             stream_wrapper(response.body_iterator, events),
