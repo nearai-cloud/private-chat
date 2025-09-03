@@ -89,7 +89,6 @@
 				function setSplashImage() {
 					const logo = document.getElementById('logo');
 					const isDarkMode = document.documentElement.classList.contains('dark');
-					console.log('isDarkMode', isDarkMode);
 
 					if (isDarkMode) {
 						const darkImage = new Image();
@@ -139,7 +138,7 @@
 					left: 50%;
 					transform: translateX(-50%);
 				"
-				src="/static/splash.png"
+				src="/static/splash-dark.svg"
 			/>
 
 			<div
@@ -159,7 +158,7 @@
 				<img
 					id="logo-her"
 					style="width: auto; height: 13rem"
-					src="/static/splash.png"
+					src="/static/splash-dark.svg"
 					class="animate-pulse-fast"
 				/>
 
