@@ -49,7 +49,7 @@
 	<!-- Verifier Panel -->
 	{#if expanded}
 		<div
-			class="fixed right-0 top-10 bottom-0 w-80 bg-white dark:bg-gray-950 shadow-xl border-l border-gray-200 dark:border-[rgba(255,255,255,0.04)] z-40"
+			class="fixed right-0 top-10 bottom-0 w-80 bg-white dark:bg-gray-875 shadow-xl border-l border-gray-200 dark:border-[rgba(255,255,255,0.04)] z-40"
 		>
 			<!-- Header -->
 			<div class="flex items-center justify-between p-4">
@@ -78,7 +78,7 @@
 				<div class="flex-shrink-0 dark:border-gray-700">
 					<div class="p-4">
 						<h2
-							class="text-sm text-gray-900 flex rounded items-center pl-4 dark:text-[#A1A1A1] h-8 dark:bg-[rgba(248,248,248,0.04)] mb-3"
+							class="text-base font-semibold text-gray-900 flex rounded items-center pl-4 dark:text-gray-300 h-8 mb-3"
 						>
 							Model Verification
 						</h2>
@@ -123,7 +123,7 @@
 							<button
 								on:click={() => (modelVerificationStatus = null)}
 								disabled={!selectedModels[0]}
-								class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"
+								class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"
 							>
 								Retry Verification
 							</button>
@@ -180,7 +180,7 @@
 						{:else}
 							<!-- No Data State -->
 							<div class="flex items-center justify-center py-4">
-								<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+								<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
 								<span class="ml-3 text-sm text-gray-600 dark:text-gray-400"
 									>Verifying confidentiality...</span
 								>
@@ -194,7 +194,7 @@
 					<div class="h-full flex flex-col">
 						<div class="flex-shrink-0">
 							<h2
-								class="text-sm text-gray-900 flex rounded items-center pl-4 dark:text-[#A1A1A1] h-8 bg-[rgba(248,248,248,0.04)]"
+								class="text-base font-semibold text-gray-900 flex rounded items-center pl-4 dark:text-gray-300 h-8"
 							>
 								Messages Verification
 							</h2>

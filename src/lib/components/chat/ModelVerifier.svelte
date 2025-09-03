@@ -97,7 +97,7 @@
 		transition:fade={{ duration: 200 }}
 	>
 		<div
-			class="bg-white dark:bg-gray-950 rounded-lg shadow-3xl border-gray-200 dark:border-[rgba(255,255,255,0.04)] max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+			class="bg-white dark:bg-gray-875 rounded-lg shadow-3xl border-gray-200 dark:border-[rgba(255,255,255,0.04)] max-w-2xl w-full max-h-[90vh] overflow-y-auto"
 			on:click|stopPropagation
 			transition:slide={{ duration: 300 }}
 		>

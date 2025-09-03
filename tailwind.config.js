@@ -20,6 +20,7 @@ export default {
 					750: 'var(--color-gray-750, rgba(248,248,248,0.08))',
 					800: 'var(--color-gray-800, #333)',
 					850: 'var(--color-gray-850, #262626)',
+					875: 'var(--color-gray-875, #151515)',
 					900: 'var(--color-gray-900, #090909)',
 					950: 'var(--color-gray-950, rgba(9, 9, 9, 1))'
 				},

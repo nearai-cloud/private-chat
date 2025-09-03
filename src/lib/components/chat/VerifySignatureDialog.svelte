@@ -34,7 +34,7 @@
 		transition:fade={{ duration: 200 }}
 	>
 		<div
-			class="bg-white dark:bg-gray-950 border dark:border-[rgba(255,255,255,0.1)] rounded-lg shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+			class="bg-white dark:bg-gray-875 border dark:border-[rgba(255,255,255,0.1)] rounded-lg shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
 			on:click|stopPropagation
 		>
 			<!-- Header -->

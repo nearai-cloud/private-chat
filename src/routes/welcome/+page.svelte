@@ -61,7 +61,7 @@
 				</div>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content
-				class="w-full max-w-[400px] rounded-xl p-5 border border-gray-300/30 dark:border-[rgba(51,51,51,0.2)] z-50 bg-white dark:bg-[rgba(51,51,51,0.2)] dark:text-white shadow-sm"
+				class="w-full max-w-[400px] rounded-xl p-5 border border-gray-300/30 dark:border-[rgba(51,51,51,0.2)] z-50 bg-white dark:bg-gray-875 dark:text-white shadow-sm"
 				sideOffset={10}
 				alignOffset={10}
 			>

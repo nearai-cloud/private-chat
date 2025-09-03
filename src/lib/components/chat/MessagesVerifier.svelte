@@ -2,6 +2,7 @@
 	import { getMessageSignature, type MessageSignature } from '$lib/apis/nearai';
 	import VerifySignatureDialog from './VerifySignatureDialog.svelte';
 	import type { Message } from '$lib/types';
+	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 
 	export let history: {
 		messages: Record<string, Message>;
@@ -18,6 +19,7 @@
 
 	let showVerifySignatureDialog = false;
 	let selectedSignature: MessageSignature | null = null;
+	let viewMore = false;
 
 	// Get verifiable messages from history
 	const getChatCompletions = (history: {
@@ -46,6 +48,8 @@
 	$: if (selectedMessageId && containerElement) {
 		scrollToSelectedMessage();
 	}
+
+	$: messageList = viewMore ? chatCompletions : chatCompletions.slice(0, 2);
 
 	// Function to fetch message signature
 	const fetchMessageSignature = async (model: string, chatCompletionId: string) => {
@@ -161,7 +165,7 @@
 				Verifiable Messages ({chatCompletions.length})
 			</h3>
 
-			{#each chatCompletions as message, index}
+			{#each messageList as message, index}
 				<div
 					class="bg-green-50 text-xs dark:bg-[rgba(0,236,151,0.08)] border border-green-200 dark:border-[rgba(0,236,151,0.16)] rounded-lg my-2 p-2 relative cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors {selectedMessageId ===
 					message.chatCompletionId
@@ -191,6 +195,16 @@
 					</div>
 				</div>
 			{/each}
+
+			{#if chatCompletions.length > 2}
+				<button
+					class="w-full flex items-center justify-center px-4 py-2 bg-gray-100 gap-2.5 hover:bg-gray-200 dark:bg-[rgba(248,248,248,0.08)] text-gray-700 dark:text-white text-sm rounded-md transition-colors"
+					on:click={() => (viewMore = !viewMore)}
+				>
+					{#if viewMore}View Less{:else}View More{/if}
+					<ChevronDown className="size-4 {viewMore ? 'rotate-180' : ''}" strokeWidth="2.5" />
+				</button>
+			{/if}
 
 			<!-- Signature Details Section -->
 			<div class="space-y-3">
