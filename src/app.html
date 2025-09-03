@@ -89,13 +89,14 @@
 				function setSplashImage() {
 					const logo = document.getElementById('logo');
 					const isDarkMode = document.documentElement.classList.contains('dark');
+					console.log('isDarkMode', isDarkMode);
 
 					if (isDarkMode) {
 						const darkImage = new Image();
-						darkImage.src = '/static/splash-dark.png';
+						darkImage.src = '/static/splash-dark.svg';
 
 						darkImage.onload = () => {
-							logo.src = '/static/splash-dark.png';
+							logo.src = '/static/splash-dark.svg';
 							logo.style.filter = ''; // Ensure no inversion is applied if splash-dark.png exists
 						};
 

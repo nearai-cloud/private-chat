@@ -97,18 +97,18 @@
 		transition:fade={{ duration: 200 }}
 	>
 		<div
-			class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+			class="bg-white dark:bg-gray-950 rounded-lg shadow-3xl border-gray-200 dark:border-[rgba(255,255,255,0.04)] max-w-2xl w-full max-h-[90vh] overflow-y-auto"
 			on:click|stopPropagation
 			transition:slide={{ duration: 300 }}
 		>
 			<!-- Header -->
-			<div
-				class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700"
-			>
-				<h2 class="text-xl font-bold text-gray-900 dark:text-white">Model Verification</h2>
+			<div class="flex items-center justify-between px-6 py-4 dark:border-gray-700">
+				<h2 class="text-lg text-gray-900 dark:text-white gap-2 flex items-center">
+					Model Verification
+				</h2>
 				<button
 					on:click={closeModal}
-					class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+					class="text-white shadow hover:text-gray-600 dark:hover:text-gray-300 h-8 w-8 rounded flex items-center justify-center dark:bg-[rgba(248,248,248,0.04)] transition-colors"
 				>
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -124,7 +124,7 @@
 			<!-- Content -->
 			<div class="p-6">
 				<!-- Model Info -->
-				<div class="mb-6">
+				<div class="mb-4">
 					<h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Verified Model</h3>
 					<p class="text-sm text-gray-600 dark:text-gray-400">{model}</p>
 				</div>
@@ -135,13 +135,13 @@
 					<div class="flex items-center space-x-4">
 						<!-- NVIDIA Logo -->
 						<div class="flex items-center space-x-2">
-							<img src="/assets/images/nvidia.svg" alt="NVIDIA" class="w-20 h-8" />
+							<img src="/assets/images/nvidia-2.svg" alt="NVIDIA" class="w-20 h-8" />
 							<!-- <span class="text-gray-900 grey:text-white">and</span> -->
 						</div>
 						<div class="text-gray-600 dark:text-gray-400">and</div>
 						<!-- Intel Logo -->
 						<div class="flex items-center space-x-2">
-							<img src="/assets/images/intel.svg" alt="Intel" class="w-16 h-8" />
+							<img src="/assets/images/intel-2.svg" alt="Intel" class="w-16 h-8" />
 						</div>
 					</div>
 				</div>
@@ -180,7 +180,9 @@
 				<!-- Loading State -->
 				{#if loading}
 					<div class="flex items-center justify-center py-8">
-						<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+						<div
+							class="animate-spin rounded-full h-8 w-8 border-b-2 border-[rgba(0,236,151,1)]"
+						></div>
 						<span class="ml-3 text-gray-600 dark:text-gray-400">Verifying attestation...</span>
 					</div>
 				{:else if error}
@@ -203,7 +205,7 @@
 					<!-- Attestation Results -->
 					<div class="space-y-4">
 						<!-- GPU Attestation Section -->
-						<div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+						<div class="bg-gray-50 dark:bg-[rgba(0,236,151,0.08)] rounded-lg p-4">
 							<button
 								on:click={() => toggleSection('gpu')}
 								class="w-full flex items-center justify-between text-left"
@@ -243,15 +245,15 @@
 									<div class="space-y-4">
 										<!-- NVIDIA Remote Attestation Service Info -->
 										<div
-											class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3"
+											class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3"
 										>
 											<div class="flex items-center mb-2">
-												<img src="/assets/images/nvidia.svg" alt="NVIDIA" class="w-20 h-8 mr-2" />
-												<span class="text-sm font-medium text-blue-900 dark:text-blue-100"
+												<img src="/assets/images/nvidia-2.svg" alt="NVIDIA" class="w-20 h-8 mr-2" />
+												<span class="text-sm font-medium text-green-900 dark:text-green-100"
 													>Remote Attestation Service</span
 												>
 											</div>
-											<p class="text-xs text-blue-800 dark:text-blue-200 mb-3">
+											<p class="text-xs text-green-800 dark:text-green-200 mb-3">
 												This verification uses NVIDIA's Remote Attestation Service (NRAS) to prove
 												that your model is running on genuine NVIDIA hardware in a secure
 												environment. You can independently verify the attestation evidence using
@@ -304,7 +306,7 @@
 												<div class="relative">
 													<textarea
 														readonly
-														class="w-full h-16 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none font-mono"
+														class="w-full h-16 px-3 py-2 text-sm bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded-md resize-none font-mono"
 														>{nvidiaPayload?.nonce || ''}</textarea
 													>
 													<button
@@ -334,7 +336,7 @@
 												<div class="relative">
 													<textarea
 														readonly
-														class="w-full h-32 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none font-mono"
+														class="w-full h-32 px-3 py-2 text-sm bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded-md resize-none font-mono"
 														>{JSON.stringify(nvidiaPayload?.evidence_list || [], null, 2)}</textarea
 													>
 													<button
@@ -369,7 +371,7 @@
 													type="text"
 													readonly
 													value={nvidiaPayload?.arch}
-													class="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md"
+													class="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded-md"
 												/>
 												<button
 													on:click={() => copyToClipboard(nvidiaPayload?.arch)}
@@ -391,7 +393,7 @@
 						</div>
 
 						<!-- TDX Attestation Section -->
-						<div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+						<div class="bg-gray-50 dark:bg-[rgba(0,236,151,0.08)] rounded-lg p-4">
 							<button
 								on:click={() => toggleSection('tdx')}
 								class="w-full flex items-center justify-between text-left"
@@ -431,15 +433,15 @@
 									<div class="space-y-4">
 										<!-- Intel Trust Domain Extensions Info -->
 										<div
-											class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3"
+											class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3"
 										>
 											<div class="flex items-center mb-2">
-												<img src="/assets/images/intel.svg" alt="Intel" class="w-16 h-8 mr-2" />
-												<span class="text-sm font-medium text-blue-900 dark:text-blue-100"
+												<img src="/assets/images/intel-2.svg" alt="Intel" class="w-16 h-8 mr-2" />
+												<span class="text-sm font-medium text-green-900 dark:text-green-100"
 													>Trust Domain Extensions</span
 												>
 											</div>
-											<p class="text-xs text-blue-800 dark:text-blue-200 mb-3">
+											<p class="text-xs text-green-800 dark:text-green-200 mb-3">
 												Intel TDX (Trust Domain Extensions) provides hardware-based attestation for
 												confidential computing. You can verify the authenticity of this TDX quote
 												using Phala's TEE Attestation Explorer - an open source tool for analyzing
@@ -492,7 +494,7 @@
 												<div class="relative">
 													<textarea
 														readonly
-														class="w-full h-32 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md resize-none font-mono"
+														class="w-full h-32 px-3 py-2 text-sm bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded-md resize-none font-mono"
 														>{intelQuote}</textarea
 													>
 													<button
@@ -523,7 +525,7 @@
 						<button
 							on:click={verifyAgain}
 							disabled={loading}
-							class="flex items-center space-x-2 px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+							class="disabled:opacity-45 disabled:cursor-not-allowed bg-gray-700/5 flex items-center gap-2 font-semibold hover:bg-gray-700/10 dark:bg-gray-750 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition rounded-lg text-sm py-2.5 px-5"
 						>
 							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path

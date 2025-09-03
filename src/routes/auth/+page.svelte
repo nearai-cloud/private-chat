@@ -183,7 +183,7 @@
 						id="logo"
 						crossorigin="anonymous"
 						src="{WEBUI_BASE_URL}/static/splash.png"
-						class=" w-6 rounded-full"
+						class=" w-6 h-6"
 						alt="logo"
 					/>
 				</div>

@@ -204,7 +204,7 @@
 					<!-- Verify on ECDSA Signature modal -->
 					{#if signatures[selectedMessageId].signature}
 						<button
-							class="flex items-center text-blue-600 hover:text-blue-700 text-xs transition-colors mb-4"
+							class="flex items-center text-green-500 hover:text-green-700 text-xs transition-colors mb-4"
 							on:click={openVerifySignatureDialog}
 						>
 							<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -85,7 +85,7 @@
 				<div class="flex-shrink-0 dark:border-gray-700">
 					<div class="p-4">
 						<h2
-							class="text-sm text-gray-900 flex rounded items-center pl-4 dark:text-[#A1A1A1] h-8 bg-[rgba(248,248,248,0.04)] mb-3"
+							class="text-sm text-gray-900 flex rounded items-center pl-4 dark:text-[#A1A1A1] h-8 dark:bg-[rgba(248,248,248,0.04)] mb-3"
 						>
 							Model Verification
 						</h2>
