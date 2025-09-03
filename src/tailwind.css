@@ -40,6 +40,10 @@
 	textarea::placeholder {
 		color: theme(--color-gray-400);
 	}
+
+	html, body: {
+		font-family: 'Inter', 'sans-serif';
+	}
 }
 
 @custom-variant hover (&:hover);

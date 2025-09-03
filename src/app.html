@@ -23,6 +23,10 @@
 			title="NEAR AI Private Chat"
 			href="/opensearch.xml"
 		/>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
 		<script src="/static/loader.js" defer></script>
 
 		<script>
@@ -37,6 +41,10 @@
 				const metaThemeColorTag = document.querySelector('meta[name="theme-color"]');
 				const prefersDarkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+				// Default: Dark
+				document.documentElement.classList.add('dark');
+				metaThemeColorTag.setAttribute('content', '#171717');
+				/*
 				if (!localStorage?.theme) {
 					localStorage.theme = 'system';
 				}
@@ -76,6 +84,7 @@
 						}
 					}
 				});
+				*/
 
 				function setSplashImage() {
 					const logo = document.getElementById('logo');
@@ -83,10 +92,10 @@
 
 					if (isDarkMode) {
 						const darkImage = new Image();
-						darkImage.src = '/static/splash-dark.png';
+						darkImage.src = '/static/splash-dark.svg';
 
 						darkImage.onload = () => {
-							logo.src = '/static/splash-dark.png';
+							logo.src = '/static/splash-dark.svg';
 							logo.style.filter = ''; // Ensure no inversion is applied if splash-dark.png exists
 						};
 
@@ -129,7 +138,7 @@
 					left: 50%;
 					transform: translateX(-50%);
 				"
-				src="/static/splash.png"
+				src="/static/splash-dark.svg"
 			/>
 
 			<div
@@ -149,7 +158,7 @@
 				<img
 					id="logo-her"
 					style="width: auto; height: 13rem"
-					src="/static/splash.png"
+					src="/static/splash-dark.svg"
 					class="animate-pulse-fast"
 				/>
 

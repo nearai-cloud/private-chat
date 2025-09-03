@@ -15,6 +15,7 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import EyeSlash from '$lib/components/icons/EyeSlash.svelte';
 	import MessageInput from './MessageInput.svelte';
+	import NearAIIcon from '$lib/components/icons/NearAIGreen.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -107,10 +108,12 @@
 		<div class="w-full flex flex-col justify-center items-center">
 			<!-- title -->
 			<div class="flex flex-col justify-center gap-3 items-center sm:gap-3.5 w-fit px-5 max-w-2xl">
-				<h1 class="text-3xl sm:text-3xl flex items-center">NEAR AI</h1>
-				<p class="text-base dark:text-gray-300">
+				<h1 class="text-3xl sm:text-3xl flex gap-2 items-center">
+					<NearAIIcon className="h-6" /> AI
+				</h1>
+				<!-- <p class="text-base dark:text-gray-300">
 					Chat with your personal assistant without worrying about leaking private information.
-				</p>
+				</p> -->
 			</div>
 
 			<div class="flex mt-1 mb-2">
