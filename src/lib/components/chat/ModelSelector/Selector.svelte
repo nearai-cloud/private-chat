@@ -327,8 +327,9 @@
 		id="model-selector-{id}-button"
 	>
 		<div
-			class="flex w-full text-left px-0.5 outline-hidden bg-transparent truncate {triggerClassName} justify-between font-medium placeholder-gray-400 focus:outline-hidden"
+			class="flex w-full px-3 items-center gap-1.5 py-1.5 rounded text-sm font-semibold dark:bg-[rgba(0,236,151,0.08)] dark:text-[rgba(0,236,151,1)] outline-hidden bg-transparent truncate {triggerClassName}"
 		>
+			<span class="font-normal text-xs opacity-50 self-end pb-[1px]">Model</span>
 			{#if selectedModel}
 				{selectedModel.label}
 			{:else}
@@ -500,11 +501,14 @@
 												content={$user?.role === 'admin' ? (item?.value ?? '') : ''}
 												placement="top-start"
 											>
-												<img
+												<!-- <img
 													src={item.model?.info?.meta?.profile_image_url ?? '/static/favicon.png'}
 													alt="Model"
 													class="rounded-full size-5 flex items-center mr-2"
-												/>
+												/> -->
+												<div class="mr-2 size-5 flex items-center justify-center">
+													<img src="/static/favicon-dark.svg" class="size-3.5" />
+												</div>
 
 												<div class="flex items-center line-clamp-1">
 													<div class="line-clamp-1">
@@ -629,7 +633,7 @@
 
 						{#if value === item.value}
 							<div class="ml-auto pl-2 pr-2 md:pr-0">
-								<Check />
+								<Check className="text-green-500 w-5 h-5" />
 							</div>
 						{/if}
 					</button>
