@@ -97,7 +97,7 @@
 				<div class="w-full flex flex-col justify-center items-center">
 					<!-- title -->
 					<div
-						class="flex flex-col justify-center gap-3 items-center sm:gap-3.5 w-fit px-5 max-w-2xl"
+						class="flex flex-col justify-center gap-3 items-center sm:gap-3.5 w-fit px-2 pb-3 max-w-2xl"
 					>
 						<h1 class="text-3xl sm:text-3xl flex gap-2 items-center">
 							<NearAIIcon className="h-6" /> AI
