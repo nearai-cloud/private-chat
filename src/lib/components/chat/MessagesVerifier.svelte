@@ -169,7 +169,7 @@
 				<div
 					class="bg-green-50 text-xs dark:bg-[rgba(0,236,151,0.08)] border border-green-200 dark:border-[rgba(0,236,151,0.16)] rounded-lg my-2 p-2 relative cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors {selectedMessageId ===
 					message.chatCompletionId
-						? 'ring-1 ring-green-800'
+						? 'ring-1 ring-green-700 dark:bg-[rgba(0,236,151,0.15)]!'
 						: ''}"
 					on:click={() =>
 						message.chatCompletionId && (selectedMessageId = message.chatCompletionId)}
@@ -186,7 +186,8 @@
 								<img src="/assets/images/verified.svg" />
 							</div>
 						</h4>
-						<p class="text-xs text-gray-700 dark:text-[rgba(248,248,248,0.88)] mb-2 line-clamp-2">
+						<p class="text-xs text-gray-700 dark:text-[rgba(248,248,248,0.88)] mb-2 line-clamp-2 {selectedMessageId ===
+					message.chatCompletionId ? 'dark:text-white!' : ''}">
 							{message.content}
 						</p>
 						<p class="text-xs text-gray-500 dark:text-rgba(248,248,248,0.64)">
