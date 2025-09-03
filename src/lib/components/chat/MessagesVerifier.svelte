@@ -186,8 +186,12 @@
 								<img src="/assets/images/verified.svg" />
 							</div>
 						</h4>
-						<p class="text-xs text-gray-700 dark:text-[rgba(248,248,248,0.88)] mb-2 line-clamp-2 {selectedMessageId ===
-					message.chatCompletionId ? 'dark:text-white!' : ''}">
+						<p
+							class="text-xs text-gray-700 dark:text-[rgba(248,248,248,0.88)] mb-2 line-clamp-2 {selectedMessageId ===
+							message.chatCompletionId
+								? 'dark:text-white!'
+								: ''}"
+						>
 							{message.content}
 						</p>
 						<p class="text-xs text-gray-500 dark:text-rgba(248,248,248,0.64)">
