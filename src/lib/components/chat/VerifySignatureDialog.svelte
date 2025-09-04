@@ -19,6 +19,8 @@
 
 	let verifyStatus: 'pending' | 'success' | 'error' = 'pending';
 
+	let checkedMap = {};
+
 	const closeModal = () => {
 		dispatch('close');
 	};
@@ -27,6 +29,10 @@
 		verifyStatus = 'pending';
 		const isValid = verifySignature(address, message, signature);
 		verifyStatus = isValid ? 'success' : 'error';
+	}
+
+	$: if (show) {
+		checkedMap = {};
 	}
 </script>
 
@@ -118,9 +124,15 @@
 								on:click={() => {
 									copyToClipboard(address);
 									toast.success($i18n.t('Copied to clipboard'));
+									checkedMap['address'] = true;
 								}}
 							>
-								<CheckIcon /> Copy
+								{#if checkedMap['address']}
+									<CheckIcon />
+								{:else}
+									<ClipboardIcon />
+								{/if}
+								 Copy
 							</button>
 						</div>
 						<div class="flex-1">
@@ -145,9 +157,15 @@
 								on:click={() => {
 									copyToClipboard(message);
 									toast.success($i18n.t('Copied to clipboard'));
+									checkedMap['message'] = true;
 								}}
 							>
-								<CheckIcon /> Copy
+								{#if checkedMap['message']}
+									<CheckIcon />
+								{:else}
+									<ClipboardIcon />
+								{/if}
+								Copy
 							</button>
 						</div>
 						<div class="flex-1">
@@ -171,9 +189,15 @@
 								on:click={() => {
 									copyToClipboard(signature);
 									toast.success($i18n.t('Copied to clipboard'));
+									checkedMap['signature'] = true;
 								}}
 							>
-								<CheckIcon /> Copy
+								{#if checkedMap['signature']}
+									<CheckIcon />
+								{:else}
+									<ClipboardIcon />
+								{/if}
+								Copy
 							</button>
 						</div>
 						<div class="flex-1">
