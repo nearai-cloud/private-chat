@@ -32,6 +32,7 @@ RUN npm ci
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
 ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV VITE_GA_ID="G-P4YEBQER8D"
 RUN npm run build
 
 ######## WebUI backend ########
@@ -65,8 +66,7 @@ ENV OPENAI_API_KEY="" \
     WEBUI_SECRET_KEY="" \
     SCARF_NO_ANALYTICS=true \
     DO_NOT_TRACK=true \
-    ANONYMIZED_TELEMETRY=false \
-    VITE_GA_ID="G-P4YEBQER8D"
+    ANONYMIZED_TELEMETRY=false
 
 #### Other models #########################################################
 ## whisper TTS model settings ##
