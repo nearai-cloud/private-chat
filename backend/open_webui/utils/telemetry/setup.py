@@ -1,8 +1,12 @@
 import logging
+import os
 
 from fastapi import FastAPI
 from open_webui.env import OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_SERVICE_NAME
-from open_webui.utils.telemetry.exporters import LazyBatchSpanProcessor
+from open_webui.utils.telemetry.exporters import (
+    LazyBatchSpanProcessor,
+    LoggingSpanExporter,
+)
 from open_webui.utils.telemetry.instrumentors import Instrumentor
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -10,17 +14,16 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from sqlalchemy import Engine
 
-# Set up debug logging for OpenTelemetry
-logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
-logging.getLogger("opentelemetry.exporter").setLevel(logging.DEBUG)
-logging.getLogger("opentelemetry.exporter.otlp").setLevel(logging.DEBUG)
-logging.getLogger("opentelemetry.sdk").setLevel(logging.DEBUG)
-logging.getLogger("opentelemetry.instrumentation").setLevel(logging.DEBUG)
-logging.getLogger("opentelemetry.instrumentation.fastapi").setLevel(logging.DEBUG)
-logging.getLogger("opentelemetry.instrumentation.asgi").setLevel(logging.DEBUG)
-
-# Also set up debug logging for our own telemetry modules
-logging.getLogger("open_webui.utils.telemetry").setLevel(logging.DEBUG)
+# Configure OpenTelemetry logging based on environment
+if os.getenv("OTEL_DEBUG", "false").lower() == "true":
+    logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
+    logging.getLogger("opentelemetry.exporter").setLevel(logging.DEBUG)
+    logging.getLogger("opentelemetry.exporter.otlp").setLevel(logging.DEBUG)
+    logging.getLogger("opentelemetry.sdk").setLevel(logging.DEBUG)
+    logging.getLogger("opentelemetry.instrumentation").setLevel(logging.DEBUG)
+    logging.getLogger("opentelemetry.instrumentation.fastapi").setLevel(logging.DEBUG)
+    logging.getLogger("opentelemetry.instrumentation.asgi").setLevel(logging.DEBUG)
+    logging.getLogger("open_webui.utils.telemetry").setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
@@ -28,38 +31,23 @@ logger = logging.getLogger(__name__)
 def test_otlp_connection(exporter):
     """Test OTLP connection by attempting to create and export a test span"""
     try:
-        import time
-
-        from opentelemetry.sdk.trace import _Span
-        from opentelemetry.sdk.trace.export import SpanExportResult
-        from opentelemetry.sdk.util.instrumentation import InstrumentationScope
-        from opentelemetry.trace import SpanContext, TraceFlags
-
-        # Create a minimal test span
-        trace_id = 12345678901234567890123456789012
-        span_id = 1234567890123456
-
-        span_context = SpanContext(
-            trace_id=trace_id,
-            span_id=span_id,
-            is_remote=False,
-            trace_flags=TraceFlags(0x01),
-        )
-
-        # Note: This is a simplified test. In practice, spans are created through TracerProvider
-        logger.info("Testing OTLP connection...")
-        logger.info(
-            "Connection test completed (note: actual connectivity will be verified when real spans are exported)"
-        )
+        logger.info("OTLP connection will be verified when first real span is exported")
         return True
-
     except Exception as e:
-        logger.error(f"OTLP connection test failed: {e}", exc_info=True)
+        logger.error(f"Failed to initialize OTLP test: {e}", exc_info=True)
         return False
 
 
 def setup(app: FastAPI, db_engine: Engine):
     logger.info("Setting up OpenTelemetry telemetry...")
+
+    # Check if we have the required API key first
+    nr_api_key = os.getenv("NEW_RELIC_LICENSE_KEY")
+    if not nr_api_key:
+        logger.warning(
+            "NEW_RELIC_LICENSE_KEY environment variable is not set, skipping telemetry setup completely"
+        )
+        return
 
     # set up trace
     tracer_provider = TracerProvider(
@@ -70,12 +58,13 @@ def setup(app: FastAPI, db_engine: Engine):
 
     # otlp export
     try:
-        exporter = OTLPSpanExporter(
-            endpoint="https://otlp.nr-data.net:4317",  # or EU endpoint
-            headers={"api-key": "3f0cb8ae5a6a6a30f28a183069f2b9e4FFFFNRAL"},  # TODO
+        base_exporter = OTLPSpanExporter(
+            endpoint=OTEL_EXPORTER_OTLP_ENDPOINT or "https://otlp.nr-data.net:4317",
+            headers={"api-key": nr_api_key},
         )
+        exporter = LoggingSpanExporter(base_exporter)
         logger.info(
-            f"OTLP Exporter created with endpoint: https://otlp.nr-data.net:4317"
+            f"OTLP Exporter created with endpoint: {OTEL_EXPORTER_OTLP_ENDPOINT or 'https://otlp.nr-data.net:4317'}"
         )
 
         # Test the connection

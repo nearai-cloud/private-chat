@@ -627,8 +627,6 @@ async def generate_chat_completion(
     user=Depends(get_verified_user),
     bypass_filter: Optional[bool] = False,
 ):
-    import time
-
     start_time = time.time()
 
     if BYPASS_MODEL_ACCESS_CONTROL:
@@ -828,7 +826,7 @@ async def generate_chat_completion(
         raise HTTPException(
             status_code=r.status if r else 500,
             detail=detail,
-        )
+        ) from e
     finally:
         # Don't close shared session, only close response if non-streaming
         if not streaming and r:

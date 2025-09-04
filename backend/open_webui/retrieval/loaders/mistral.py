@@ -7,7 +7,6 @@ import requests
 from langchain_core.documents import Document
 from open_webui.env import GLOBAL_LOG_LEVEL, SRC_LOG_LEVELS
 
-logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["RAG"])
 

@@ -47,8 +47,6 @@ async def generate_direct_chat_completion(
     user: Any,
     models: dict,
 ):
-    import time
-
     start_time = time.time()
 
     metadata = form_data.pop("metadata", {})
@@ -144,8 +142,6 @@ async def generate_chat_completion(
     user: Any,
     bypass_filter: bool = False,
 ):
-    import time
-
     start_time = time.time()
     log.debug(f"generate_chat_completion: {form_data}")
     if BYPASS_MODEL_ACCESS_CONTROL:

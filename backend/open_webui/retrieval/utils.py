@@ -80,7 +80,7 @@ def query_doc(
 
         if result:
             log.debug(
-                f"get_doc: Found {len(result.ids[0]) if result.ids else 0} results"
+                f"query_doc: Found {len(result.ids[0]) if result.ids else 0} results"
             )
 
         return result
@@ -96,7 +96,7 @@ def get_doc(collection_name: str, user: UserModel = None):
 
         if result:
             log.debug(
-                f"query_doc: Found {len(result.ids[0]) if result.ids else 0} results"
+                f"get_doc: Found {len(result.ids[0]) if result.ids else 0} results"
             )
 
         return result

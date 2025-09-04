@@ -665,8 +665,6 @@ def apply_params_to_form_data(form_data, model):
 
 
 async def process_chat_payload(request, form_data, user, metadata, model):
-    import time
-
     start_time = time.time()
 
     form_data = apply_params_to_form_data(form_data, model)
@@ -940,8 +938,6 @@ async def process_chat_payload(request, form_data, user, metadata, model):
 async def process_chat_response(
     request, response, form_data, user, metadata, model, events, tasks
 ):
-    import time
-
     start_time = time.time()
 
     async def background_tasks_handler():
