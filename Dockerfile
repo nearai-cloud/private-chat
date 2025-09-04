@@ -3,6 +3,7 @@
 # use build args in the docker build command with --build-arg="BUILDARG=true"
 ARG USE_CUDA=false
 ARG USE_OLLAMA=false
+ARG VITE_GA_ID
 # Tested with cu117 for CUDA 11 and cu121 for CUDA 12 (default)
 ARG USE_CUDA_VER=cu121
 # any sentence transformer model; models to use can be found at https://huggingface.co/models?library=sentence-transformers
@@ -32,7 +33,7 @@ RUN npm ci
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-ENV VITE_GA_ID="G-P4YEBQER8D"
+ENV VITE_GA_ID=${VITE_GA_ID}
 RUN npm run build
 
 ######## WebUI backend ########
