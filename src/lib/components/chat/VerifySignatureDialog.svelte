@@ -132,7 +132,7 @@
 								{:else}
 									<ClipboardIcon />
 								{/if}
-								 Copy
+								Copy
 							</button>
 						</div>
 						<div class="flex-1">
