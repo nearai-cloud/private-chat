@@ -3,7 +3,6 @@
 # use build args in the docker build command with --build-arg="BUILDARG=true"
 ARG USE_CUDA=false
 ARG USE_OLLAMA=false
-ARG VITE_GA_ID
 # Tested with cu117 for CUDA 11 and cu121 for CUDA 12 (default)
 ARG USE_CUDA_VER=cu121
 # any sentence transformer model; models to use can be found at https://huggingface.co/models?library=sentence-transformers
@@ -24,6 +23,7 @@ ARG GID=0
 ######## WebUI frontend ########
 FROM --platform=linux/amd64 node:22-alpine3.20 AS build
 ARG BUILD_HASH
+ARG VITE_GA_ID
 
 WORKDIR /app
 
