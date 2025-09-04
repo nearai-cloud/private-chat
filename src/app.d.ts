@@ -12,15 +12,15 @@ declare global {
 export {};
 
 interface ImportMetaEnv {
-  readonly VITE_GA_ID: string;
+	readonly VITE_GA_ID: string;
 }
 
 interface ImportMeta {
-  readonly env: ImportMetaEnv;
+	readonly env: ImportMetaEnv;
 }
 
 declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-  }
+	interface Window {
+		gtag?: (...args: any[]) => void;
+	}
 }
