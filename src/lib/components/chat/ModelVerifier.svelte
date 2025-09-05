@@ -1,8 +1,11 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, getContext } from 'svelte';
+	import { toast } from 'svelte-sonner';
 	import { getModelAttestationReport, type ModelAttestationReport } from '$lib/apis/nearai';
 	import { fade, slide } from 'svelte/transition';
 	import { copyToClipboard } from '$lib/utils';
+	import CheckIcon from '$lib/components/icons/Check.svelte';
+	import ClipboardIcon from '$lib/components/icons/ClipboardFilled.svelte';
 
 	export let model: string;
 	export let token: string;
@@ -10,6 +13,8 @@
 	export let autoVerify = false; // New prop for automatic verification
 
 	const dispatch = createEventDispatcher();
+
+	const i18n = getContext('i18n');
 
 	let loading = false;
 	let error: string | null = null;
@@ -20,6 +25,7 @@
 		gpu: false,
 		tdx: false
 	};
+	let checkedMap = {};
 
 	// Function to fetch attestation report
 	const fetchAttestationReport = async () => {
@@ -46,11 +52,13 @@
 	// Function to verify again
 	const verifyAgain = async () => {
 		await fetchAttestationReport();
+		checkedMap = {};
 	};
 
 	// Function to close modal
 	const closeModal = () => {
 		dispatch('close');
+		checkedMap = {};
 	};
 
 	// Toggle section expansion
@@ -87,6 +95,10 @@
 		attestationData = null;
 		error = null;
 		expandedSections = { gpu: false, tdx: false };
+	}
+
+	$: if (show) {
+		checkedMap = {};
 	}
 </script>
 
@@ -310,16 +322,16 @@
 														>{nvidiaPayload?.nonce || ''}</textarea
 													>
 													<button
-														on:click={() => nvidiaPayload && copyToClipboard(nvidiaPayload.nonce)}
+														on:click={() => {
+															if (!nvidiaPayload) return;
+															copyToClipboard(nvidiaPayload.nonce);
+															toast.success($i18n.t('Copied to clipboard'));
+															checkedMap['nonce'] = true;
+														}}
 														class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
 														title="Copy nonce"
 													>
-														<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-															<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-															<path
-																d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"
-															/>
-														</svg>
+														{#if checkedMap['nonce']}<CheckIcon />{:else}<ClipboardIcon />{/if}
 													</button>
 												</div>
 											</div>
@@ -340,20 +352,19 @@
 														>{JSON.stringify(nvidiaPayload?.evidence_list || [], null, 2)}</textarea
 													>
 													<button
-														on:click={() =>
-															nvidiaPayload &&
+														on:click={() => {
+															if (!nvidiaPayload) return;
 															copyToClipboard(
 																JSON.stringify(nvidiaPayload?.evidence_list || [], null, 2)
-															)}
+															);
+															toast.success($i18n.t('Copied to clipboard'));
+															checkedMap['evidence_list'] = true;
+														}}
 														class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
 														title="Copy evidence list"
 													>
-														<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-															<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-															<path
-																d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"
-															/>
-														</svg>
+														{#if checkedMap['evidence_list']}<CheckIcon />{:else}<ClipboardIcon
+															/>{/if}
 													</button>
 												</div>
 											</div>
@@ -374,16 +385,16 @@
 													class="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded-md"
 												/>
 												<button
-													on:click={() => copyToClipboard(nvidiaPayload?.arch)}
+													on:click={() => {
+														if (!nvidiaPayload) return;
+														copyToClipboard(nvidiaPayload.arch);
+														toast.success($i18n.t('Copied to clipboard'));
+														checkedMap['arch'] = true;
+													}}
 													class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
 													title="Copy architecture"
 												>
-													<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-														<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-														<path
-															d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"
-														/>
-													</svg>
+													{#if checkedMap['arch']}<CheckIcon />{:else}<ClipboardIcon />{/if}
 												</button>
 											</div>
 										</div>
@@ -498,16 +509,16 @@
 														>{intelQuote}</textarea
 													>
 													<button
-														on:click={() => intelQuote && copyToClipboard(intelQuote)}
+														on:click={() => {
+															if (!intelQuote) return;
+															copyToClipboard(intelQuote);
+															toast.success($i18n.t('Copied to clipboard'));
+															checkedMap['intelQuote'] = true;
+														}}
 														class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
 														title="Copy quote"
 													>
-														<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-															<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-															<path
-																d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"
-															/>
-														</svg>
+														{#if checkedMap['intelQuote']}<CheckIcon />{:else}<ClipboardIcon />{/if}
 													</button>
 												</div>
 											</div>
