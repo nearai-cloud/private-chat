@@ -132,7 +132,7 @@
 									</div>
 									<div class=" flex justify-between mt-0.5 mb-2.5 mx-0.5 max-w-full" dir="ltr">
 										<div class="ml-1 self-end flex items-center flex-1 max-w-[80%]">
-											<InputMenu
+											<!-- <InputMenu
 												inputFilesHandler={() => {}}
 												screenCaptureHandler={() => {}}
 												uploadFilesHandler={() => {}}
@@ -155,7 +155,7 @@
 														/>
 													</svg>
 												</div>
-											</InputMenu>
+											</InputMenu> -->
 										</div>
 
 										<div class="self-end flex space-x-1 mr-1 shrink-0">

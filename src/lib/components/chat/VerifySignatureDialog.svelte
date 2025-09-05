@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { toast } from 'svelte-sonner';
+	import { createEventDispatcher, getContext } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { copyToClipboard } from '$lib/utils';
 	import { verifySignature } from '$lib/utils/signature';
@@ -7,6 +8,8 @@
 	import ClipboardIcon from '$lib/components/icons/Clipboard.svelte';
 
 	const dispatch = createEventDispatcher();
+
+	const i18n = getContext('i18n');
 
 	export let show = false;
 	export let address = '';
@@ -16,6 +19,8 @@
 
 	let verifyStatus: 'pending' | 'success' | 'error' = 'pending';
 
+	let checkedMap = {};
+
 	const closeModal = () => {
 		dispatch('close');
 	};
@@ -24,6 +29,10 @@
 		verifyStatus = 'pending';
 		const isValid = verifySignature(address, message, signature);
 		verifyStatus = isValid ? 'success' : 'error';
+	}
+
+	$: if (show) {
+		checkedMap = {};
 	}
 </script>
 
@@ -114,9 +123,16 @@
 								class="flex items-center gap-x-1 bg-none border-none text-xs bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-md px-2 py-1"
 								on:click={() => {
 									copyToClipboard(address);
+									toast.success($i18n.t('Copied to clipboard'));
+									checkedMap['address'] = true;
 								}}
 							>
-								<ClipboardIcon /> Copy
+								{#if checkedMap['address']}
+									<CheckIcon />
+								{:else}
+									<ClipboardIcon />
+								{/if}
+								Copy
 							</button>
 						</div>
 						<div class="flex-1">
@@ -140,9 +156,16 @@
 								class="flex items-center gap-x-1 bg-none border-none text-xs bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-md px-2 py-1"
 								on:click={() => {
 									copyToClipboard(message);
+									toast.success($i18n.t('Copied to clipboard'));
+									checkedMap['message'] = true;
 								}}
 							>
-								<ClipboardIcon /> Copy
+								{#if checkedMap['message']}
+									<CheckIcon />
+								{:else}
+									<ClipboardIcon />
+								{/if}
+								Copy
 							</button>
 						</div>
 						<div class="flex-1">
@@ -165,9 +188,16 @@
 								class="flex items-center gap-x-1 bg-none border-none text-xs bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-md px-2 py-1"
 								on:click={() => {
 									copyToClipboard(signature);
+									toast.success($i18n.t('Copied to clipboard'));
+									checkedMap['signature'] = true;
 								}}
 							>
-								<ClipboardIcon /> Copy
+								{#if checkedMap['signature']}
+									<CheckIcon />
+								{:else}
+									<ClipboardIcon />
+								{/if}
+								Copy
 							</button>
 						</div>
 						<div class="flex-1">
