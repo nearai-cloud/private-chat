@@ -324,7 +324,7 @@
 													<button
 														on:click={() => {
 															if (!nvidiaPayload) return;
-															copyToClipboard(nvidiaPayload.nonce)
+															copyToClipboard(nvidiaPayload.nonce);
 															toast.success($i18n.t('Copied to clipboard'));
 															checkedMap['nonce'] = true;
 														}}
@@ -356,14 +356,15 @@
 															if (!nvidiaPayload) return;
 															copyToClipboard(
 																JSON.stringify(nvidiaPayload?.evidence_list || [], null, 2)
-															)
+															);
 															toast.success($i18n.t('Copied to clipboard'));
 															checkedMap['evidence_list'] = true;
 														}}
 														class="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
 														title="Copy evidence list"
 													>
-														{#if checkedMap['evidence_list']}<CheckIcon />{:else}<ClipboardIcon />{/if}
+														{#if checkedMap['evidence_list']}<CheckIcon />{:else}<ClipboardIcon
+															/>{/if}
 													</button>
 												</div>
 											</div>
@@ -386,7 +387,7 @@
 												<button
 													on:click={() => {
 														if (!nvidiaPayload) return;
-														copyToClipboard(nvidiaPayload.arch)
+														copyToClipboard(nvidiaPayload.arch);
 														toast.success($i18n.t('Copied to clipboard'));
 														checkedMap['arch'] = true;
 													}}
@@ -510,7 +511,7 @@
 													<button
 														on:click={() => {
 															if (!intelQuote) return;
-															copyToClipboard(intelQuote)
+															copyToClipboard(intelQuote);
 															toast.success($i18n.t('Copied to clipboard'));
 															checkedMap['intelQuote'] = true;
 														}}
