@@ -190,7 +190,7 @@ async def upload_pipeline(
     file: UploadFile = File(...),
     user=Depends(get_admin_user),
 ):
-    log.debug(f"upload_pipeline: Processing file upload")
+    log.debug("upload_pipeline: Processing file upload")
     # Check if the uploaded file is a python file
     if not (file.filename and file.filename.endswith(".py")):
         raise HTTPException(

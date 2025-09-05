@@ -171,10 +171,9 @@ async def generate_chat_completion(
     model = models[model_id]
 
     if getattr(request.state, "direct", False):
-        result = await generate_direct_chat_completion(
+        return await generate_direct_chat_completion(
             request, form_data, user=user, models=models
         )
-        return result
     else:
         # Check if user has access to the model
         if not bypass_filter and user.role == "user":

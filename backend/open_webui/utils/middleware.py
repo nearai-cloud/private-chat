@@ -665,8 +665,6 @@ def apply_params_to_form_data(form_data, model):
 
 
 async def process_chat_payload(request, form_data, user, metadata, model):
-    start_time = time.time()
-
     form_data = apply_params_to_form_data(form_data, model)
 
     log.debug(f"form_data: {form_data}")
@@ -938,8 +936,6 @@ async def process_chat_payload(request, form_data, user, metadata, model):
 async def process_chat_response(
     request, response, form_data, user, metadata, model, events, tasks
 ):
-    start_time = time.time()
-
     async def background_tasks_handler():
         message_map = Chats.get_messages_by_chat_id(metadata["chat_id"])
         message = message_map.get(metadata["message_id"]) if message_map else None
