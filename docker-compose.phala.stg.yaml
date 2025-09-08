@@ -1,0 +1,64 @@
+services:
+  # key service
+  key-service:
+    image: danielwpz/seal-cvm:0.5
+    container_name: key-service
+    volumes:
+      - /var/run/dstack.sock:/var/run/dstack.sock
+    restart: unless-stopped
+
+  # private chat
+  private-chat:
+    image: ghcr.io/nearai-cloud/private-chat:${NEAR_AI_PRIVATE_CHAT_DOCKER_IMAGE_TAG}
+    container_name: private-chat
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      ENABLE_CHAT_ENCRYPTION: true
+      MODELS_CACHE_TTL: 300
+      KEY_SERVICE_BASE_URL: http://key-service:3001
+      ENABLE_OAUTH_SIGNUP: true
+      OAUTH_MERGE_ACCOUNTS_BY_EMAIL: true
+      OPENID_PROVIDER_URL: https://token.actions.githubusercontent.com/.well-known/openid-configuration
+      DATABASE_URL: ${DATABASE_URL}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      WEBSOCKET_MANAGER: redis
+      REDIS_URL: redis://redis:6379/0
+      UVICORN_WORKERS: 4
+    volumes:
+      - private-chat-backend-data:/app/backend/data
+    restart: unless-stopped
+
+  # redis
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+
+  # Dstack Ingress container for custom domain
+  dstack-ingress:
+    image: robortyan/dstack-ingress@sha256:e46aba89a180c6e2e8a42a5df771dd65a6b73ecb107791e35aa4f3c3a48d896b
+    ports:
+      - "443:443"
+    environment:
+      - TARGET_ENDPOINT=http://private-chat:8080
+      - DNS_PROVIDER=cloudflare
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+      - DOMAIN=${NEAR_AI_PRIVATE_CHAT_DOMAIN}
+      - GATEWAY_DOMAIN=_.dstack-prod7.phala.network
+      - CERTBOT_EMAIL=${CERTBOT_EMAIL}
+      - TXT_PREFIX=_dstack-app-address
+      - SET_CAA=true
+    volumes:
+      - /var/run/dstack.sock:/var/run/dstack.sock
+      - /var/run/tappd.sock:/var/run/tappd.sock
+      - cert-data:/etc/letsencrypt
+    restart: unless-stopped
+
+volumes:
+  cert-data:  # Persistent volume for certificates
+  private-chat-backend-data:  # Persistent volume for private chat backend data
