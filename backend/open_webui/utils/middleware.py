@@ -1,96 +1,78 @@
-import time
-import logging
-import sys
-import os
-import base64
-
+import ast
 import asyncio
-from aiocache import cached
-from typing import Any, Optional
-import random
-import json
+import base64
 import html
 import inspect
+import json
+import logging
+import os
+import random
 import re
-import ast
-
-from uuid import uuid4
+import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Optional
+from uuid import uuid4
 
-
-from fastapi import Request, HTTPException
-from starlette.responses import Response, StreamingResponse
-
-
+from aiocache import cached
+from fastapi import HTTPException, Request
+from open_webui.config import (
+    CACHE_DIR,
+    DEFAULT_CODE_INTERPRETER_PROMPT,
+    DEFAULT_TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE,
+)
+from open_webui.constants import TASKS
+from open_webui.env import (
+    BYPASS_MODEL_ACCESS_CONTROL,
+    ENABLE_REALTIME_CHAT_SAVE,
+    GLOBAL_LOG_LEVEL,
+    SRC_LOG_LEVELS,
+)
 from open_webui.models.chats import Chats
-from open_webui.models.users import Users
-from open_webui.socket.main import (
-    get_event_call,
-    get_event_emitter,
-    get_active_status_by_user_id,
-)
-from open_webui.routers.tasks import (
-    generate_queries,
-    generate_title,
-    generate_image_prompt,
-    generate_chat_tags,
-)
-from open_webui.routers.retrieval import process_web_search, SearchForm
-from open_webui.routers.images import image_generations, GenerateImageForm
+from open_webui.models.functions import Functions
+from open_webui.models.models import Models
+from open_webui.models.users import UserModel, Users
+from open_webui.retrieval.utils import get_sources_from_files
+from open_webui.routers.images import GenerateImageForm, image_generations
 from open_webui.routers.pipelines import (
     process_pipeline_inlet_filter,
     process_pipeline_outlet_filter,
 )
-
-from open_webui.utils.webhook import post_webhook
-
-
-from open_webui.models.users import UserModel
-from open_webui.models.functions import Functions
-from open_webui.models.models import Models
-
-from open_webui.retrieval.utils import get_sources_from_files
-
-
+from open_webui.routers.retrieval import SearchForm, process_web_search
+from open_webui.routers.tasks import (
+    generate_chat_tags,
+    generate_image_prompt,
+    generate_queries,
+    generate_title,
+)
+from open_webui.socket.main import (
+    get_active_status_by_user_id,
+    get_event_call,
+    get_event_emitter,
+)
+from open_webui.tasks import create_task
 from open_webui.utils.chat import generate_chat_completion
+from open_webui.utils.code_interpreter import execute_code_jupyter
+from open_webui.utils.filter import get_sorted_filter_ids, process_filter_functions
+from open_webui.utils.misc import (
+    add_or_update_system_message,
+    add_or_update_user_message,
+    convert_logit_bias_input_to_json,
+    deep_update,
+    get_last_assistant_message,
+    get_last_user_message,
+    get_message_list,
+    prepend_to_first_user_message_content,
+)
+from open_webui.utils.plugin import load_function_module_by_id
 from open_webui.utils.task import (
     get_task_model_id,
     rag_template,
     tools_function_calling_generation_template,
 )
-from open_webui.utils.misc import (
-    deep_update,
-    get_message_list,
-    add_or_update_system_message,
-    add_or_update_user_message,
-    get_last_user_message,
-    get_last_assistant_message,
-    prepend_to_first_user_message_content,
-    convert_logit_bias_input_to_json,
-)
 from open_webui.utils.tools import get_tools
-from open_webui.utils.plugin import load_function_module_by_id
-from open_webui.utils.filter import (
-    get_sorted_filter_ids,
-    process_filter_functions,
-)
-from open_webui.utils.code_interpreter import execute_code_jupyter
-
-from open_webui.tasks import create_task
-
-from open_webui.config import (
-    CACHE_DIR,
-    DEFAULT_TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE,
-    DEFAULT_CODE_INTERPRETER_PROMPT,
-)
-from open_webui.env import (
-    SRC_LOG_LEVELS,
-    GLOBAL_LOG_LEVEL,
-    BYPASS_MODEL_ACCESS_CONTROL,
-    ENABLE_REALTIME_CHAT_SAVE,
-)
-from open_webui.constants import TASKS
-
+from open_webui.utils.webhook import post_webhook
+from starlette.responses import Response, StreamingResponse
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
@@ -683,8 +665,8 @@ def apply_params_to_form_data(form_data, model):
 
 
 async def process_chat_payload(request, form_data, user, metadata, model):
-
     form_data = apply_params_to_form_data(form_data, model)
+
     log.debug(f"form_data: {form_data}")
 
     event_emitter = get_event_emitter(metadata)
@@ -2255,6 +2237,7 @@ async def process_chat_response(
         task_id, _ = create_task(
             post_response_handler(response, events), id=metadata["chat_id"]
         )
+
         return {"status": True, "task_id": task_id}
 
     else:

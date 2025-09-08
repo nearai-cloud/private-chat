@@ -1,59 +1,40 @@
-import time
+import asyncio
+import inspect
+import json
 import logging
+import random
 import sys
+import time
+import uuid
+from typing import Any, Optional
 
 from aiocache import cached
-from typing import Any, Optional
-import random
-import json
-import inspect
-import uuid
-import asyncio
-
 from fastapi import Request, status
-from starlette.responses import Response, StreamingResponse, JSONResponse
-
-
-from open_webui.models.users import UserModel
-
-from open_webui.socket.main import (
-    sio,
-    get_event_call,
-    get_event_emitter,
-)
+from open_webui.env import BYPASS_MODEL_ACCESS_CONTROL, GLOBAL_LOG_LEVEL, SRC_LOG_LEVELS
 from open_webui.functions import generate_function_chat_completion
-
-from open_webui.routers.openai import (
-    generate_chat_completion as generate_openai_chat_completion,
-)
-
+from open_webui.models.functions import Functions
+from open_webui.models.models import Models
+from open_webui.models.users import UserModel
 from open_webui.routers.ollama import (
     generate_chat_completion as generate_ollama_chat_completion,
 )
-
+from open_webui.routers.openai import (
+    generate_chat_completion as generate_openai_chat_completion,
+)
 from open_webui.routers.pipelines import (
     process_pipeline_inlet_filter,
     process_pipeline_outlet_filter,
 )
-
-from open_webui.models.functions import Functions
-from open_webui.models.models import Models
-
-
-from open_webui.utils.plugin import load_function_module_by_id
-from open_webui.utils.models import get_all_models, check_model_access
+from open_webui.socket.main import get_event_call, get_event_emitter, sio
+from open_webui.utils.filter import get_sorted_filter_ids, process_filter_functions
+from open_webui.utils.models import check_model_access, get_all_models
 from open_webui.utils.payload import convert_payload_openai_to_ollama
+from open_webui.utils.plugin import load_function_module_by_id
 from open_webui.utils.response import (
     convert_response_ollama_to_openai,
     convert_streaming_response_ollama_to_openai,
 )
-from open_webui.utils.filter import (
-    get_sorted_filter_ids,
-    process_filter_functions,
-)
-
-from open_webui.env import SRC_LOG_LEVELS, GLOBAL_LOG_LEVEL, BYPASS_MODEL_ACCESS_CONTROL
-
+from starlette.responses import JSONResponse, Response, StreamingResponse
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
@@ -66,7 +47,7 @@ async def generate_direct_chat_completion(
     user: Any,
     models: dict,
 ):
-    log.info("generate_direct_chat_completion")
+    start_time = time.time()
 
     metadata = form_data.pop("metadata", {})
 
@@ -161,6 +142,7 @@ async def generate_chat_completion(
     user: Any,
     bypass_filter: bool = False,
 ):
+    start_time = time.time()
     log.debug(f"generate_chat_completion: {form_data}")
     if BYPASS_MODEL_ACCESS_CONTROL:
         bypass_filter = True
@@ -233,35 +215,41 @@ async def generate_chat_completion(
                 response = await generate_chat_completion(
                     request, form_data, user, bypass_filter=True
                 )
+
                 return StreamingResponse(
                     stream_wrapper(response.body_iterator),
                     media_type="text/event-stream",
                     background=response.background,
                 )
             else:
+                result = await generate_chat_completion(
+                    request, form_data, user, bypass_filter=True
+                )
+
                 return {
-                    **(
-                        await generate_chat_completion(
-                            request, form_data, user, bypass_filter=True
-                        )
-                    ),
+                    **result,
                     "selected_model_id": selected_model_id,
                 }
 
         if model.get("pipe"):
             # Below does not require bypass_filter because this is the only route the uses this function and it is already bypassing the filter
-            return await generate_function_chat_completion(
+            result = await generate_function_chat_completion(
                 request, form_data, user=user, models=models
             )
+
+            return result
+
         if model.get("owned_by") == "ollama":
             # Using /ollama/api/chat endpoint
             form_data = convert_payload_openai_to_ollama(form_data)
+
             response = await generate_ollama_chat_completion(
                 request=request,
                 form_data=form_data,
                 user=user,
                 bypass_filter=bypass_filter,
             )
+
             if form_data.get("stream"):
                 response.headers["content-type"] = "text/event-stream"
                 return StreamingResponse(
@@ -270,14 +258,18 @@ async def generate_chat_completion(
                     background=response.background,
                 )
             else:
-                return convert_response_ollama_to_openai(response)
+                result = convert_response_ollama_to_openai(response)
+
+                return result
         else:
-            return await generate_openai_chat_completion(
+            result = await generate_openai_chat_completion(
                 request=request,
                 form_data=form_data,
                 user=user,
                 bypass_filter=bypass_filter,
             )
+
+            return result
 
 
 chat_completion = generate_chat_completion

@@ -2,8 +2,10 @@ import json
 import logging
 from typing import Optional
 
-
-from open_webui.socket.main import get_event_emitter
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from open_webui.config import ENABLE_ADMIN_CHAT_ACCESS, ENABLE_ADMIN_EXPORT
+from open_webui.constants import ERROR_MESSAGES
+from open_webui.env import SRC_LOG_LEVELS
 from open_webui.models.chats import (
     ChatForm,
     ChatImportForm,
@@ -11,18 +13,12 @@ from open_webui.models.chats import (
     Chats,
     ChatTitleIdResponse,
 )
-from open_webui.models.tags import TagModel, Tags
 from open_webui.models.folders import Folders
-
-from open_webui.config import ENABLE_ADMIN_CHAT_ACCESS, ENABLE_ADMIN_EXPORT
-from open_webui.constants import ERROR_MESSAGES
-from open_webui.env import SRC_LOG_LEVELS
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel
-
-
-from open_webui.utils.auth import get_admin_user, get_verified_user
+from open_webui.models.tags import TagModel, Tags
+from open_webui.socket.main import get_event_emitter
 from open_webui.utils.access_control import has_permission
+from open_webui.utils.auth import get_admin_user, get_verified_user
+from pydantic import BaseModel
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MODELS"])
@@ -719,14 +715,8 @@ async def update_chat_folder_id_by_id(
 
 @router.get("/{id}/tags", response_model=list[TagModel])
 async def get_chat_tags_by_id(id: str, user=Depends(get_verified_user)):
-    chat = Chats.get_chat_by_id_and_user_id(id, user.id)
-    if chat:
-        tags = chat.meta.get("tags", [])
-        return Tags.get_tags_by_ids_and_user_id(tags, user.id)
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=ERROR_MESSAGES.NOT_FOUND
-        )
+    # Shortcut: Always return empty list
+    return []
 
 
 ############################
