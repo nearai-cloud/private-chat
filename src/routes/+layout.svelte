@@ -562,7 +562,11 @@
 				} else {
 					// Don't redirect if we're already on the auth page
 					// Needed because we pass in tokens from OAuth logins via URL fragments
-					if (['/auth', '/welcome', '/terms', '/privacy'].indexOf($page.url.pathname) === -1) {
+					if (
+						['/auth', '/welcome', '/terms', '/privacy', '/privacy-eu', '/privacy-cal'].indexOf(
+							$page.url.pathname
+						) === -1
+					) {
 						// await goto(`/auth?redirect=${encodedUrl}`);
 						await goto(`/welcome`);
 					}
