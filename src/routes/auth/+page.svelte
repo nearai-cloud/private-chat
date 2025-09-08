@@ -479,7 +479,7 @@
 
 						<p class="text-xs text-app-quaternary-500 text-center pt-10">
 							By signing in, I agree to the
-							<a class="underline" href="/terms">Terms & Conditions</a>
+							<a class="underline" href="/terms">Terms of Service</a>
 							and
 							<a class="underline" href="/privacy">Privacy Policy</a>
 							.
