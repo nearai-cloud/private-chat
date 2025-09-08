@@ -31,6 +31,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { Toaster, toast } from 'svelte-sonner';
+	import { initGa } from '$lib/utils/analytics';
 
 	import { executeToolServer, getBackendConfig } from '$lib/apis';
 	import { getSessionUser } from '$lib/apis/auths';
@@ -433,6 +434,8 @@
 	};
 
 	onMount(async () => {
+		initGa();
+
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
 		}
@@ -477,7 +480,8 @@
 		// Call visibility change handler initially to set state on load
 		handleVisibilityChange();
 
-		theme.set(localStorage.theme);
+		// theme.set(localStorage.theme);
+		theme.set('dark');
 
 		mobile.set(window.innerWidth < BREAKPOINT);
 
