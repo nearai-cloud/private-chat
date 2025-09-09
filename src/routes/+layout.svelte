@@ -31,7 +31,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { Toaster, toast } from 'svelte-sonner';
-	import { initGa } from '$lib/utils/analytics';
+	import { initGa, trackPageView } from '$lib/utils/analytics';
 
 	import { executeToolServer, getBackendConfig } from '$lib/apis';
 	import { getSessionUser } from '$lib/apis/auths';
@@ -434,7 +434,17 @@
 	};
 
 	onMount(async () => {
-		initGa();
+		const disableAutoPageView = false;
+		initGa(disableAutoPageView);
+		if (disableAutoPageView) {
+			// Set up global page view tracking with selective override for sensitive pages
+			page.subscribe((pageData) => {
+				const path = pageData.url.pathname;
+				if (path) {
+					trackPageView(document.title, path);
+				}
+			});
+		}
 
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
