@@ -6,24 +6,28 @@ export function initGa() {
 		return;
 	}
 
-	if (window.gtag) return;
+	if (window.gtag) {
+		return;
+	};
 
+	// Initialize dataLayer and gtag function BEFORE loading the script
 	window.dataLayer = window.dataLayer || [];
 	window.gtag = function () {
+		// eslint-disable-next-line prefer-rest-params
+		console.log('gtag', arguments);
 		// eslint-disable-next-line prefer-rest-params
 		window.dataLayer!.push(arguments);
 	};
 
-	window.gtag('js', new Date());
+	// Pre-initialize
+	window.gtag("js", new Date());
+	// 👇 Now explicitly configure, disabling auto page view
+	window.gtag("config", gaId, {
+		send_page_view: false,
+	});
 
-	// Disable automatic page view tracking to prevent sensitive data leakage
-	const config = {
-		send_page_view: false
-	};
-
-	window.gtag('config', gaId, config);
-
-	const script = document.createElement('script');
+	// 👇 Load GA script
+	const script = document.createElement("script");
 	script.async = true;
 	script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
 	document.head.appendChild(script);
