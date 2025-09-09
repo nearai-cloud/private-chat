@@ -6,11 +6,9 @@ export function initGa(disableAutoPageView = false) {
 		return;
 	}
 
-	if (window.gtag) {
-		return;
-	}
+	if (window.gtag) return;
 
-	// Initialize dataLayer and gtag function BEFORE loading the script
+	// Initialize data layer and gtag function
 	window.dataLayer = window.dataLayer || [];
 	window.gtag = function () {
 		// eslint-disable-next-line prefer-rest-params
@@ -19,14 +17,10 @@ export function initGa(disableAutoPageView = false) {
 		window.dataLayer!.push(arguments);
 	};
 
-	// Pre-initialize
 	window.gtag('js', new Date());
-	// Now explicitly configure, disabling auto page view
-	if (disableAutoPageView) {
-		window.gtag('config', gaId, {
-			send_page_view: false
-		});
-	}
+	window.gtag('config', gaId, {
+		send_page_view: !disableAutoPageView
+	});
 
 	// Load GA script
 	const script = document.createElement('script');
