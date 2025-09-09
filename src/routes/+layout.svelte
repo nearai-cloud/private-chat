@@ -437,8 +437,9 @@
 		initGa();
 		// Set up global page view tracking with selective override for sensitive pages
 		page.subscribe((pageData) => {
-			if (pageData.url.pathname) {
-				trackPageView(document.title, pageData.url.pathname);
+			const path = pageData.url.pathname;
+			if (path) {
+				trackPageView(document.title, path);
 			}
 		});
 

@@ -43,7 +43,7 @@ export const ANALYTICS_CONFIG = {
 };
 
 /**
- * Checks if a given path should use sanitized page view tracking
+ * Sanitize a given title based on the path
  * @param title - The title to sanitize
  * @param path - The path to check
  * @returns The sanitized title
@@ -66,7 +66,7 @@ export function sanitizeTitle(title: string, path: string): string {
 }
 
 /**
- * Tracks page view with automatic detection of whether to use sanitized or default tracking
+ * Tracks page view with automatic detection of whether to use sanitized or default title
  *
  * @param pageTitle - The page title
  * @param pagePath - The page path
