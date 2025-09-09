@@ -461,7 +461,6 @@
 		chatIdUnsubscriber?.();
 		window.removeEventListener('message', onMessageHandler);
 		$socket?.off('chat-events', chatEventHandler);
-		localStorage.setItem(WEB_SEARCH_STORAGE_KEY, webSearchEnabled ? 'true' : 'false');
 	});
 
 	// File upload functions
