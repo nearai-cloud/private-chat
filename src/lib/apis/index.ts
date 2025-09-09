@@ -17,28 +17,34 @@ export const getModels = async (
 	connections: object | null = null,
 	base: boolean = false
 ) => {
-	if (modelsCache.has(MODELS_CACHE_KEY)) {
-		return modelsCache.get(MODELS_CACHE_KEY);
-	}
-
+	const cacheKey = `${MODELS_CACHE_KEY}_${base ? 'base' : 'all'}`;
 	let error = null;
-	const res = await fetch(`${WEBUI_BASE_URL}/api/models${base ? '/base' : ''}`, {
-		method: 'GET',
-		headers: {
-			Accept: 'application/json',
-			'Content-Type': 'application/json',
-			...(token && { authorization: `Bearer ${token}` })
-		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
+	let res = null;
+	if (modelsCache.get(cacheKey)) {
+		res = modelsCache.get(cacheKey);
+	} else {
+		res = await fetch(`${WEBUI_BASE_URL}/api/models${base ? '/base' : ''}`, {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
+				...(token && { authorization: `Bearer ${token}` })
+			}
 		})
-		.catch((err) => {
-			error = err;
-			console.log(err);
-			return null;
-		});
+			.then(async (res) => {
+				if (!res.ok) throw await res.json();
+				return res.json();
+			})
+			.catch((err) => {
+				error = err;
+				console.log(err);
+				return null;
+			});
+
+		if (res) {
+			modelsCache.set(cacheKey, res);
+		}
+	}
 
 	if (error) {
 		throw error;
@@ -157,9 +163,6 @@ export const getModels = async (
 		models = Object.values(modelsMap);
 	}
 
-	if (res) {
-		modelsCache.set(MODELS_CACHE_KEY, res);
-	}
 	return models;
 };
 
