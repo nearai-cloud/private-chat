@@ -276,12 +276,19 @@ async def chat_web_search_handler(
     request: Request, form_data: dict, extra_params: dict, user
 ):
     event_emitter = extra_params["__event_emitter__"]
+    # Update status message based on whether query generation is enabled
+    status_description = (
+        "Generating search query"
+        if request.app.state.config.ENABLE_SEARCH_QUERY_GENERATION
+        else "Preparing search"
+    )
+
     await event_emitter(
         {
             "type": "status",
             "data": {
                 "action": "web_search",
-                "description": "Generating search query",
+                "description": status_description,
                 "done": False,
             },
         }
@@ -291,35 +298,42 @@ async def chat_web_search_handler(
     user_message = get_last_user_message(messages)
 
     queries = []
-    try:
-        res = await generate_queries(
-            request,
-            {
-                "model": form_data["model"],
-                "messages": messages,
-                "prompt": user_message,
-                "type": "web_search",
-            },
-            user,
-        )
 
-        response = res["choices"][0]["message"]["content"]
-
+    # Check if query generation is enabled before calling generate_queries
+    if request.app.state.config.ENABLE_SEARCH_QUERY_GENERATION:
         try:
-            bracket_start = response.find("{")
-            bracket_end = response.rfind("}") + 1
+            res = await generate_queries(
+                request,
+                {
+                    "model": form_data["model"],
+                    "messages": messages,
+                    "prompt": user_message,
+                    "type": "web_search",
+                },
+                user,
+            )
 
-            if bracket_start == -1 or bracket_end == -1:
-                raise Exception("No JSON object found in the response")
+            response = res["choices"][0]["message"]["content"]
 
-            response = response[bracket_start:bracket_end]
-            queries = json.loads(response)
-            queries = queries.get("queries", [])
+            try:
+                bracket_start = response.find("{")
+                bracket_end = response.rfind("}") + 1
+
+                if bracket_start == -1 or bracket_end == -1:
+                    raise Exception("No JSON object found in the response")
+
+                response = response[bracket_start:bracket_end]
+                queries = json.loads(response)
+                queries = queries.get("queries", [])
+            except Exception as e:
+                queries = [response]
+
         except Exception as e:
-            queries = [response]
-
-    except Exception as e:
-        log.exception(e)
+            log.exception(e)
+            queries = [user_message]
+    else:
+        # If query generation is disabled, use user message directly
+        log.debug("Search query generation is disabled, using user message directly")
         queries = [user_message]
 
     if len(queries) == 0:
