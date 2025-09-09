@@ -8,7 +8,7 @@ export function initGa() {
 
 	if (window.gtag) {
 		return;
-	};
+	}
 
 	// Initialize dataLayer and gtag function BEFORE loading the script
 	window.dataLayer = window.dataLayer || [];
@@ -20,14 +20,14 @@ export function initGa() {
 	};
 
 	// Pre-initialize
-	window.gtag("js", new Date());
+	window.gtag('js', new Date());
 	// 👇 Now explicitly configure, disabling auto page view
-	window.gtag("config", gaId, {
-		send_page_view: false,
+	window.gtag('config', gaId, {
+		send_page_view: false
 	});
 
 	// 👇 Load GA script
-	const script = document.createElement("script");
+	const script = document.createElement('script');
 	script.async = true;
 	script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
 	document.head.appendChild(script);
