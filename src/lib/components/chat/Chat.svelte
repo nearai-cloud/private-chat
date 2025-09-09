@@ -1932,7 +1932,8 @@
 			? `${$chatTitle.length > 30 ? `${$chatTitle.slice(0, 30)}...` : $chatTitle} | ${$WEBUI_NAME}`
 			: `${$WEBUI_NAME}`}
 	</title> -->
-	<title>{$i18n.t('Chat')} | {$WEBUI_NAME}</title>
+	<!-- <title>{$i18n.t('Chat')} | {$WEBUI_NAME}</title> -->
+	<title>{$WEBUI_NAME}</title>
 </svelte:head>
 
 <audio id="audioElement" src="" style="display: none;" />
