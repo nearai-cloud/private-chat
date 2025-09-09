@@ -195,7 +195,8 @@
 </script>
 
 <svelte:head>
-	<title>#{channel?.name ?? 'Channel'} | {$WEBUI_NAME}</title>
+	<!-- <title>#{channel?.name ?? 'Channel'} | {$WEBUI_NAME}</title> -->
+	<title>Channel | {$WEBUI_NAME}</title>
 </svelte:head>
 
 <div

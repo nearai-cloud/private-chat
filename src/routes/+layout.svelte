@@ -434,14 +434,17 @@
 	};
 
 	onMount(async () => {
-		initGa();
-		// Set up global page view tracking with selective override for sensitive pages
-		page.subscribe((pageData) => {
-			const path = pageData.url.pathname;
-			if (path) {
-				trackPageView(document.title, path);
-			}
-		});
+		const disableAutoPageView = false;
+		initGa(disableAutoPageView);
+		if (disableAutoPageView) {
+			// Set up global page view tracking with selective override for sensitive pages
+			page.subscribe((pageData) => {
+				const path = pageData.url.pathname;
+				if (path) {
+					trackPageView(document.title, path);
+				}
+			});
+		}
 
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();

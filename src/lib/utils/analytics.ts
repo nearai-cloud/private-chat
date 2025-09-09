@@ -1,4 +1,4 @@
-export function initGa() {
+export function initGa(disableAutoPageView = false) {
 	const gaId = import.meta.env.VITE_GA_ID;
 
 	if (!gaId) {
@@ -22,9 +22,11 @@ export function initGa() {
 	// Pre-initialize
 	window.gtag('js', new Date());
 	// 👇 Now explicitly configure, disabling auto page view
-	window.gtag('config', gaId, {
-		send_page_view: false
-	});
+	if (disableAutoPageView) {
+		window.gtag('config', gaId, {
+			send_page_view: false
+		});
+	}
 
 	// 👇 Load GA script
 	const script = document.createElement('script');
