@@ -21,14 +21,14 @@ export function initGa(disableAutoPageView = false) {
 
 	// Pre-initialize
 	window.gtag('js', new Date());
-	// 👇 Now explicitly configure, disabling auto page view
+	// Now explicitly configure, disabling auto page view
 	if (disableAutoPageView) {
 		window.gtag('config', gaId, {
 			send_page_view: false
 		});
 	}
 
-	// 👇 Load GA script
+	// Load GA script
 	const script = document.createElement('script');
 	script.async = true;
 	script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
