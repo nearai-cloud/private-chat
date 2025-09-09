@@ -31,7 +31,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { Toaster, toast } from 'svelte-sonner';
-	import { initGa } from '$lib/utils/analytics';
+	import { initGa, trackPageView } from '$lib/utils/analytics';
 
 	import { executeToolServer, getBackendConfig } from '$lib/apis';
 	import { getSessionUser } from '$lib/apis/auths';
@@ -435,6 +435,12 @@
 
 	onMount(async () => {
 		initGa();
+		// Set up global page view tracking with selective override for sensitive pages
+		page.subscribe((pageData) => {
+			if (pageData.url.pathname) {
+				trackPageView(document.title, pageData.url.pathname);
+			}
+		});
 
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
