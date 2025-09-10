@@ -35,6 +35,7 @@
 	export let shareEnabled: boolean = false;
 	export let shareHandler: Function;
 	export let downloadHandler: Function;
+	export let chatVerifierHandler: Function;
 
 	// export let tagHandler: Function;
 
@@ -331,6 +332,19 @@
 			>
 				<Clipboard className=" size-4" strokeWidth="1.5" />
 				<div class="flex items-center">{$i18n.t('Copy')}</div>
+			</DropdownMenu.Item>
+
+			<DropdownMenu.Item
+				class="flex sm:hidden gap-2 items-center px-3 py-2 text-sm  cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
+				id="chat-verify-button"
+				on:click={async () => {
+					if (chatVerifierHandler) {
+						chatVerifierHandler();
+					}
+				}}
+			>
+				<img alt="safe" src="/assets/images/safe.svg" class="size-4" />
+				<div class="flex items-center">Chat verify</div>
 			</DropdownMenu.Item>
 
 			<!-- {#if !$temporaryChatEnabled}

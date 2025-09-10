@@ -36,7 +36,7 @@
 
 <div class="relative z-50">
 	<!-- Toggle Button -->
-	{#if !expanded}
+	<!-- {#if !expanded}
 		<button
 			on:click={toggleVerifier}
 			class="fixed right-3 top-12 z-50 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg transition-all duration-200"
@@ -44,7 +44,7 @@
 		>
 			<img alt="safe" src="/assets/images/safe.svg" class="w-8 h-8" />
 		</button>
-	{/if}
+	{/if} -->
 
 	<!-- Verifier Panel -->
 	{#if expanded}

@@ -2005,6 +2005,7 @@
 					{history}
 					title={$chatTitle}
 					bind:selectedModels
+					bind:showChatVerifier
 					shareEnabled={!!history.currentId}
 					{initNewChat}
 				/>

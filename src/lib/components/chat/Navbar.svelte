@@ -35,6 +35,7 @@
 	export let initNewChat: Function;
 	export let title: string = $WEBUI_NAME;
 	export let shareEnabled: boolean = false;
+	export let showChatVerifier: boolean = false;
 
 	export let chat;
 	export let history;
@@ -43,11 +44,15 @@
 
 	let showShareChatModal = false;
 	let showDownloadChatModal = false;
+
+	const toggleVerifier = () => {
+		showChatVerifier = !showChatVerifier;
+	};
 </script>
 
 <ShareChatModal bind:show={showShareChatModal} chatId={$chatId} />
 
-<nav class="sticky top-0 z-30 w-full py-1.5 -mb-8 flex flex-col items-center drag-region">
+<nav class="sticky top-0 z-30 w-full py-1.5 -mb-6 fl6x flex-col items-center drag-region">
 	<div class="flex items-center w-full px-1.5">
 		<div
 			class=" bg-linear-to-b via-50% from-white via-white to-transparent dark:from-gray-900 dark:via-gray-900 dark:to-transparent pointer-events-none absolute inset-0 -bottom-7 z-[-1]"
@@ -96,6 +101,7 @@
 							downloadHandler={() => {
 								showDownloadChatModal = !showDownloadChatModal;
 							}}
+							chatVerifierHandler={toggleVerifier}
 						>
 							<button
 								class="flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
@@ -151,6 +157,14 @@
 							</div>
 						</button>
 					</Tooltip>
+
+					<button
+						on:click={toggleVerifier}
+						class="p-1.5 hidden sm:flex text-white rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+						title="Toggle Verification Panel"
+					>
+						<img alt="safe" src="/assets/images/safe.svg" class="w-6 h-6" />
+					</button>
 
 					{#if $user !== undefined && $user !== null}
 						<UserMenu
