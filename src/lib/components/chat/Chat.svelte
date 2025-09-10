@@ -90,6 +90,8 @@
 	import Spinner from '../common/Spinner.svelte';
 	import ChatVerifier from './ChatVerifier.svelte';
 
+	const WEB_SEARCH_STATUS_KEY = 'web-search-status';
+
 	export let chatIdProp = '';
 
 	let loading = false;
@@ -124,7 +126,7 @@
 
 	let selectedToolIds = [];
 	let imageGenerationEnabled = false;
-	let webSearchEnabled = false;
+	let webSearchEnabled = sessionStorage.getItem(WEB_SEARCH_STATUS_KEY) === 'true';
 	let codeInterpreterEnabled = false;
 
 	let chat = null;
@@ -142,6 +144,14 @@
 	let chatFiles = [];
 	let files = [];
 	let params = {};
+
+	$: {
+		if (webSearchEnabled) {
+			sessionStorage.setItem(WEB_SEARCH_STATUS_KEY, 'true');
+		} else {
+			sessionStorage.removeItem(WEB_SEARCH_STATUS_KEY);
+		}
+	}
 
 	$: if (chatIdProp) {
 		(async () => {
