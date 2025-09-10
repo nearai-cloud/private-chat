@@ -8,6 +8,7 @@
 		messages: Record<string, Message>;
 		currentId: string | null;
 	};
+	export let chatId = null;
 	export let token: string;
 	export let selectedModels: string[];
 	export let expanded = false;
@@ -200,7 +201,7 @@
 							</h2>
 						</div>
 						<div class="flex-1 overflow-y-auto">
-							<MessagesVerifier {history} {token} />
+							<MessagesVerifier {history} {token} {chatId} />
 						</div>
 					</div>
 				</div>
