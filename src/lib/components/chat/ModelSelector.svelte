@@ -13,6 +13,8 @@
 
 	export let showSetDefault = true;
 
+	let disabledAdd = false;
+
 	const saveDefaultModel = async () => {
 		const hasEmptyModel = selectedModels.filter((it) => it === '');
 		if (hasEmptyModel.length) {
@@ -30,6 +32,9 @@
 			$models.map((m) => m.id).includes(model) ? model : ''
 		);
 	}
+
+	$: disabledAdd = disabled || selectedModels.length >= 3;
+	$: console.log('showSetDefault', selectedModels);
 </script>
 
 <div class="flex flex-col w-full items-start">
@@ -40,11 +45,15 @@
 					<Selector
 						id={`${selectedModelIdx}`}
 						placeholder={$i18n.t('Select a model')}
-						items={$models.map((model) => ({
-							value: model.id,
-							label: model.name,
-							model: model
-						}))}
+						items={$models
+							.filter(
+								(model) => !selectedModels.filter((m) => m !== selectedModel).includes(model.id)
+							)
+							.map((model) => ({
+								value: model.id,
+								label: model.name,
+								model: model
+							}))}
 						showTemporaryChatControl={$user?.role === 'user'
 							? ($user?.permissions?.chat?.temporary ?? true) &&
 								!($user?.permissions?.chat?.temporary_enforced ?? false)
@@ -61,7 +70,7 @@
 					>
 						<Tooltip content={$i18n.t('Add Model')}>
 							<button
-								class=" "
+								class={disabledAdd ? 'hidden' : ''}
 								{disabled}
 								on:click={() => {
 									selectedModels = [...selectedModels, ''];
