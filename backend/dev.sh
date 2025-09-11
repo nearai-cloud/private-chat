@@ -12,7 +12,5 @@ export OTEL_SERVICE_NAME=private-chat-dev
 export OTEL_LOG_LEVEL=INFO
 export OTEL_PYTHON_LOG_LEVEL=INFO
 
-export ENABLE_SEARCH_QUERY_GENERATION=False
-
 PORT="${PORT:-8080}"
 uvicorn open_webui.main:app --port $PORT --host 0.0.0.0 --forwarded-allow-ips '*' --reload
