@@ -468,7 +468,7 @@
 				{#each filteredItems as item, index}
 					<button
 						aria-label="model-item"
-						class="flex w-full text-left font-medium line-clamp-1 select-none items-center rounded-button py-2 pl-3 pr-1.5 text-sm text-gray-700 dark:text-gray-100 outline-hidden transition-all duration-75 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer data-highlighted:bg-muted {index ===
+						class="flex w-full mb-1 text-left font-medium line-clamp-1 select-none items-center rounded-button py-2 pl-3 pr-1.5 text-sm text-gray-700 dark:text-gray-100 outline-hidden transition-all duration-75 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer data-highlighted:bg-muted {index ===
 						selectedModelIdx
 							? 'bg-gray-100 dark:bg-gray-800 group-hover:bg-transparent'
 							: ''}"
@@ -501,14 +501,21 @@
 												content={$user?.role === 'admin' ? (item?.value ?? '') : ''}
 												placement="top-start"
 											>
-												<!-- <img
-													src={item.model?.info?.meta?.profile_image_url ?? '/static/favicon.png'}
-													alt="Model"
-													class="rounded-full size-5 flex items-center mr-2"
-												/> -->
-												<div class="mr-2 size-5 flex items-center justify-center">
-													<img src="/static/favicon-dark.svg" class="size-3.5" />
-												</div>
+												{#if item.model?.info?.meta?.profile_image_url }
+													<img
+														src={item.model?.info?.meta?.profile_image_url}
+														alt="Model"
+														class="rounded-full size-5 flex items-center mr-2"
+													/>
+												{:else}
+													<div class="mr-2 size-5 flex items-center justify-center">
+														<img
+															src="/static/favicon-dark.svg"
+															alt="Model"
+															class="size-3.5"
+														/>
+													</div>
+												{/if}
 
 												<div class="flex items-center line-clamp-1">
 													<div class="line-clamp-1">

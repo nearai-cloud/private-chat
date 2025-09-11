@@ -64,12 +64,12 @@
 					<Tooltip content="Expand Sidebar">
 						<button
 							type="button"
-							class="h-8 w-8 cursor-pointer shadow rounded flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-850 dark:bg-[#00EC9714]"
+							class="text-white shadow h-8 w-8 cursor-pointer rounded flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-850 dark:bg-[rgba(248,248,248,0.04)]"
 							on:click={() => {
 								showSidebar.set(!$showSidebar);
 							}}
 						>
-							<NearAIIcon className="w-4 h-4" />
+							<MenuLines className="size-5" />
 						</button>
 					</Tooltip>
 					<Tooltip content={$i18n.t('New Chat')}>
