@@ -501,7 +501,7 @@
 												content={$user?.role === 'admin' ? (item?.value ?? '') : ''}
 												placement="top-start"
 											>
-												{#if item.model?.info?.meta?.profile_image_url }
+												{#if item.model?.info?.meta?.profile_image_url}
 													<img
 														src={item.model?.info?.meta?.profile_image_url}
 														alt="Model"
@@ -509,11 +509,7 @@
 													/>
 												{:else}
 													<div class="mr-2 size-5 flex items-center justify-center">
-														<img
-															src="/static/favicon-dark.svg"
-															alt="Model"
-															class="size-3.5"
-														/>
+														<img src="/static/favicon-dark.svg" alt="Model" class="size-3.5" />
 													</div>
 												{/if}
 
