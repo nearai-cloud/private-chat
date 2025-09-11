@@ -1489,7 +1489,6 @@ async def process_web_search(
                     "search_query": form_data.query,
                 },
             )
-            log.info(doc)
             docs.append(doc)
 
         log.debug(
