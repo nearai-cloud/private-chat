@@ -33,8 +33,7 @@
 		);
 	}
 
-	$: disabledAdd = disabled || selectedModels.length >= 3;
-	$: console.log('showSetDefault', selectedModels);
+	$: disabledAdd = disabled || selectedModels.length >= $models.length;
 </script>
 
 <div class="flex flex-col w-full items-start">
@@ -44,6 +43,7 @@
 				<div class="mr-1 max-w-full">
 					<Selector
 						id={`${selectedModelIdx}`}
+						searchEnabled={$models.length >= 5}
 						placeholder={$i18n.t('Select a model')}
 						items={$models
 							.filter(
