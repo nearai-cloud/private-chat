@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getMessageSignature, type MessageSignature } from '$lib/apis/nearai';
+	import { messagesSignatures } from '$lib/stores';
 	import VerifySignatureDialog from './VerifySignatureDialog.svelte';
 	import type { Message } from '$lib/types';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
@@ -10,7 +11,6 @@
 	};
 	export let token: string;
 
-	let signatures: Record<string, MessageSignature> = {};
 	let loadingSignatures: Set<string> = new Set();
 	let error: string | null = null;
 	let selectedMessageId = '';
@@ -60,7 +60,7 @@
 
 		try {
 			const data = await getMessageSignature({ token, model, chatCompletionId });
-			signatures = { ...signatures, [chatCompletionId]: data };
+			messagesSignatures.update((prev) => ({ ...prev, [chatCompletionId]: data }));
 		} catch (err) {
 			console.error('Error fetching message signature:', err);
 			error = err instanceof Error ? err.message : 'Failed to fetch message signature';
@@ -73,7 +73,7 @@
 	// Function to verify all message signatures
 	const verifyAllMessageSignatures = async () => {
 		for (const message of chatCompletions) {
-			if (message.chatCompletionId && !signatures[message.chatCompletionId]) {
+			if (message.chatCompletionId && !$messagesSignatures[message.chatCompletionId]) {
 				await fetchMessageSignature(message.model, message.chatCompletionId);
 			}
 		}
@@ -122,17 +122,17 @@
 	// Auto-fetch signatures when chatCompletions change
 	$: if (history && token && chatCompletions.length > 0) {
 		chatCompletions.forEach((message: Message) => {
-			if (message.chatCompletionId && !signatures[message.chatCompletionId]) {
+			if (message.chatCompletionId && !$messagesSignatures[message.chatCompletionId]) {
 				fetchMessageSignature(message.model, message.chatCompletionId);
 			}
 		});
 	}
 
 	const openVerifySignatureDialog = () => {
-		if (!signatures[selectedMessageId]) return;
-		if (!signatures[selectedMessageId].signature) return;
+		if (!$messagesSignatures[selectedMessageId]) return;
+		if (!$messagesSignatures[selectedMessageId].signature) return;
 		showVerifySignatureDialog = true;
-		selectedSignature = signatures[selectedMessageId];
+		selectedSignature = $messagesSignatures[selectedMessageId];
 	};
 
 	const closeVerifySignatureDialog = () => {
@@ -219,9 +219,9 @@
 					</h3>
 				</div>
 
-				{#if selectedMessageId && signatures[selectedMessageId]}
+				{#if selectedMessageId && $messagesSignatures[selectedMessageId]}
 					<!-- Verify on ECDSA Signature modal -->
-					{#if signatures[selectedMessageId].signature}
+					{#if $messagesSignatures[selectedMessageId].signature}
 						<button
 							class="flex items-center text-green-500 hover:text-green-700 text-xs transition-colors mb-4"
 							on:click={openVerifySignatureDialog}
@@ -247,7 +247,7 @@
 							<div
 								class="px-2 py-1 bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded text-xs font-mono break-all min-h-[24px] flex items-center"
 							>
-								{signatures[selectedMessageId].signing_address ?? ''}
+								{$messagesSignatures[selectedMessageId].signing_address ?? ''}
 							</div>
 						</div>
 
@@ -259,7 +259,7 @@
 							<div
 								class="px-2 py-1 bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded text-xs font-mono break-all min-h-[24px] flex items-center"
 							>
-								{signatures[selectedMessageId].text ?? ''}
+								{$messagesSignatures[selectedMessageId].text ?? ''}
 							</div>
 						</div>
 
@@ -271,7 +271,7 @@
 							<div
 								class="px-2 py-1 bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded text-xs font-mono break-all min-h-[24px] flex items-center"
 							>
-								{signatures[selectedMessageId].signature ?? ''}
+								{$messagesSignatures[selectedMessageId].signature ?? ''}
 							</div>
 						</div>
 
@@ -283,14 +283,18 @@
 							<div
 								class="px-2 py-1 bg-gray-100 dark:bg-[rgba(248,248,248,0.04)] border border-gray-300 dark:border-[rgba(248,248,248,0.08)] rounded text-xs min-h-[24px] flex items-center"
 							>
-								{signatures[selectedMessageId].signing_algo ?? ''}
+								{$messagesSignatures[selectedMessageId].signing_algo ?? ''}
 							</div>
 						</div>
 					</div>
 				{:else if selectedMessageId}
 					<div class="rounded-lg min-h-[150px] flex items-center justify-center">
 						<div class="text-center py-2 text-gray-500 dark:text-gray-400">
-							<p class="text-xs">No signature data available for selected message</p>
+							{#if loadingSignatures.has(selectedMessageId)}
+								<p class="text-xs">Loading signature data...</p>
+							{:else}
+								<p class="text-xs">No signature data available for selected message</p>
+							{/if}
 						</div>
 					</div>
 				{:else}
