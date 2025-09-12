@@ -37,8 +37,8 @@
 		dispatch('closeToast');
 	}}
 >
-	<div class="shrink-0 self-top -translate-y-0.5">
-		<img src={'/static/favicon.png'} alt="favicon" class="size-7 rounded-full" />
+	<div class="shrink-0 self-top -translate-y-0.5 size-7 flex items-center justify-center">
+		<img src={'/static/favicon-dark.svg'} alt="favicon" class="size-4" />
 	</div>
 
 	<div>

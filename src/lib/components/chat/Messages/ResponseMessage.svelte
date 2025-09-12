@@ -587,36 +587,26 @@
 		id="message-{message.id}"
 		dir={$settings.chatDirection}
 	>
-		<div class={`shrink-0 ltr:mr-3 rtl:ml-3`}>
-			<ProfileImage
+		<div class={`shrink-0 ltr:mr-2 rtl:ml-2`}>
+			<!-- <ProfileImage
 				src={model?.info?.meta?.profile_image_url ??
 					($i18n.language === 'dg-DG' ? `/doge.png` : `${WEBUI_BASE_URL}/static/favicon.png`)}
 				className={'size-8'}
-			/>
+			/> -->
+			<img src="/assets/images/near-icon.svg" class="w-6 h-6 mt-0.5" />
 		</div>
 
 		<div class="flex-auto w-0 pl-1">
 			<Name>
 				<Tooltip content={model?.name ?? message.model} placement="top-start">
-					<span class="line-clamp-1 text-black dark:text-white">
+					<span class="line-clamp-1 font-normal text-black dark:text-white">
 						{model?.name ?? message.model}
 					</span>
 				</Tooltip>
 
 				<!-- Verification Badge -->
-				<div class="flex items-center ml-2">
-					<div
-						class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-md text-xs font-medium flex items-center"
-					>
-						<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								fill-rule="evenodd"
-								d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-						Verified
-					</div>
+				<div class="flex items-center ml-3">
+					<img src="/assets/images/verified-2.svg" />
 				</div>
 
 				{#if message.timestamp}

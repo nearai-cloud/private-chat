@@ -3,8 +3,8 @@ from typing import Optional
 from urllib.parse import urlencode
 
 import requests
-from open_webui.retrieval.web.main import SearchResult, get_filtered_results
 from open_webui.env import SRC_LOG_LEVELS
+from open_webui.retrieval.web.main import SearchResult, get_filtered_results
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["RAG"])
@@ -28,7 +28,7 @@ def search_serply(
         hl (str): Host Language code to display results in (reference https://developers.google.com/custom-search/docs/xml_results?hl=en#wsInterfaceLanguages)
         limit (int): The maximum number of results to return [10-100, defaults to 10]
     """
-    log.info("Searching with Serply")
+    log.debug("Searching with Serply")
 
     url = "https://api.serply.io/v1/search/"
 
@@ -52,7 +52,7 @@ def search_serply(
     response.raise_for_status()
 
     json_response = response.json()
-    log.info(f"results from serply search: {json_response}")
+    log.debug(f"serply search: Found {len(json_response.get('results', []))} results")
 
     results = sorted(
         json_response.get("results", []), key=lambda x: x.get("realPosition", 0)

@@ -1,31 +1,25 @@
+import logging
+import os
+import shutil
+from typing import Optional
+
+import aiohttp
+import requests
 from fastapi import (
+    APIRouter,
     Depends,
-    FastAPI,
     File,
     Form,
     HTTPException,
     Request,
     UploadFile,
     status,
-    APIRouter,
 )
-import aiohttp
-import os
-import logging
-import shutil
-import requests
-from pydantic import BaseModel
-from starlette.responses import FileResponse
-from typing import Optional
-
-from open_webui.env import SRC_LOG_LEVELS
 from open_webui.config import CACHE_DIR
-from open_webui.constants import ERROR_MESSAGES
-
-
+from open_webui.env import SRC_LOG_LEVELS
 from open_webui.routers.openai import get_all_models_responses
-
 from open_webui.utils.auth import get_admin_user
+from pydantic import BaseModel
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MAIN"])
@@ -196,7 +190,7 @@ async def upload_pipeline(
     file: UploadFile = File(...),
     user=Depends(get_admin_user),
 ):
-    log.info(f"upload_pipeline: urlIdx={urlIdx}, filename={file.filename}")
+    log.debug("upload_pipeline: Processing file upload")
     # Check if the uploaded file is a python file
     if not (file.filename and file.filename.endswith(".py")):
         raise HTTPException(

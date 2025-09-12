@@ -346,31 +346,33 @@ export const setDefaultPromptSuggestions = async (token: string, promptSuggestio
 	return res;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getBanners = async (token: string): Promise<Banner[]> => {
-	let error = null;
+	return [];
+	// let error = null;
 
-	const res = await fetch(`${WEBUI_API_BASE_URL}/configs/banners`, {
-		method: 'GET',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${token}`
-		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.catch((err) => {
-			console.log(err);
-			error = err.detail;
-			return null;
-		});
+	// const res = await fetch(`${WEBUI_API_BASE_URL}/configs/banners`, {
+	// 	method: 'GET',
+	// 	headers: {
+	// 		'Content-Type': 'application/json',
+	// 		Authorization: `Bearer ${token}`
+	// 	}
+	// })
+	// 	.then(async (res) => {
+	// 		if (!res.ok) throw await res.json();
+	// 		return res.json();
+	// 	})
+	// 	.catch((err) => {
+	// 		console.log(err);
+	// 		error = err.detail;
+	// 		return null;
+	// 	});
 
-	if (error) {
-		throw error;
-	}
+	// if (error) {
+	// 	throw error;
+	// }
 
-	return res;
+	// return res;
 };
 
 export const setBanners = async (token: string, banners: Banner[]) => {
