@@ -3,6 +3,7 @@
 	import VerifySignatureDialog from './VerifySignatureDialog.svelte';
 	import type { Message } from '$lib/types';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
+	import { stripHtmlTags } from '$lib/utils/html';
 
 	export let history: {
 		messages: Record<string, Message>;
@@ -192,7 +193,7 @@
 								? 'dark:text-white!'
 								: ''}"
 						>
-							{message.content}
+							{stripHtmlTags(message.content)}
 						</p>
 						<p class="text-xs text-gray-500 dark:text-rgba(248,248,248,0.64)">
 							ID: {message.chatCompletionId}
