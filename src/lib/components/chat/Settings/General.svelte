@@ -93,6 +93,7 @@
 	};
 
 	const saveHandler = async () => {
+		requestFormat = requestFormat === 'null' ? null : requestFormat;
 		if (requestFormat !== null && requestFormat !== 'json') {
 			if (validateJSON(requestFormat) === false) {
 				toast.error($i18n.t('Invalid JSON schema'));
