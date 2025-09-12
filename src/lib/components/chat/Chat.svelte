@@ -1924,6 +1924,19 @@
 			}
 		}
 	};
+
+	let sideClassNames = '';
+	$: {
+		if (!$showSidebar && !showChatVerifier) {
+			sideClassNames = '';
+		} else {
+			let w = $showSidebar ? 260 : 0;
+			if (showChatVerifier) {
+				w += 320;
+			}
+			sideClassNames = `md:max-w-[calc(100%-${w}px)]`;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -1957,20 +1970,8 @@
 	}}
 />
 
-<ChatVerifier
-	{history}
-	token={localStorage.token}
-	{selectedModels}
-	bind:expanded={showChatVerifier}
-	on:toggle={(e) => {
-		showChatVerifier = e.detail.expanded;
-	}}
-/>
-
 <div
-	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
-		? '  md:max-w-[calc(100%-260px)]'
-		: ' '} w-full max-w-full flex flex-col"
+	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {sideClassNames} w-full max-w-full flex flex-col"
 	id="chat-container"
 >
 	{#if !loading}
@@ -2168,3 +2169,13 @@
 		</div>
 	{/if}
 </div>
+
+<ChatVerifier
+	{history}
+	token={localStorage.token}
+	{selectedModels}
+	bind:expanded={showChatVerifier}
+	on:toggle={(e) => {
+		showChatVerifier = e.detail.expanded;
+	}}
+/>
