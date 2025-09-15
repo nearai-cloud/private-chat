@@ -43,7 +43,7 @@ class ChatTableEncryptionProxy(ChatTable):
         )
 
     def _create_chat_model_from_db_record(self, db_record) -> ChatModel:
-        """Create ChatModel from database record, handling encrypted data now."""
+        """Create ChatModel from database record, handling encrypted data."""
         chat_data = db_record.chat
         title_data = db_record.title
 
