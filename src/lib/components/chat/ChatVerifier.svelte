@@ -51,7 +51,7 @@
 	<!-- class="fixed right-0 top-10 bottom-0 w-80 bg-white dark:bg-gray-875 shadow-xl border-l border-gray-200 dark:border-[rgba(255,255,255,0.04)] z-40" -->
 	<div
 		id="chat-verifier-sidebar"
-		class="h-screen max-h-[100dvh] min-h-screen select-none
+		class="h-screen max-h-[100dvh] min-h-screen select-none overflow-y-hidden
 		shrink-0 bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-200 text-sm fixed z-50 top-0 right-0 overflow-x-hidden
 		{expanded ? 'md:relative w-[320px] max-w-[320px]' : 'translate-x-[320px] w-[0px]'}
 		"
