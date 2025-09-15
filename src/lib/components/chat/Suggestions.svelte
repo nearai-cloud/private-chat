@@ -91,18 +91,14 @@
 			>
 				<div class="flex flex-col text-left">
 					{#if prompt.title && prompt.title[0] !== ''}
-						<div
-							class="font-medium dark:text-gray-300 dark:group-hover:text-gray-200 transition line-clamp-1"
-						>
+						<div class="dark:text-gray-300 dark:group-hover:text-gray-200 transition line-clamp-1">
 							{prompt.title[0]}
 						</div>
 						<div class="text-xs text-gray-500 font-normal line-clamp-1">
 							{prompt.title[1]}
 						</div>
 					{:else}
-						<div
-							class="font-medium dark:text-gray-300 dark:group-hover:text-gray-200 transition line-clamp-1"
-						>
+						<div class="dark:text-gray-300 dark:group-hover:text-gray-200 transition line-clamp-1">
 							{prompt.content}
 						</div>
 						<div class="text-xs text-gray-500 font-normal line-clamp-1">{$i18n.t('Prompt')}</div>

@@ -1,5 +1,12 @@
 import { WEBUI_API_BASE_URL } from '$lib/constants';
 import { getUserPosition } from '$lib/utils';
+import { LRUCache } from 'lru-cache';
+
+const settingCache = new LRUCache({
+	max: 10,
+	ttl: 60 * 1000
+});
+const SETTING_CACHE_KEY = 'settings';
 
 export const getUserGroups = async (token: string) => {
 	let error = null;
@@ -144,6 +151,10 @@ export const getUsers = async (token: string) => {
 };
 
 export const getUserSettings = async (token: string) => {
+	if (settingCache.has(SETTING_CACHE_KEY)) {
+		return settingCache.get(SETTING_CACHE_KEY);
+	}
+
 	let error = null;
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/user/settings`, {
 		method: 'GET',
@@ -166,11 +177,15 @@ export const getUserSettings = async (token: string) => {
 		throw error;
 	}
 
+	if (res) {
+		settingCache.set(SETTING_CACHE_KEY, res);
+	}
 	return res;
 };
 
 export const updateUserSettings = async (token: string, settings: object) => {
 	let error = null;
+	settingCache.delete(SETTING_CACHE_KEY);
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/user/settings/update`, {
 		method: 'POST',

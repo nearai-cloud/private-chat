@@ -327,8 +327,9 @@
 		id="model-selector-{id}-button"
 	>
 		<div
-			class="flex w-full text-left px-0.5 outline-hidden bg-transparent truncate {triggerClassName} justify-between font-medium placeholder-gray-400 focus:outline-hidden"
+			class="flex w-full px-3 items-center gap-1.5 py-1.5 rounded text-sm font-semibold dark:bg-[rgba(0,236,151,0.08)] dark:text-[rgba(0,236,151,1)] outline-hidden bg-transparent truncate {triggerClassName}"
 		>
+			<span class="font-normal text-xs opacity-50 self-end pb-[1px]">Model</span>
 			{#if selectedModel}
 				{selectedModel.label}
 			{:else}
@@ -341,7 +342,7 @@
 	<DropdownMenu.Content
 		class=" z-40 {$mobile
 			? `w-full`
-			: `${className}`} max-w-[calc(100vw-1rem)] justify-start rounded-xl  bg-white dark:bg-gray-850 dark:text-white shadow-lg  outline-hidden"
+			: `${className}`} max-w-[calc(100vw-1rem)] justify-start rounded-xl  bg-white dark:bg-gray-875 dark:text-white shadow-lg  outline-hidden"
 		transition={flyAndScale}
 		side={$mobile ? 'bottom' : 'bottom-start'}
 		sideOffset={3}
@@ -467,7 +468,7 @@
 				{#each filteredItems as item, index}
 					<button
 						aria-label="model-item"
-						class="flex w-full text-left font-medium line-clamp-1 select-none items-center rounded-button py-2 pl-3 pr-1.5 text-sm text-gray-700 dark:text-gray-100 outline-hidden transition-all duration-75 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer data-highlighted:bg-muted {index ===
+						class="flex w-full mb-1 text-left font-medium line-clamp-1 select-none items-center rounded-button py-2 pl-3 pr-1.5 text-sm text-gray-700 dark:text-gray-100 outline-hidden transition-all duration-75 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer data-highlighted:bg-muted {index ===
 						selectedModelIdx
 							? 'bg-gray-100 dark:bg-gray-800 group-hover:bg-transparent'
 							: ''}"
@@ -500,11 +501,17 @@
 												content={$user?.role === 'admin' ? (item?.value ?? '') : ''}
 												placement="top-start"
 											>
-												<img
-													src={item.model?.info?.meta?.profile_image_url ?? '/static/favicon.png'}
-													alt="Model"
-													class="rounded-full size-5 flex items-center mr-2"
-												/>
+												{#if item.model?.info?.meta?.profile_image_url}
+													<img
+														src={item.model?.info?.meta?.profile_image_url}
+														alt="Model"
+														class="rounded-full size-5 flex items-center mr-2"
+													/>
+												{:else}
+													<div class="mr-2 size-5 flex items-center justify-center">
+														<img src="/static/favicon-dark.svg" alt="Model" class="size-3.5" />
+													</div>
+												{/if}
 
 												<div class="flex items-center line-clamp-1">
 													<div class="line-clamp-1">
@@ -629,7 +636,7 @@
 
 						{#if value === item.value}
 							<div class="ml-auto pl-2 pr-2 md:pr-0">
-								<Check />
+								<Check className="text-green-500 w-5 h-5" />
 							</div>
 						{/if}
 					</button>

@@ -11,54 +11,43 @@ import re
 import time
 from typing import Optional, Union
 from urllib.parse import urlparse
+
 import aiohttp
-from aiocache import cached
 import requests
-from open_webui.models.users import UserModel
-
-from open_webui.env import (
-    ENABLE_FORWARD_USER_INFO_HEADERS,
-)
-
+from aiocache import cached
 from fastapi import (
+    APIRouter,
     Depends,
     FastAPI,
     File,
     HTTPException,
     Request,
     UploadFile,
-    APIRouter,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, ConfigDict, validator
-from starlette.background import BackgroundTask
-
-
-from open_webui.models.models import Models
-from open_webui.utils.misc import (
-    calculate_sha256,
+from open_webui.config import UPLOAD_DIR
+from open_webui.constants import ERROR_MESSAGES
+from open_webui.env import (
+    AIOHTTP_CLIENT_TIMEOUT,
+    AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST,
+    BYPASS_MODEL_ACCESS_CONTROL,
+    ENABLE_FORWARD_USER_INFO_HEADERS,
+    ENV,
+    SRC_LOG_LEVELS,
 )
+from open_webui.models.models import Models
+from open_webui.models.users import UserModel
+from open_webui.utils.access_control import has_access
+from open_webui.utils.auth import get_admin_user, get_verified_user
+from open_webui.utils.misc import calculate_sha256
 from open_webui.utils.payload import (
     apply_model_params_to_body_ollama,
     apply_model_params_to_body_openai,
     apply_model_system_prompt_to_body,
 )
-from open_webui.utils.auth import get_admin_user, get_verified_user
-from open_webui.utils.access_control import has_access
-
-
-from open_webui.config import (
-    UPLOAD_DIR,
-)
-from open_webui.env import (
-    ENV,
-    SRC_LOG_LEVELS,
-    AIOHTTP_CLIENT_TIMEOUT,
-    AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST,
-    BYPASS_MODEL_ACCESS_CONTROL,
-)
-from open_webui.constants import ERROR_MESSAGES
+from pydantic import BaseModel, ConfigDict, validator
+from starlette.background import BackgroundTask
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["OLLAMA"])
@@ -462,74 +451,8 @@ async def get_ollama_tags(
 @router.get("/api/version")
 @router.get("/api/version/{url_idx}")
 async def get_ollama_versions(request: Request, url_idx: Optional[int] = None):
-    if request.app.state.config.ENABLE_OLLAMA_API:
-        if url_idx is None:
-            # returns lowest version
-            request_tasks = []
-
-            for idx, url in enumerate(request.app.state.config.OLLAMA_BASE_URLS):
-                api_config = request.app.state.config.OLLAMA_API_CONFIGS.get(
-                    str(idx),
-                    request.app.state.config.OLLAMA_API_CONFIGS.get(
-                        url, {}
-                    ),  # Legacy support
-                )
-
-                enable = api_config.get("enable", True)
-                key = api_config.get("key", None)
-
-                if enable:
-                    request_tasks.append(
-                        send_get_request(
-                            f"{url}/api/version",
-                            key,
-                        )
-                    )
-
-            responses = await asyncio.gather(*request_tasks)
-            responses = list(filter(lambda x: x is not None, responses))
-
-            if len(responses) > 0:
-                lowest_version = min(
-                    responses,
-                    key=lambda x: tuple(
-                        map(int, re.sub(r"^v|-.*", "", x["version"]).split("."))
-                    ),
-                )
-
-                return {"version": lowest_version["version"]}
-            else:
-                raise HTTPException(
-                    status_code=500,
-                    detail=ERROR_MESSAGES.OLLAMA_NOT_FOUND,
-                )
-        else:
-            url = request.app.state.config.OLLAMA_BASE_URLS[url_idx]
-
-            r = None
-            try:
-                r = requests.request(method="GET", url=f"{url}/api/version")
-                r.raise_for_status()
-
-                return r.json()
-            except Exception as e:
-                log.exception(e)
-
-                detail = None
-                if r is not None:
-                    try:
-                        res = r.json()
-                        if "error" in res:
-                            detail = f"Ollama: {res['error']}"
-                    except Exception:
-                        detail = f"Ollama: {e}"
-
-                raise HTTPException(
-                    status_code=r.status_code if r else 500,
-                    detail=detail if detail else "Open WebUI: Server Connection Error",
-                )
-    else:
-        return {"version": False}
+    # Shortcut: Always return {"version": False}
+    return {"version": False}
 
 
 @router.get("/api/ps")
@@ -571,7 +494,7 @@ async def pull_model(
     user=Depends(get_admin_user),
 ):
     url = request.app.state.config.OLLAMA_BASE_URLS[url_idx]
-    log.info(f"url: {url}")
+    log.debug(f"Using Ollama URL index: {url_idx}")
 
     # Admin should be able to pull models from any source
     payload = {**form_data.model_dump(exclude_none=True), "insecure": True}

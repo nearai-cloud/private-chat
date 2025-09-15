@@ -9,14 +9,28 @@ services:
 
   # private chat
   private-chat:
-    image: danielwpz/private-chat:0.4
+    image: danielwpz/private-chat:0.5
     container_name: private-chat
     ports:
       - "8080:8080"
     environment:
       PORT: 8080
       ENABLE_CHAT_ENCRYPTION: true
-      MODELS_CACHE_TTL: 300
+      MODELS_CACHE_TTL: 10
       KEY_SERVICE_BASE_URL: http://key-service:3001
-      DATABASE_URL: ${DATABASE_URL}
+      # DATABASE_URL: ${DATABASE_URL}
+      WEBSOCKET_MANAGER: redis
+      REDIS_URL: redis://redis:6379/0
+      UVICORN_WORKERS: 4
+    volumes:
+      - sqlite:/app/backend/data
     restart: unless-stopped
+
+  # redis
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+
+volumes:
+  sqlite:

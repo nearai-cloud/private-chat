@@ -1047,8 +1047,18 @@ async def chat_completion(
     form_data: dict,
     user=Depends(get_verified_user),
 ):
+    import time
+
+    start_time = time.time()
+    log.debug(f"[TIMING] /api/chat/completions - Request started at {start_time}")
+
     if not request.app.state.MODELS:
+        models_start = time.time()
         await get_all_models(request, user=user)
+        models_end = time.time()
+        log.debug(
+            f"[TIMING] get_all_models took {(models_end - models_start) * 1000:.2f}ms"
+        )
 
     model_item = form_data.pop("model_item", {})
     tasks = form_data.pop("background_tasks", None)
@@ -1061,6 +1071,7 @@ async def chat_completion(
                 raise Exception("Model not found")
 
             model = request.app.state.MODELS[model_id]
+
             model_info = Models.get_model_by_id(model_id)
 
             # Check if user has access to the model
@@ -1127,10 +1138,21 @@ async def chat_completion(
     try:
         response = await chat_completion_handler(request, form_data, user)
 
-        return await process_chat_response(
+        result = await process_chat_response(
             request, response, form_data, user, metadata, model, events, tasks
         )
+
+        total_time = time.time() - start_time
+        log.debug(
+            f"[TIMING] /api/chat/completions - Total request took {total_time * 1000:.2f}ms"
+        )
+
+        return result
     except Exception as e:
+        total_time = time.time() - start_time
+        log.debug(
+            f"[TIMING] /api/chat/completions - Request failed after {total_time * 1000:.2f}ms: {e}"
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),

@@ -22,6 +22,7 @@
 		config,
 		isApp
 	} from '$lib/stores';
+	import NearAIIcon from '$lib/components/icons/NearAIGreen.svelte';
 	import { onMount, getContext, tick, onDestroy } from 'svelte';
 
 	const i18n = getContext('i18n');
@@ -482,34 +483,40 @@
 			? ''
 			: 'invisible'}"
 	>
-		<div class="px-1.5 flex justify-between space-x-1 text-gray-600 dark:text-gray-400">
+		<div class="flex items-center justify-between my-4 px-4">
 			<button
-				class=" cursor-pointer p-[7px] flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+				type="button"
+				class="h-8 w-8 cursor-pointer shadow rounded flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-850 dark:bg-[rgba(248,248,248,0.04)]"
 				on:click={() => {
 					showSidebar.set(!$showSidebar);
 				}}
 			>
-				<div class=" m-auto self-center">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="2"
-						stroke="currentColor"
-						class="size-5"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"
-						/>
-					</svg>
-				</div>
+				<NearAIIcon className="w-4 h-4" />
 			</button>
+			<button
+				on:click={() => {
+					showSidebar.set(!$showSidebar);
+				}}
+				type="button"
+				class="text-white shadow hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-850 h-8 w-8 rounded flex items-center justify-center dark:bg-[rgba(248,248,248,0.04)] transition-colors"
+			>
+				<svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M6 18L18 6M6 6l12 12"
+					/>
+				</svg>
+			</button>
+		</div>
 
+		<div
+			class="px-4 flex justify-center mb-5 space-x-1 text-gray-600 dark:text-white h-9 items-center"
+		>
 			<a
 				id="sidebar-new-chat-button"
-				class="flex justify-between items-center flex-1 rounded-lg px-2 py-1 h-full text-right hover:bg-gray-100 dark:hover:bg-gray-900 transition no-drag-region"
+				class="flex justify-center items-center flex-1 gap-x-2 rounded-lg px-2 py-1 h-full text-right transition no-drag-region dark:bg-[#F8F8F80A] hover:bg-gray-50 dark:hover:bg-gray-850"
 				href="/"
 				draggable="false"
 				on:click={async () => {
@@ -525,21 +532,12 @@
 				}}
 			>
 				<div class="flex items-center">
-					<div class="self-center mx-1.5">
-						<img
-							crossorigin="anonymous"
-							src="{WEBUI_BASE_URL}/static/favicon.png"
-							class=" size-5 -translate-x-1.5 rounded-full"
-							alt="logo"
-						/>
-					</div>
-					<div class=" self-center font-medium text-sm text-gray-850 dark:text-white font-primary">
+					<div class=" self-center font-medium text-sm font-primary">
 						{$i18n.t('New Chat')}
 					</div>
 				</div>
-
 				<div>
-					<PencilSquare className=" size-5" strokeWidth="2" />
+					<PencilSquare className="size-5" strokeWidth="2" />
 				</div>
 			</a>
 		</div>
@@ -571,7 +569,7 @@
 		{/if} -->
 
 		{#if $user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools}
-			<div class="px-1.5 flex justify-center text-gray-800 dark:text-gray-200">
+			<div class="px-3 flex justify-center text-gray-800 dark:text-gray-200">
 				<a
 					class="grow flex items-center space-x-3 rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition"
 					href="/workspace"
