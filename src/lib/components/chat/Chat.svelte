@@ -90,7 +90,7 @@
 	import Spinner from '../common/Spinner.svelte';
 	import ChatVerifier from './ChatVerifier.svelte';
 
-	const WEB_SEARCH_STATUS_KEY = 'web-search-status';
+	const WEB_SEARCH_STATUS_KEY = 'web-search-enabled-status';
 
 	export let chatIdProp = '';
 
