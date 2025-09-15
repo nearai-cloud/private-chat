@@ -52,12 +52,12 @@
 	<div
 		id="chat-verifier-sidebar"
 		class="h-screen max-h-[100dvh] min-h-screen select-none
-		transition-width duration-200 ease-in-out'} shrink-0 bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-200 text-sm fixed z-50 top-0 right-0 overflow-x-hidden
-			{expanded ? 'md:relative w-[320px] max-w-[320px]' : 'translate-x-[320px] w-[0px]'}
-			"
+		transition-width duration-150 ease-in-out'} shrink-0 bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-200 text-sm fixed z-50 top-0 right-0 overflow-x-hidden
+		{expanded ? 'md:relative w-[320px] max-w-[320px]' : 'translate-x-[320px] w-[0px]'}
+		"
 	>
 		<!-- Header -->
-		<div class="flex items-center justify-between p-4 mt-2">
+		<div class="flex w-[320px] items-center justify-between px-4 pb-4 pt-3.5">
 			<h2 class="text-base text-gray-900 dark:text-white gap-2 flex items-center">
 				<img alt="safe" src="/assets/images/safe.svg" class="w-6 h-6" />
 				AI Chat Verification
@@ -78,7 +78,7 @@
 		</div>
 
 		<!-- Content -->
-		<div class="h-full flex flex-col">
+		<div class="h-full w-[320px] flex flex-col">
 			<!-- Model Verification Section -->
 			<div class="flex-shrink-0 dark:border-gray-700">
 				<div class="p-4">
