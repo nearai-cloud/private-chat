@@ -171,14 +171,6 @@
 						</button>
 					</Tooltip> -->
 
-					<button
-						on:click={toggleVerifier}
-						class="p-1.5 text-white rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition
-							{showChatVerifier ? 'hidden!' : ''}"
-						title="Toggle Verification Panel"
-					>
-						<img alt="safe" src="/assets/images/safe.svg" class="w-6 h-6" />
-					</button>
 					{#if $user !== undefined && $user !== null}
 						<UserMenu
 							className="max-w-[200px]"
@@ -204,6 +196,15 @@
 							</button>
 						</UserMenu>
 					{/if}
+
+					<button
+						on:click={toggleVerifier}
+						class="p-1.5 text-white rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition-all duration-200
+							{showChatVerifier ? 'hidden!' : ''}"
+						title="Toggle Verification Panel"
+					>
+						<img alt="safe" src="/assets/images/safe.svg" class="w-6 h-6" />
+					</button>
 				</div>
 			</div>
 		</div>
