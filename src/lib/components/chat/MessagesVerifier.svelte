@@ -9,6 +9,7 @@
 		currentId: string | null;
 	};
 	export let token: string;
+	export let chatId = null;
 
 	let signatures: Record<string, MessageSignature> = {};
 	let loadingSignatures: Set<string> = new Set();
@@ -139,6 +140,11 @@
 		showVerifySignatureDialog = false;
 		selectedSignature = null;
 	};
+
+	$: {
+		chatId;
+		selectedMessageId = '';
+	}
 </script>
 
 <div class="space-y-4 h-full overflow-y-auto pb-4 px-4" bind:this={containerElement}>

@@ -1960,6 +1960,7 @@
 <ChatVerifier
 	{history}
 	token={localStorage.token}
+	chatId={$chatId}
 	{selectedModels}
 	bind:expanded={showChatVerifier}
 	on:toggle={(e) => {
