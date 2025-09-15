@@ -484,14 +484,23 @@
 			: 'invisible'}"
 	>
 		<div class="flex items-center justify-between my-4 px-4">
-			<NearAIIcon className="w-6 h-6" />
+			<button
+				type="button"
+				class="h-8 w-8 cursor-pointer shadow rounded flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-850 dark:bg-[rgba(248,248,248,0.04)]"
+				on:click={() => {
+					showSidebar.set(!$showSidebar);
+				}}
+			>
+				<NearAIIcon className="w-4 h-4" />
+			</button>
 			<button
 				on:click={() => {
 					showSidebar.set(!$showSidebar);
 				}}
-				class="text-white shadow hover:text-gray-600 dark:hover:text-gray-300 h-8 w-8 rounded flex items-center justify-center dark:bg-[rgba(248,248,248,0.04)] transition-colors"
+				type="button"
+				class="text-white shadow hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-850 h-8 w-8 rounded flex items-center justify-center dark:bg-[rgba(248,248,248,0.04)] transition-colors"
 			>
-				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg class="size-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
@@ -503,11 +512,11 @@
 		</div>
 
 		<div
-			class="px-4 flex justify-center mb-2 space-x-1 text-gray-600 dark:text-[rgba(0,236,151,1)] h-9 items-center"
+			class="px-4 flex justify-center mb-5 space-x-1 text-gray-600 dark:text-white h-9 items-center"
 		>
 			<a
 				id="sidebar-new-chat-button"
-				class="flex justify-center items-center flex-1 gap-x-2 rounded-lg px-2 py-1 h-full text-right transition no-drag-region dark:bg-[rgba(0,236,151,0.08)]"
+				class="flex justify-center items-center flex-1 gap-x-2 rounded-lg px-2 py-1 h-full text-right transition no-drag-region dark:bg-[#F8F8F80A] hover:bg-gray-50 dark:hover:bg-gray-850"
 				href="/"
 				draggable="false"
 				on:click={async () => {
