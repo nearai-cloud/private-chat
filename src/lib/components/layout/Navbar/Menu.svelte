@@ -334,7 +334,7 @@
 				<div class="flex items-center">{$i18n.t('Copy')}</div>
 			</DropdownMenu.Item>
 
-			<DropdownMenu.Item
+			<!-- <DropdownMenu.Item
 				class="flex sm:hidden gap-2 items-center px-3 py-2 text-sm  cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
 				id="chat-verify-button"
 				on:click={async () => {
@@ -345,7 +345,7 @@
 			>
 				<img alt="safe" src="/assets/images/safe.svg" class="size-4" />
 				<div class="flex items-center">Chat verify</div>
-			</DropdownMenu.Item>
+			</DropdownMenu.Item> -->
 
 			<!-- {#if !$temporaryChatEnabled}
 				<hr class="border-gray-100 dark:border-gray-850 my-0.5" />
