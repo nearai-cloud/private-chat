@@ -143,11 +143,12 @@
 </script>
 
 <svelte:head>
-	<title>
+	<!-- <title>
 		{title
 			? `${title.length > 30 ? `${title.slice(0, 30)}...` : title} | ${$WEBUI_NAME}`
 			: `${$WEBUI_NAME}`}
-	</title>
+	</title> -->
+	<title>{$i18n.t('Share Chat')} | {$WEBUI_NAME}</title>
 </svelte:head>
 
 {#if loaded}

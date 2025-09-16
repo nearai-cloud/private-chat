@@ -90,6 +90,8 @@
 	import Spinner from '../common/Spinner.svelte';
 	import ChatVerifier from './ChatVerifier.svelte';
 
+	const WEB_SEARCH_STATUS_KEY = 'web-search-enabled-status';
+
 	export let chatIdProp = '';
 
 	let loading = false;
@@ -124,7 +126,7 @@
 
 	let selectedToolIds = [];
 	let imageGenerationEnabled = false;
-	let webSearchEnabled = false;
+	let webSearchEnabled = sessionStorage.getItem(WEB_SEARCH_STATUS_KEY) === 'true';
 	let codeInterpreterEnabled = false;
 
 	let chat = null;
@@ -143,6 +145,14 @@
 	let files = [];
 	let params = {};
 
+	$: {
+		if (webSearchEnabled) {
+			sessionStorage.setItem(WEB_SEARCH_STATUS_KEY, 'true');
+		} else {
+			sessionStorage.removeItem(WEB_SEARCH_STATUS_KEY);
+		}
+	}
+
 	$: if (chatIdProp) {
 		(async () => {
 			loading = true;
@@ -151,7 +161,6 @@
 			prompt = '';
 			files = [];
 			selectedToolIds = [];
-			webSearchEnabled = false;
 			imageGenerationEnabled = false;
 
 			if (chatIdProp && (await loadChat())) {
@@ -165,7 +174,6 @@
 						prompt = input.prompt;
 						files = input.files;
 						selectedToolIds = input.selectedToolIds;
-						webSearchEnabled = input.webSearchEnabled;
 						imageGenerationEnabled = input.imageGenerationEnabled;
 					} catch (e) {}
 				}
@@ -424,13 +432,11 @@
 				prompt = input.prompt;
 				files = input.files;
 				selectedToolIds = input.selectedToolIds;
-				webSearchEnabled = input.webSearchEnabled;
 				imageGenerationEnabled = input.imageGenerationEnabled;
 			} catch (e) {
 				prompt = '';
 				files = [];
 				selectedToolIds = [];
-				webSearchEnabled = false;
 				imageGenerationEnabled = false;
 			}
 		}
@@ -1924,14 +1930,29 @@
 			}
 		}
 	};
+
+	let sideClassNames = '';
+	$: {
+		if (!$showSidebar && !showChatVerifier) {
+			sideClassNames = '';
+		} else {
+			let w = $showSidebar ? 260 : 0;
+			if (showChatVerifier) {
+				w += 320;
+			}
+			sideClassNames = `md:max-w-[calc(100%-${w}px)]`;
+		}
+	}
 </script>
 
 <svelte:head>
-	<title>
+	<!-- <title>
 		{$chatTitle
 			? `${$chatTitle.length > 30 ? `${$chatTitle.slice(0, 30)}...` : $chatTitle} | ${$WEBUI_NAME}`
 			: `${$WEBUI_NAME}`}
-	</title>
+	</title> -->
+	<!-- <title>{$i18n.t('Chat')} | {$WEBUI_NAME}</title> -->
+	<title>{$WEBUI_NAME}</title>
 </svelte:head>
 
 <audio id="audioElement" src="" style="display: none;" />
@@ -1955,20 +1976,8 @@
 	}}
 />
 
-<ChatVerifier
-	{history}
-	token={localStorage.token}
-	{selectedModels}
-	bind:expanded={showChatVerifier}
-	on:toggle={(e) => {
-		showChatVerifier = e.detail.expanded;
-	}}
-/>
-
 <div
-	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
-		? '  md:max-w-[calc(100%-260px)]'
-		: ' '} w-full max-w-full flex flex-col"
+	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {sideClassNames} w-full max-w-full flex flex-col"
 	id="chat-container"
 >
 	{#if !loading}
@@ -2003,6 +2012,7 @@
 					{history}
 					title={$chatTitle}
 					bind:selectedModels
+					bind:showChatVerifier
 					shareEnabled={!!history.currentId}
 					{initNewChat}
 				/>
@@ -2165,3 +2175,14 @@
 		</div>
 	{/if}
 </div>
+
+<ChatVerifier
+	{history}
+	token={localStorage.token}
+	chatId={$chatId}
+	{selectedModels}
+	bind:expanded={showChatVerifier}
+	on:toggle={(e) => {
+		showChatVerifier = e.detail.expanded;
+	}}
+/>
