@@ -36,6 +36,7 @@
 	export let initNewChat: Function;
 	export let title: string = $WEBUI_NAME;
 	export let shareEnabled: boolean = false;
+	export let showChatVerifier: boolean = false;
 
 	export let chat;
 	export let history;
@@ -44,11 +45,15 @@
 
 	let showShareChatModal = false;
 	let showDownloadChatModal = false;
+
+	const toggleVerifier = () => {
+		showChatVerifier = !showChatVerifier;
+	};
 </script>
 
 <ShareChatModal bind:show={showShareChatModal} chatId={$chatId} />
 
-<nav class="sticky top-0 z-30 w-full py-1.5 -mb-8 flex flex-col items-center drag-region">
+<nav class="sticky top-0 z-30 w-full py-1.5 -mb-6 fl6x flex-col items-center drag-region">
 	<div class="flex items-center w-full px-1.5">
 		<div
 			class=" bg-linear-to-b via-50% from-white via-white to-transparent dark:from-gray-900 dark:via-gray-900 dark:to-transparent pointer-events-none absolute inset-0 -bottom-7 z-[-1]"
@@ -109,6 +114,7 @@
 							downloadHandler={() => {
 								showDownloadChatModal = !showDownloadChatModal;
 							}}
+							chatVerifierHandler={toggleVerifier}
 						>
 							<button
 								class="flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
@@ -148,6 +154,23 @@
 						</button>
 					</Tooltip> -->
 
+					<!-- <Tooltip content={$i18n.t('New Chat')}>
+						<button
+							id="new-chat-button"
+							class=" flex {$showSidebar
+								? 'md:hidden'
+								: ''} cursor-pointer px-2 py-2 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+							on:click={() => {
+								initNewChat();
+							}}
+							aria-label="New Chat"
+						>
+							<div class=" m-auto self-center">
+								<PencilSquare className=" size-5" strokeWidth="2" />
+							</div>
+						</button>
+					</Tooltip> -->
+
 					{#if $user !== undefined && $user !== null}
 						<UserMenu
 							className="max-w-[200px]"
@@ -173,6 +196,15 @@
 							</button>
 						</UserMenu>
 					{/if}
+
+					<button
+						on:click={toggleVerifier}
+						class="p-1.5 text-white rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition-all duration-200
+							{showChatVerifier ? 'hidden!' : ''}"
+						title="Toggle Verification Panel"
+					>
+						<img alt="safe" src="/assets/images/safe.svg" class="w-6 h-6" />
+					</button>
 				</div>
 			</div>
 		</div>
