@@ -6,7 +6,7 @@
 	import { onMount, tick, getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
 	import type { i18n as i18nType, t } from 'i18next';
-	import NearAiIcon from '$lib/components/icons/NearAiGreen2.svelte';
+	import NearAiIcon from '$lib/components/icons/NearAIGreen2.svelte';
 	import VerifiedIcon from '$lib/components/icons/Verified.svelte';
 
 	const i18n = getContext<Writable<i18nType>>('i18n');
