@@ -344,7 +344,7 @@
 				}}
 			>
 				<img alt="safe" src="/assets/images/safe.svg" class="size-4" />
-				<div class="flex items-center">Chat verify</div>
+				<div class="flex items-center">Verify Chat</div>
 			</DropdownMenu.Item> -->
 
 			<!-- {#if !$temporaryChatEnabled}
