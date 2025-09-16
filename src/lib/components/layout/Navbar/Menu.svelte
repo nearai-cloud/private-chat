@@ -131,6 +131,7 @@
 				pdf.save(`chat-${chat.chat.title}.pdf`);
 			} catch (error) {
 				console.error('Error generating PDF', error);
+				toast.error(`Error generating PDF: ${error}`);
 			}
 		}
 	};
