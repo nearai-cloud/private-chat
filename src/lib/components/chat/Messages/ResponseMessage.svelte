@@ -6,6 +6,8 @@
 	import { onMount, tick, getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
 	import type { i18n as i18nType, t } from 'i18next';
+	import NearAiIcon from '$lib/components/icons/NearAIGreen2.svelte';
+	import VerifiedIcon from '$lib/components/icons/Verified.svelte';
 
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
@@ -593,7 +595,8 @@
 					($i18n.language === 'dg-DG' ? `/doge.png` : `${WEBUI_BASE_URL}/static/favicon.png`)}
 				className={'size-8'}
 			/> -->
-			<img src="/assets/images/near-icon.svg" class="w-6 h-6 mt-0.5" />
+			<!-- <img src="/assets/images/near-icon.svg" class="w-6 h-6 mt-0.5" /> -->
+			<NearAiIcon className="w-6 h-6 mt-0.5" />
 		</div>
 
 		<div class="flex-auto w-0 pl-1">
@@ -606,7 +609,8 @@
 
 				<!-- Verification Badge -->
 				<div class="flex items-center ml-3">
-					<img src="/assets/images/verified-2.svg" />
+					<!-- <img src="/assets/images/verified-2.svg" /> -->
+					<VerifiedIcon className="h-6" />
 				</div>
 
 				{#if message.timestamp}
