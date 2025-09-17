@@ -2,8 +2,8 @@ import logging
 from typing import Optional
 
 import requests
-from open_webui.retrieval.web.main import SearchResult, get_filtered_results
 from open_webui.env import SRC_LOG_LEVELS
+from open_webui.retrieval.web.main import SearchResult, get_filtered_results
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["RAG"])
@@ -30,7 +30,11 @@ def search_brave(
     response.raise_for_status()
 
     json_response = response.json()
-    results = json_response.get("web", {}).get("results", [])
+    web_results = json_response.get("web", {}).get("results", [])
+    news_results = json_response.get("news", {}).get("results", [])
+    # Merge web and news results
+    results = web_results + news_results
+
     if filter_list:
         results = get_filtered_results(results, filter_list)
 
