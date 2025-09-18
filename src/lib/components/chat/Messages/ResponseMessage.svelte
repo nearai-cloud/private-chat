@@ -35,6 +35,7 @@
 	import Name from './Name.svelte';
 	import ProfileImage from './ProfileImage.svelte';
 	import Skeleton from './Skeleton.svelte';
+	import MessageSkeleton from './MessageSkeleton.svelte';
 	import Image from '$lib/components/common/Image.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import RateComment from './RateComment.svelte';
@@ -635,7 +636,7 @@
 								<div class="status-description flex items-center gap-2 py-0.5">
 									{#if status?.done === false}
 										<div class="">
-											<Spinner className="size-4" />
+											<Spinner className="size-4 text-[#00EC97]" />
 										</div>
 									{/if}
 
@@ -788,7 +789,10 @@
 						{:else}
 							<div class="w-full flex flex-col relative" id="response-content-container">
 								{#if message.content === '' && !message.error}
-									<Skeleton />
+									<!-- <Skeleton /> -->
+									{#if (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length > 0}{:else}
+										<MessageSkeleton />
+									{/if}
 								{:else if message.content && message.error !== true}
 									<!-- always show message contents even if there's an error -->
 									<!-- unless message.error === true which is legacy error handling, where the error message is stored in message.content -->
