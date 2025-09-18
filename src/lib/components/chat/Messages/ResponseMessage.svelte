@@ -790,7 +790,9 @@
 							<div class="w-full flex flex-col relative" id="response-content-container">
 								{#if message.content === '' && !message.error}
 									<!-- <Skeleton /> -->
-									<MessageSkeleton />
+									{#if (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length > 0}{:else}
+										<MessageSkeleton />
+									{/if}
 								{:else if message.content && message.error !== true}
 									<!-- always show message contents even if there's an error -->
 									<!-- unless message.error === true which is legacy error handling, where the error message is stored in message.content -->

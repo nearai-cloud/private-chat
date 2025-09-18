@@ -1,9 +1,11 @@
 <script lang="ts">
+	import Spinner from '$lib/components/common/Spinner.svelte';
 </script>
 
 <div class="flex items-center py-2 gap-x-2 text-xs">
-	<div class="size-3.5 bg-[#00EC97] rounded-full animate-msg"></div>
-	<span class="text-gray-500">Encrypting messages...</span>
+	<!-- <div class="size-3.5 bg-[#00EC97] rounded-full animate-msg"></div> -->
+	<Spinner className="size-4" />
+	<span class="shimmer text-gray-500 dark:text-gray-500 text-base">Encrypting messages...</span>
 </div>
 
 <style>
