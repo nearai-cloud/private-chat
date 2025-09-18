@@ -636,7 +636,7 @@
 								<div class="status-description flex items-center gap-2 py-0.5">
 									{#if status?.done === false}
 										<div class="">
-											<Spinner className="size-4" />
+											<Spinner className="size-4 text-[#00EC97]" />
 										</div>
 									{/if}
 
