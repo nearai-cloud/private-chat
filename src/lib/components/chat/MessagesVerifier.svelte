@@ -71,15 +71,6 @@
 		}
 	};
 
-	// Function to verify all message signatures
-	const verifyAllMessageSignatures = async () => {
-		for (const message of chatCompletions) {
-			if (message.chatCompletionId && !signatures[message.chatCompletionId]) {
-				await fetchMessageSignature(message.model, message.chatCompletionId);
-			}
-		}
-	};
-
 	// Function to scroll to selected message
 	const scrollToSelectedMessage = () => {
 		if (!containerElement || !selectedMessageId) return;
@@ -120,15 +111,6 @@
 		}, 300); // Increased delay to ensure DOM is updated
 	};
 
-	// Auto-fetch signatures when chatCompletions change
-	$: if (history && token && chatCompletions.length > 0) {
-		chatCompletions.forEach((message: Message) => {
-			if (message.chatCompletionId && !signatures[message.chatCompletionId]) {
-				fetchMessageSignature(message.model, message.chatCompletionId);
-			}
-		});
-	}
-
 	const openVerifySignatureDialog = () => {
 		if (!signatures[selectedMessageId]) return;
 		if (!signatures[selectedMessageId].signature) return;
@@ -145,6 +127,22 @@
 		chatId;
 		selectedMessageId = '';
 	}
+
+	$: if (selectedMessageId && history && token && chatCompletions.length > 0) {
+		const msg = chatCompletions.find((message) => message.chatCompletionId === selectedMessageId);
+		if (msg && msg.chatCompletionId && !signatures[msg.chatCompletionId]) {
+			fetchMessageSignature(msg.model, msg.chatCompletionId);
+		}
+	}
+
+	// Auto-fetch signatures when chatCompletions change
+	// $: if (history && token && chatCompletions.length > 0) {
+	// 	chatCompletions.forEach((message: Message) => {
+	// 		if (message.chatCompletionId && !signatures[message.chatCompletionId]) {
+	// 			fetchMessageSignature(message.model, message.chatCompletionId);
+	// 		}
+	// 	});
+	// }
 </script>
 
 <div class="space-y-4 h-full overflow-y-auto pb-4 px-4" bind:this={containerElement}>
