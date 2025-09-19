@@ -1,4 +1,4 @@
-# User Data Encryption in Open WebUI
+# User Data Encryption in Private Chat
 
 ## Overview
 

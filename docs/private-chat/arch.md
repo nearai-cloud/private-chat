@@ -2,7 +2,7 @@
 
 ## Overview
 
-The entire Open WebUI application stack runs within Phala Network's Trusted Execution Environment (TEE), providing hardware-level security for all components.
+The entire Private Chat application stack runs within Phala Network's Trusted Execution Environment (TEE), providing hardware-level security for all components.
 
 ### TEE Deployment Model
 
@@ -26,7 +26,8 @@ The entire Open WebUI application stack runs within Phala Network's Trusted Exec
 │ │  Attestation            │ │        Database          │ │ │          │              Attestation                                   │ │
 │ │                         │ │     ★ENCRYPTED★          │ │ │          │                                                            │ │
 │ │                         │ └──────────────────────────┘ │ │          │                                                            │ │
-│ └────────────────────────────────────────────────────────┘ │          └────────────────────────────────────────────────────────────┘ │
+│ │                         └──────────────────────────────┘ │          └────────────────────────────────────────────────────────────┘ │
+│ └──────────────────────────────────────────────────────────┘                                                                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │                                            Intel SGX / ARM TrustZone Hardware                                                        │
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
