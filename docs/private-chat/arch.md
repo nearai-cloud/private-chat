@@ -38,8 +38,8 @@ The entire Private Chat application stack runs within Phala Network's Trusted Ex
 ```mermaid
 sequenceDiagram
     participant User
-    participant Frontend as Phala TEE<br/>Frontend
-    participant Backend as Phala TEE<br/>Backend
+    participant Private Chat Frontend<br/>Frontend
+    participant Private Chat Backend<br/>Backend
     participant DB as Encrypted<br/>Database
     participant KMS as Key Service<br/>(TEE)
     participant AI as NEAR AI<br/>Cloud TEE
@@ -68,11 +68,13 @@ sequenceDiagram
 ## NEAR AI Cloud TEE Integration
 
 Uses **NEAR AI Cloud exclusively** within TEE environments for complete privacy:
+
 - Minimal logging (no user data)
 - TEE-to-TEE encrypted communication
 - No training data collection
 
 ### Communication
+
 - TEE-sealed key encryption
 - Secure inference in NEAR AI Cloud TEE
 - Hardware-verified attestation and signature exchange
@@ -82,6 +84,7 @@ Uses **NEAR AI Cloud exclusively** within TEE environments for complete privacy:
 ### Why the Database is Safe from Developers
 
 Database runs entirely within TEE enclave with complete isolation:
+
 - No direct database connections (psql, mysql, etc.)
 - TEE-encrypted memory and storage
 - Process isolation prevents debugging/inspection
@@ -95,7 +98,7 @@ Developer -> SSH -> Server -> Database (VULNERABLE)
 
 TEE Model:
 Developer -> ❌ BLOCKED ❌ -> TEE Boundary -> Database (SECURE)
-                          
+
 Only Path:
 Application Code (in TEE) -> Database (in TEE) ✅
 ```
@@ -117,6 +120,7 @@ TEE Instances (Private Chat Servers)
 ```
 
 **Security Features**:
+
 - Multi-party signature requirements
 - Ethereum-recorded updates
 - Governance revocation capability

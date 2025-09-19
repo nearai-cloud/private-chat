@@ -7,16 +7,19 @@ This private chat system provides **unprecedented privacy** through complete TEE
 ## Key Features
 
 ### 🔒 Complete TEE Deployment
+
 - **Frontend & Backend**: Run within Phala Network's TEE
 - **Database**: Encrypted at rest, inaccessible to developers
 - **LLM Provider**: NEAR AI Cloud also operates in TEE environment
 
 ### 🛡️ Multi-Sig Governance
+
 - All code updates require multi-signature approval
 - Ethereum smart contract authorization prevents unauthorized changes
 - Phala's Decentralized Root of Trust (DeRoT) manages keys
 
 ### 🔐 Per-User Encryption
+
 - AES-256-GCM encryption for all user data
 - External key management through TEE-sealed keys
 - Zero-knowledge architecture - even developers cannot access user data
@@ -38,6 +41,7 @@ The system consists of two main TEE environments communicating securely:
 ## Security Benefits
 
 This architecture protects against:
+
 - Database breaches (data encrypted at rest)
 - Developer access (zero-knowledge design)
 - Cloud provider surveillance (TEE isolation)

@@ -73,7 +73,7 @@ services:
     image: danielwpz/seal-cvm:0.5
     volumes:
       - /var/run/dstack.sock:/var/run/dstack.sock
-    
+
   private-chat:
     environment:
       ENABLE_CHAT_ENCRYPTION: true
@@ -97,7 +97,7 @@ class ChatTableEncryptionProxy(ChatTable):
     def insert_new_chat(self, user_id: str, form_data: ChatForm):
         # Encrypts chat data before storage
         self._store_encrypted_chat(chat_record, form_data.chat, user_id)
-        
+
     def get_chat_by_id(self, id: str):
         # Decrypts chat data after retrieval
         return self._create_chat_model_from_db_record(db_record)
@@ -106,14 +106,17 @@ class ChatTableEncryptionProxy(ChatTable):
 ### Security Features
 
 #### Configuration
+
 - `ENABLE_CHAT_ENCRYPTION=true`
 - Backward compatible with plaintext data
 - Graceful fallback on encryption failures
 
 #### Protected Data
+
 - Chat content, titles, and user metadata
 
 #### Performance
+
 - In-memory key caching, lazy loading, batch operations
 
 ## Configuration
@@ -153,6 +156,7 @@ services:
 ```
 
 **TEE Benefits:**
+
 - Hardware-protected enclaves
 - Frontend runs in TEE (not user devices)
 - Zero trust architecture
@@ -172,6 +176,7 @@ services:
 ## Privacy Guarantees
 
 **Privacy Guarantees:**
+
 - User conversations remain private with database access
 - Developers cannot read user content
 - Cloud providers cannot access plaintext
