@@ -1,33 +1,50 @@
-import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
+import { WEBUI_API_BASE_URL, WEBUI_BASE_URL, WEBUI_VERSION } from '$lib/constants';
 import { convertOpenApiToToolPayload } from '$lib/utils';
 import { getOpenAIModelsDirect } from './openai';
+import { LRUCache } from 'lru-cache';
 
 import { parse } from 'yaml';
 import { toast } from 'svelte-sonner';
+
+const modelsCache = new LRUCache({
+	max: 10,
+	ttl: 60 * 1000 * 10
+});
+const MODELS_CACHE_KEY = 'models';
 
 export const getModels = async (
 	token: string = '',
 	connections: object | null = null,
 	base: boolean = false
 ) => {
+	const cacheKey = `${MODELS_CACHE_KEY}_${base ? 'base' : 'all'}`;
 	let error = null;
-	const res = await fetch(`${WEBUI_BASE_URL}/api/models${base ? '/base' : ''}`, {
-		method: 'GET',
-		headers: {
-			Accept: 'application/json',
-			'Content-Type': 'application/json',
-			...(token && { authorization: `Bearer ${token}` })
-		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
+	let res = null;
+	if (modelsCache.get(cacheKey)) {
+		res = modelsCache.get(cacheKey);
+	} else {
+		res = await fetch(`${WEBUI_BASE_URL}/api/models${base ? '/base' : ''}`, {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
+				...(token && { authorization: `Bearer ${token}` })
+			}
 		})
-		.catch((err) => {
-			error = err;
-			console.log(err);
-			return null;
-		});
+			.then(async (res) => {
+				if (!res.ok) throw await res.json();
+				return res.json();
+			})
+			.catch((err) => {
+				error = err;
+				console.log(err);
+				return null;
+			});
+
+		if (res) {
+			modelsCache.set(cacheKey, res);
+		}
+	}
 
 	if (error) {
 		throw error;
@@ -1191,56 +1208,61 @@ export const getBackendConfig = async () => {
 };
 
 export const getChangelog = async () => {
-	let error = null;
+	return null;
+	// let error = null;
 
-	const res = await fetch(`${WEBUI_BASE_URL}/api/changelog`, {
-		method: 'GET',
-		headers: {
-			'Content-Type': 'application/json'
-		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.catch((err) => {
-			console.log(err);
-			error = err;
-			return null;
-		});
+	// const res = await fetch(`${WEBUI_BASE_URL}/api/changelog`, {
+	// 	method: 'GET',
+	// 	headers: {
+	// 		'Content-Type': 'application/json'
+	// 	}
+	// })
+	// 	.then(async (res) => {
+	// 		if (!res.ok) throw await res.json();
+	// 		return res.json();
+	// 	})
+	// 	.catch((err) => {
+	// 		console.log(err);
+	// 		error = err;
+	// 		return null;
+	// 	});
 
-	if (error) {
-		throw error;
-	}
+	// if (error) {
+	// 	throw error;
+	// }
 
-	return res;
+	// return res;
 };
 
 export const getVersionUpdates = async (token: string) => {
-	let error = null;
+	return {
+		current: WEBUI_VERSION,
+		latest: WEBUI_VERSION
+	};
+	// let error = null;
 
-	const res = await fetch(`${WEBUI_BASE_URL}/api/version/updates`, {
-		method: 'GET',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${token}`
-		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.catch((err) => {
-			console.log(err);
-			error = err;
-			return null;
-		});
+	// const res = await fetch(`${WEBUI_BASE_URL}/api/version/updates`, {
+	// 	method: 'GET',
+	// 	headers: {
+	// 		'Content-Type': 'application/json',
+	// 		Authorization: `Bearer ${token}`
+	// 	}
+	// })
+	// 	.then(async (res) => {
+	// 		if (!res.ok) throw await res.json();
+	// 		return res.json();
+	// 	})
+	// 	.catch((err) => {
+	// 		console.log(err);
+	// 		error = err;
+	// 		return null;
+	// 	});
 
-	if (error) {
-		throw error;
-	}
+	// if (error) {
+	// 	throw error;
+	// }
 
-	return res;
+	// return res;
 };
 
 export const getModelFilterConfig = async (token: string) => {

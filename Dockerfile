@@ -23,6 +23,7 @@ ARG GID=0
 ######## WebUI frontend ########
 FROM --platform=linux/amd64 node:22-alpine3.20 AS build
 ARG BUILD_HASH
+ARG VITE_GA_ID
 
 WORKDIR /app
 
@@ -32,6 +33,7 @@ RUN npm ci
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
 ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV VITE_GA_ID=${VITE_GA_ID}
 RUN npm run build
 
 ######## WebUI backend ########

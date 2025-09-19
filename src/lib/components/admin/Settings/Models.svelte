@@ -51,7 +51,14 @@
 	let showManageModal = false;
 
 	$: if (models) {
-		filteredModels = models
+		const uniMap = models.reduce((acc, model) => {
+			if (!acc.has(model.id)) {
+				acc.set(model.id, model);
+			}
+			return acc;
+		}, new Map());
+		const ms = Array.from(uniMap.values());
+		filteredModels = ms
 			.filter((m) => searchValue === '' || m.name.toLowerCase().includes(searchValue.toLowerCase()))
 			.sort((a, b) => {
 				// // Check if either model is inactive and push them to the bottom

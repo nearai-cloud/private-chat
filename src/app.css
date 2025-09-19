@@ -64,6 +64,8 @@ textarea::placeholder {
 
 .markdown-prose {
 	@apply prose dark:prose-invert prose-blockquote:border-s-gray-100 prose-blockquote:dark:border-gray-800 prose-blockquote:border-s-2 prose-blockquote:not-italic prose-blockquote:font-normal  prose-headings:font-semibold prose-hr:my-4 prose-hr:border-gray-100 prose-hr:dark:border-gray-800 prose-p:my-0 prose-img:my-1 prose-headings:my-1 prose-pre:my-0 prose-table:my-0 prose-blockquote:my-0 prose-ul:-my-0 prose-ol:-my-0 prose-li:-my-0 whitespace-pre-line;
+	color: rgba(248, 248, 248, 0.88);
+	font-size: 14px;
 }
 
 .markdown-prose-xs {
@@ -75,7 +77,7 @@ textarea::placeholder {
 }
 
 .font-primary {
-	font-family: 'Archivo', sans-serif;
+	font-family: Inter, 'Archivo', sans-serif;
 }
 
 .drag-region {
@@ -397,4 +399,9 @@ input[type='number'] {
 
 .hljs-strong {
 	font-weight: 700;
+}
+
+.app-chat-input {
+	border: 1px solid rgba(0, 61, 39, 1);
+	background: linear-gradient(180deg, rgba(0, 236, 151, 0.02) 0%, rgba(0, 236, 151, 0.04) 100%);
 }

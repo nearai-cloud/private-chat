@@ -1,32 +1,28 @@
-from typing import List, Optional
-from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException, status, Request
 import logging
+from typing import List, Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from open_webui.constants import ERROR_MESSAGES
+from open_webui.env import SRC_LOG_LEVELS
+from open_webui.models.files import FileModel, Files
 from open_webui.models.knowledge import (
-    Knowledges,
     KnowledgeForm,
     KnowledgeResponse,
+    Knowledges,
     KnowledgeUserResponse,
 )
-from open_webui.models.files import Files, FileModel
+from open_webui.models.models import ModelForm, Models
 from open_webui.retrieval.vector.connector import VECTOR_DB_CLIENT
 from open_webui.routers.retrieval import (
-    process_file,
-    ProcessFileForm,
-    process_files_batch,
     BatchProcessFilesForm,
+    ProcessFileForm,
+    process_file,
+    process_files_batch,
 )
 from open_webui.storage.provider import Storage
-
-from open_webui.constants import ERROR_MESSAGES
-from open_webui.utils.auth import get_verified_user
 from open_webui.utils.access_control import has_access, has_permission
-
-
-from open_webui.env import SRC_LOG_LEVELS
-from open_webui.models.models import Models, ModelForm
-
+from open_webui.utils.auth import get_verified_user
+from pydantic import BaseModel
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MODELS"])
@@ -585,11 +581,11 @@ async def delete_knowledge_by_id(id: str, user=Depends(get_verified_user)):
             detail=ERROR_MESSAGES.ACCESS_PROHIBITED,
         )
 
-    log.info(f"Deleting knowledge base: {id} (name: {knowledge.name})")
+    log.debug(f"Deleting knowledge base")
 
     # Get all models
     models = Models.get_all_models()
-    log.info(f"Found {len(models)} models to check for knowledge base {id}")
+    log.debug(f"Checking {len(models)} models for knowledge base references")
 
     # Update models that reference this knowledge base
     for model in models:
@@ -600,7 +596,7 @@ async def delete_knowledge_by_id(id: str, user=Depends(get_verified_user)):
 
             # If the knowledge list changed, update the model
             if len(updated_knowledge) != len(knowledge_list):
-                log.info(f"Updating model {model.id} to remove knowledge base {id}")
+                log.debug(f"Updating model to remove knowledge base reference")
                 model.meta.knowledge = updated_knowledge
                 # Create a ModelForm for the update
                 model_form = ModelForm(

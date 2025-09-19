@@ -251,9 +251,9 @@
 		<div
 			class=" w-full flex justify-between rounded-lg px-[11px] py-[6px] {id === $chatId ||
 			confirmEdit
-				? 'bg-gray-200 dark:bg-gray-900'
+				? 'bg-gray-200 dark:bg-[rgba(0,236,151,0.08)]'
 				: selected
-					? 'bg-gray-100 dark:bg-gray-950'
+					? 'bg-gray-100 dark:bg-[rgba(0,236,151,0.08)] font-semibold'
 					: 'group-hover:bg-gray-100 dark:group-hover:bg-gray-950'}  whitespace-nowrap text-ellipsis"
 		>
 			<input
@@ -268,9 +268,9 @@
 		<a
 			class=" w-full flex justify-between rounded-lg px-[11px] py-[6px] {id === $chatId ||
 			confirmEdit
-				? 'bg-gray-200 dark:bg-gray-900'
+				? 'bg-gray-200 dark:bg-[rgba(0,236,151,0.08)]'
 				: selected
-					? 'bg-gray-100 dark:bg-gray-950'
+					? 'bg-gray-100 dark:bg-[rgba(0,236,151,0.08)] font-semibold'
 					: ' group-hover:bg-gray-100 dark:group-hover:bg-gray-950'}  whitespace-nowrap text-ellipsis"
 			href="/c/{id}"
 			on:click={() => {
@@ -304,11 +304,7 @@
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		class="
-        {id === $chatId || confirmEdit
-			? 'from-gray-200 dark:from-gray-900'
-			: selected
-				? 'from-gray-100 dark:from-gray-950'
-				: 'invisible group-hover:visible from-gray-100 dark:from-gray-950'}
+        {id === $chatId || confirmEdit ? '' : selected ? '' : 'invisible group-hover:visible'}
             absolute {className === 'pr-2'
 			? 'right-[8px]'
 			: 'right-0'}  top-[4px] py-1 pr-0.5 mr-1.5 pl-5 bg-linear-to-l from-80%

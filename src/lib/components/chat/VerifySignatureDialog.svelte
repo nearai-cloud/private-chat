@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { toast } from 'svelte-sonner';
+	import { createEventDispatcher, getContext } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { copyToClipboard } from '$lib/utils';
 	import { verifySignature } from '$lib/utils/signature';
@@ -8,6 +9,8 @@
 
 	const dispatch = createEventDispatcher();
 
+	const i18n = getContext('i18n');
+
 	export let show = false;
 	export let address = '';
 	export let message = '';
@@ -15,6 +18,8 @@
 	export let algorithm = '';
 
 	let verifyStatus: 'pending' | 'success' | 'error' = 'pending';
+
+	let checkedMap = {};
 
 	const closeModal = () => {
 		dispatch('close');
@@ -25,6 +30,10 @@
 		const isValid = verifySignature(address, message, signature);
 		verifyStatus = isValid ? 'success' : 'error';
 	}
+
+	$: if (show) {
+		checkedMap = {};
+	}
 </script>
 
 {#if show}
@@ -34,17 +43,19 @@
 		transition:fade={{ duration: 200 }}
 	>
 		<div
-			class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+			class="bg-white dark:bg-gray-875 border dark:border-[rgba(255,255,255,0.1)] rounded-lg shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
 			on:click|stopPropagation
 		>
 			<!-- Header -->
 			<div
-				class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700"
+				class="flex px-6 pt-6 pb-3 items-center justify-between border-gray-200 dark:border-gray-700"
 			>
-				<h2 class="text-xl font-bold text-gray-900 dark:text-white">Signature Verification</h2>
+				<h2 class="text-lg text-gray-900 dark:text-white gap-2 flex items-center">
+					Signature Verification
+				</h2>
 				<button
 					on:click={closeModal}
-					class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+					class="text-white shadow hover:text-gray-600 dark:hover:text-gray-300 h-8 w-8 rounded flex items-center justify-center dark:bg-[rgba(248,248,248,0.04)] transition-colors"
 				>
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -62,10 +73,10 @@
 				<!-- Status -->
 				{#if verifyStatus === 'success'}
 					<div
-						class="mb-4 py-2 px-2.5 text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-sm"
+						class="mb-4 py-2 px-2.5 text-green-700 dark:text-green-300 bg-green-50 dark:bg-[rgba(0,236,151,0.08)] border border-green-200 dark:border-[rgba(0,236,151,0.08)] rounded-lg text-sm"
 					>
 						<svg
-							class="w-5 -mt-[2px] h-5 text-green-500 mr-0.5 inline-block"
+							class="w-5 -mt-[2px] h-5 text-green-500 dark:text-[rgba(0,236,151,1)] mr-0.5 inline-block"
 							fill="currentColor"
 							viewBox="0 0 20 20"
 						>
@@ -104,20 +115,29 @@
 					}}
 				>
 					<div class="flex flex-col w-full mb-3">
-						<div class="mb-2 text-black text-sm flex items-center justify-between">
+						<div
+							class="mb-2 text-black dark:text-[rgba(161,161,161,1)] text-sm flex items-center justify-between"
+						>
 							<span>Address</span>
 							<button
 								class="flex items-center gap-x-1 bg-none border-none text-xs bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-md px-2 py-1"
 								on:click={() => {
 									copyToClipboard(address);
+									toast.success($i18n.t('Copied to clipboard'));
+									checkedMap['address'] = true;
 								}}
 							>
-								<ClipboardIcon /> Copy
+								{#if checkedMap['address']}
+									<CheckIcon />
+								{:else}
+									<ClipboardIcon />
+								{/if}
+								Copy
 							</button>
 						</div>
 						<div class="flex-1">
 							<input
-								class="w-full placeholder:text-gray-300 text-sm dark:placeholder:text-gray-700 outline-hidden py-2 px-3 border rounded border-gray-300/50"
+								class="w-full placeholder:text-[rgba(161,161,161,1)] dark:text-[rgba(161,161,161,1)] text-sm outline-hidden py-2 px-3 border rounded border-gray-300/50 dark:border-[rgba(248,248,248,0.08)] dark:bg-[rgba(248,248,248,0.04)]"
 								type="text"
 								autocomplete="off"
 								value={address}
@@ -128,20 +148,29 @@
 						</div>
 					</div>
 					<div class="flex flex-col w-full mb-3">
-						<div class="mb-2 text-black text-sm flex items-center justify-between">
+						<div
+							class="mb-2 text-black dark:text-[rgba(161,161,161,1)] text-sm flex items-center justify-between"
+						>
 							<span>Message</span>
 							<button
 								class="flex items-center gap-x-1 bg-none border-none text-xs bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-md px-2 py-1"
 								on:click={() => {
 									copyToClipboard(message);
+									toast.success($i18n.t('Copied to clipboard'));
+									checkedMap['message'] = true;
 								}}
 							>
-								<ClipboardIcon /> Copy
+								{#if checkedMap['message']}
+									<CheckIcon />
+								{:else}
+									<ClipboardIcon />
+								{/if}
+								Copy
 							</button>
 						</div>
 						<div class="flex-1">
 							<textarea
-								class="w-full placeholder:text-gray-300 text-sm dark:placeholder:text-gray-700 outline-hidden py-2 px-3 border rounded border-gray-300/50"
+								class="w-full placeholder:text-[rgba(161,161,161,1)] dark:text-[rgba(161,161,161,1)] text-sm outline-hidden py-2 px-3 border rounded border-gray-300/50 dark:border-[rgba(248,248,248,0.08)] dark:bg-[rgba(248,248,248,0.04)]"
 								rows="3"
 								required
 								value={message}
@@ -151,20 +180,29 @@
 						</div>
 					</div>
 					<div class="flex flex-col w-full mb-6">
-						<div class="mb-2 text-black text-sm flex items-center justify-between">
+						<div
+							class="mb-2 text-black dark:text-[rgba(161,161,161,1)] text-sm flex items-center justify-between"
+						>
 							<span>Signature</span>
 							<button
 								class="flex items-center gap-x-1 bg-none border-none text-xs bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-md px-2 py-1"
 								on:click={() => {
 									copyToClipboard(signature);
+									toast.success($i18n.t('Copied to clipboard'));
+									checkedMap['signature'] = true;
 								}}
 							>
-								<ClipboardIcon /> Copy
+								{#if checkedMap['signature']}
+									<CheckIcon />
+								{:else}
+									<ClipboardIcon />
+								{/if}
+								Copy
 							</button>
 						</div>
 						<div class="flex-1">
 							<textarea
-								class="w-full placeholder:text-gray-300 text-sm dark:placeholder:text-gray-700 outline-hidden py-2 px-3 border rounded border-gray-300/50"
+								class="w-full dark:text-[rgba(161,161,161,1)] placeholder:text-[rgba(161,161,161,1)] text-smoutline-hidden py-2 px-3 border rounded border-gray-300/50 dark:border-[rgba(248,248,248,0.08)] dark:bg-[rgba(248,248,248,0.04)]"
 								value={signature}
 								rows="3"
 								required

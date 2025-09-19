@@ -31,6 +31,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { Toaster, toast } from 'svelte-sonner';
+	import { initGa, trackPageView } from '$lib/utils/analytics';
 
 	import { executeToolServer, getBackendConfig } from '$lib/apis';
 	import { getSessionUser } from '$lib/apis/auths';
@@ -433,6 +434,18 @@
 	};
 
 	onMount(async () => {
+		const disableAutoPageView = false;
+		initGa(disableAutoPageView);
+		if (disableAutoPageView) {
+			// Set up global page view tracking with selective override for sensitive pages
+			page.subscribe((pageData) => {
+				const path = pageData.url.pathname;
+				if (path) {
+					trackPageView(document.title, path);
+				}
+			});
+		}
+
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
 		}
@@ -477,7 +490,8 @@
 		// Call visibility change handler initially to set state on load
 		handleVisibilityChange();
 
-		theme.set(localStorage.theme);
+		// theme.set(localStorage.theme);
+		theme.set('dark');
 
 		mobile.set(window.innerWidth < BREAKPOINT);
 
@@ -558,7 +572,17 @@
 				} else {
 					// Don't redirect if we're already on the auth page
 					// Needed because we pass in tokens from OAuth logins via URL fragments
-					if (['/auth', '/welcome'].indexOf($page.url.pathname) === -1) {
+					if (
+						[
+							'/auth',
+							'/welcome',
+							'/terms',
+							'/privacy',
+							'/privacy/eu',
+							'/privacy/cal',
+							'/privacy/cookie'
+						].indexOf($page.url.pathname) === -1
+					) {
 						// await goto(`/auth?redirect=${encodedUrl}`);
 						await goto(`/welcome`);
 					}
