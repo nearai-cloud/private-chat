@@ -135,6 +135,7 @@
 
 	export let isLastMessage = true;
 	export let readOnly = false;
+	export let webSearchEnabled = false;
 
 	let buttonsContainerElement: HTMLDivElement;
 	let showDeleteConfirm = false;
@@ -790,7 +791,7 @@
 							<div class="w-full flex flex-col relative" id="response-content-container">
 								{#if message.content === '' && !message.error}
 									<!-- <Skeleton /> -->
-									{#if (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length > 0}{:else}
+									{#if !webSearchEnabled}
 										<MessageSkeleton />
 									{/if}
 								{:else if message.content && message.error !== true}

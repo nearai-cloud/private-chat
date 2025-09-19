@@ -33,6 +33,7 @@
 	export let history = {};
 	export let selectedModels;
 	export let atSelectedModel;
+	export let webSearchEnabled;
 
 	let messages = [];
 
@@ -452,6 +453,7 @@
 							{addMessages}
 							{triggerScroll}
 							{readOnly}
+							{webSearchEnabled}
 						/>
 					{/each}
 				</div>
