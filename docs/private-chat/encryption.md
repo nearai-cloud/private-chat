@@ -163,9 +163,11 @@ services:
 
 ### Threat Model
 
-**Protected Against:** Database breaches, cloud surveillance, insider threats, network interception, client-side compromises, host OS attacks, infrastructure attacks
+**Protected Against:** Database breaches, cloud surveillance, insider threats, network interception, host OS attacks, infrastructure attacks
 
-**Attack Surface:** Memory dumps (TEE only), side-channel attacks (mitigated), physical hardware attacks
+**Attack Surface:** Memory dumps (TEE only), side-channel attacks (mitigated), physical hardware attacks, fully compromised client endpoints
+
+**Note:** TEEs may mitigate certain client-side risks by running the frontend in hardware-protected enclaves rather than user devices, but cannot protect against fully compromised endpoints or browsers.
 
 ## Privacy Guarantees
 
