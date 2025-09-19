@@ -13,6 +13,7 @@
 	import { get, type Unsubscriber, type Writable } from 'svelte/store';
 	import type { i18n as i18nType } from 'i18next';
 	import { WEBUI_BASE_URL } from '$lib/constants';
+	import AccountButton from './AccountButton.svelte';
 
 	import {
 		chatId,
@@ -2050,7 +2051,10 @@
 							</div>
 						</div>
 
-						<div class=" pb-[1rem]">
+						<div class="pb-[1rem] flex items-center {$showSidebar ? '' : 'md:pl-2.5'}">
+							{#if !$showSidebar}
+								<AccountButton buttonClass="hidden md:flex! size-10.5!" iconClass="size-7.5!" />
+							{/if}
 							<MessageInput
 								{history}
 								{taskIds}
@@ -2104,7 +2108,13 @@
 							</div>
 						</div>
 					{:else}
-						<div class="overflow-auto w-full h-full flex items-center">
+						<div class="overflow-auto w-full h-full flex items-end">
+							{#if !$showSidebar}
+								<AccountButton
+									buttonClass="hidden md:flex! size-10.5! ml-2.5! mb-9.5!"
+									iconClass="size-7.5!"
+								/>
+							{/if}
 							<Placeholder
 								{history}
 								{selectedModels}
