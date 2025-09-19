@@ -38,12 +38,12 @@ The entire Private Chat application stack runs within Phala Network's Trusted Ex
 ```mermaid
 sequenceDiagram
     participant User
-    participant Private Chat Frontend<br/>Frontend
-    participant Private Chat Backend<br/>Backend
-    participant DB as Encrypted<br/>Database
-    participant KMS as Key Service<br/>(TEE)
-    participant AI as NEAR AI<br/>Cloud TEE
-    participant Gov as Multi-Sig<br/>Governance
+    participant Frontend as Private Chat Frontend
+    participant Backend as Private Chat Backend
+    participant DB as Encrypted Database
+    participant KMS as Key Service (TEE)
+    participant AI as NEAR AI Cloud TEE
+    participant Gov as Multi-Sig Governance
 
     Note over User,AI: User Chat Flow
     User->>Frontend: Input message
