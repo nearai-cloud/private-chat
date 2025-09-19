@@ -336,6 +336,9 @@ async def chat_web_search_handler(
         log.debug("Search query generation is disabled, using user message directly")
         queries = [user_message]
 
+    # limit the number of queries to 1
+    queries = queries[:1]
+
     if len(queries) == 0:
         await event_emitter(
             {

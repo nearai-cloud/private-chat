@@ -12,37 +12,41 @@ log.setLevel(SRC_LOG_LEVELS["RAG"])
 def search_brave(
     api_key: str, query: str, count: int, filter_list: Optional[list[str]] = None
 ) -> list[SearchResult]:
-    """Search using Brave's Search API and return the results as a list of SearchResult objects.
+    """Search using Brave's Chat Completions API and return the results as a list of SearchResult objects.
 
     Args:
         api_key (str): A Brave Search API key
         query (str): The query to search for
     """
-    url = "https://api.search.brave.com/res/v1/web/search"
+    url = "https://api.search.brave.com/res/v1/chat/completions"
     headers = {
         "Accept": "application/json",
         "Accept-Encoding": "gzip",
         "X-Subscription-Token": api_key,
+        "Content-Type": "application/json",
     }
-    params = {"q": query, "count": count}
 
-    response = requests.get(url, headers=headers, params=params)
+    # Prepare the request body for chat completions
+    payload = {"stream": "false", "messages": [{"role": "user", "content": query}]}
+
+    response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
 
     json_response = response.json()
-    web_results = json_response.get("web", {}).get("results", [])
-    news_results = json_response.get("news", {}).get("results", [])
-    # Merge web and news results
-    results = web_results + news_results
 
-    if filter_list:
-        results = get_filtered_results(results, filter_list)
+    # Extract content from the chat completion response
+    choices = json_response.get("choices", [])
+    if not choices:
+        return []
 
-    return [
-        SearchResult(
-            link=result["url"],
-            title=result.get("title"),
-            snippet=result.get("description"),
-        )
-        for result in results[:count]
-    ]
+    content = choices[0].get("message", {}).get("content", "")
+
+    # Create a single SearchResult with the content as snippet
+    # Using mock values for link and title as requested
+    result = SearchResult(
+        link="https://search.brave.com/",
+        title="Brave Search Results",
+        snippet=content,
+    )
+
+    return [result]

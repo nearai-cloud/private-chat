@@ -1407,6 +1407,7 @@ Analyze the chat history to determine the necessity of generating search queries
 - Be concise and focused on composing high-quality search queries, avoiding unnecessary elaboration, commentary, or assumptions.
 - Always prioritize providing actionable and broad queries that maximize informational coverage.
 - Unless the user explicitly asks to generate in a specific language, generate in English.
+- Generate only ONE search query.
 
 ### Output:
 Strictly return in JSON format: 
