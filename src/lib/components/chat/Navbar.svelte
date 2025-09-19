@@ -90,6 +90,33 @@
 							<PencilSquare className="size-4.5" strokeWidth="2" />
 						</button>
 					</Tooltip>
+
+					{#if $user !== undefined && $user !== null}
+						<UserMenu
+							className="max-w-[200px]"
+							role={$user?.role}
+							side="right"
+							on:show={(e) => {
+								if (e.detail === 'archived-chat') {
+									showArchivedChats.set(true);
+								}
+							}}
+						>
+							<button
+								class="select-none flex rounded-xl p-1.5 w-full hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+								aria-label="User Menu"
+							>
+								<div class=" self-center">
+									<img
+										src={$user?.profile_image_url}
+										class="size-6 object-cover rounded-full"
+										alt="User profile"
+										draggable="false"
+									/>
+								</div>
+							</button>
+						</UserMenu>
+					{/if}
 				</div>
 
 				<div
@@ -171,7 +198,7 @@
 						</button>
 					</Tooltip> -->
 
-					{#if $user !== undefined && $user !== null}
+					<!-- {#if $user !== undefined && $user !== null}
 						<UserMenu
 							className="max-w-[200px]"
 							role={$user?.role}
@@ -195,7 +222,7 @@
 								</div>
 							</button>
 						</UserMenu>
-					{/if}
+					{/if} -->
 
 					<button
 						on:click={toggleVerifier}

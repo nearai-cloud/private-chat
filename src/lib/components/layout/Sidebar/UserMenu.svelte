@@ -15,6 +15,7 @@
 	export let show = false;
 	export let role = '';
 	export let className = 'max-w-[240px]';
+	export let side = 'bottom';
 
 	const dispatch = createEventDispatcher();
 </script>
@@ -33,7 +34,7 @@
 		<DropdownMenu.Content
 			class="w-full {className} text-sm rounded-xl px-1 py-1.5 z-50 bg-white dark:bg-gray-875 dark:text-white shadow-lg font-primary"
 			sideOffset={8}
-			side="bottom"
+			side={side}
 			align="start"
 			transition={(e) => fade(e, { duration: 100 })}
 		>
