@@ -3,6 +3,8 @@
 	import VerifySignatureDialog from './VerifySignatureDialog.svelte';
 	import type { Message } from '$lib/types';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
+	import Spinner from '$lib/components/common/Spinner.svelte';
+	import RefreshIcon from '$lib/components/icons/Refresh.svelte';
 
 	export let history: {
 		messages: Record<string, Message>;
@@ -13,6 +15,7 @@
 
 	let signatures: Record<string, MessageSignature> = {};
 	let loadingSignatures: Set<string> = new Set();
+	let errorSignatures = {};
 	let error: string | null = null;
 	let selectedMessageId = '';
 	let lastCurrentId = '';
@@ -53,21 +56,36 @@
 	$: messageList = viewMore ? chatCompletions : chatCompletions.slice(0, 2);
 
 	// Function to fetch message signature
-	const fetchMessageSignature = async (model: string, chatCompletionId: string) => {
-		if (!chatCompletionId || !token || !model || loadingSignatures.has(chatCompletionId)) return;
+	const fetchMessageSignature = async (msgId) => {
+		if (!token || !history || !chatCompletions.length || !msgId) return;
+		const msg = chatCompletions.find((message) => message.chatCompletionId === msgId);
+		if (!msg || !msg.chatCompletionId || signatures[msg.chatCompletionId]) return;
+		if (loadingSignatures.has(msg.chatCompletionId)) return;
 
-		loadingSignatures.add(chatCompletionId);
+		loadingSignatures.add(msg.chatCompletionId);
 		loadingSignatures = loadingSignatures; // Trigger reactivity
 
 		try {
-			const data = await getMessageSignature({ token, model, chatCompletionId });
-			signatures = { ...signatures, [chatCompletionId]: data };
+			const data = await getMessageSignature({
+				token,
+				model: msg.model,
+				chatCompletionId: msg.chatCompletionId
+			});
+			if (!data || !data.signature) {
+				const errorMsg =
+					data?.detail || data?.message || 'No signature data found for this message';
+				errorSignatures[msg.chatCompletionId] = errorMsg;
+				return;
+			}
+			signatures = { ...signatures, [msg.chatCompletionId]: data };
+			delete errorSignatures[msg.chatCompletionId];
 		} catch (err) {
 			console.error('Error fetching message signature:', err);
-			error = err instanceof Error ? err.message : 'Failed to fetch message signature';
+			const errorMsg = err instanceof Error ? err.message : 'Failed to fetch message signature';
+			errorSignatures[msg.chatCompletionId] = errorMsg;
 		} finally {
-			loadingSignatures.delete(chatCompletionId);
-			loadingSignatures = loadingSignatures; // Trigger reactivity
+			loadingSignatures.delete(msg.chatCompletionId);
+			loadingSignatures = loadingSignatures;
 		}
 	};
 
@@ -128,21 +146,9 @@
 		selectedMessageId = '';
 	}
 
-	$: if (selectedMessageId && history && token && chatCompletions.length > 0) {
-		const msg = chatCompletions.find((message) => message.chatCompletionId === selectedMessageId);
-		if (msg && msg.chatCompletionId && !signatures[msg.chatCompletionId]) {
-			fetchMessageSignature(msg.model, msg.chatCompletionId);
-		}
+	$: if (selectedMessageId) {
+		fetchMessageSignature(selectedMessageId);
 	}
-
-	// Auto-fetch signatures when chatCompletions change
-	// $: if (history && token && chatCompletions.length > 0) {
-	// 	chatCompletions.forEach((message: Message) => {
-	// 		if (message.chatCompletionId && !signatures[message.chatCompletionId]) {
-	// 			fetchMessageSignature(message.model, message.chatCompletionId);
-	// 		}
-	// 	});
-	// }
 </script>
 
 <div class="space-y-4 h-full overflow-y-auto pb-4 px-4" bind:this={containerElement}>
@@ -292,11 +298,35 @@
 						</div>
 					</div>
 				{:else if selectedMessageId}
-					<div class="rounded-lg min-h-[150px] flex items-center justify-center">
-						<div class="text-center py-2 text-gray-500 dark:text-gray-400">
-							<p class="text-xs">No signature data available for selected message</p>
+					{#if loadingSignatures.has(selectedMessageId)}
+						<!-- Loading State -->
+						<div class="rounded-lg min-h-[150px] flex items-center justify-center">
+							<Spinner className="size-4 text-nearg-400" />
 						</div>
-					</div>
+					{:else if errorSignatures[selectedMessageId]}
+						<!-- Error State -->
+						<div class="rounded-lg min-h-[150px] flex items-center justify-center">
+							<div class="text-center py-2 text-gray-500 dark:text-gray-400">
+								<p class="text-xs">No signature data found for this message.</p>
+							</div>
+							<!-- retry -->
+							<button
+								title="Retry"
+								type="button"
+								class="hover:opacity-75 ml-1 cursor-pointer"
+								on:click={() => fetchMessageSignature(selectedMessageId)}
+							>
+								<RefreshIcon className="size-3.5 text-nearg-400" />
+							</button>
+						</div>
+					{:else}
+						<!-- No Signature Found State -->
+						<div class="rounded-lg min-h-[150px] flex items-center justify-center">
+							<div class="text-center py-2 text-gray-500 dark:text-gray-400">
+								<p class="text-xs">No signature data found for this message.</p>
+							</div>
+						</div>
+					{/if}
 				{:else}
 					<div class="rounded-lg min-h-[150px] flex items-center justify-center">
 						<div class="text-center py-2 text-gray-500 dark:text-gray-400">
