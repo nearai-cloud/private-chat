@@ -173,7 +173,7 @@
 					</Tooltip> -->
 
 					<!-- mobile button -->
-					<AccountButton buttonClass="md:hidden!" />
+					<!-- <AccountButton buttonClass="md:hidden!" /> -->
 
 					<button
 						on:click={toggleVerifier}

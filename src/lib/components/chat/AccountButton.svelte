@@ -1,6 +1,6 @@
 <script lang="ts">
 	import UserMenu from '$lib/components/layout/Sidebar/UserMenu.svelte';
-	import { user } from '$lib/stores';
+	import { user, showArchivedChats } from '$lib/stores';
 
 	export let buttonClass: string = '';
 	export let iconClass: string = '';
