@@ -978,7 +978,7 @@
 							{/if}
 
 							{#if message.done}
-								{#if !readOnly}
+								<!-- {#if !readOnly}
 									{#if $user?.role === 'user' ? ($user?.permissions?.chat?.edit ?? true) : true}
 										<Tooltip content={$i18n.t('Edit')} placement="bottom">
 											<button
@@ -1006,7 +1006,7 @@
 											</button>
 										</Tooltip>
 									{/if}
-								{/if}
+								{/if} -->
 
 								<Tooltip content={$i18n.t('Copy')} placement="bottom">
 									<button
