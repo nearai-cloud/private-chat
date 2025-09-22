@@ -107,36 +107,21 @@ def search_brave(
                 continue
 
     # Debug: Print structured response
-    print("\n\n=== STRUCTURED RESPONSE DEBUG ===")
-    print("# 返回主体内容")
-    print("".join(main_content_parts))
+    # print("\n\n=== STRUCTURED RESPONSE DEBUG ===")
+    # print("# Main content")
+    # print("".join(main_content_parts))
 
-    if citations:
-        print("\n# Citations")
-        for i, citation in enumerate(citations, 1):
-            print(f"{i}. Citation {citation.get('number', i)}")
-            print(f"    - Link: {citation.get('url', 'N/A')}")
-            print(f"    - Title: {citation.get('snippet', 'N/A')[:100]}...")
-            print(f"    - Content: {citation.get('snippet', 'N/A')}")
-            print()
+    # if citations:
+    #     print("\n# Citations")
+    #     for i, citation in enumerate(citations, 1):
+    #         print(f"{i}. Citation {citation.get('number', i)}")
+    #         print(f"    - Link: {citation.get('url', 'N/A')}")
+    #         print(f"    - Title: {citation.get('snippet', 'N/A')[:100]}...")
+    #         print(f"    - Content: {citation.get('snippet', 'N/A')}")
+    #         print()
+    # print("=== END STRUCTURED RESPONSE DEBUG ===")
 
-    print("=== END STRUCTURED RESPONSE DEBUG ===")
-
-    # Build content from parts
-    content = "".join(content_parts)
-    main_content = "".join(main_content_parts)
-
-    # Create SearchResult objects - main content + citations
     results = []
-
-    # Add main content result if there's any content
-    # if main_content.strip():
-    #     main_result = SearchResult(
-    #         link="https://search.brave.com/",
-    #         title="Brave Search Results",
-    #         snippet=main_content,
-    #     )
-    #     results.append(main_result)
 
     # Add citation results
     for citation in citations:
