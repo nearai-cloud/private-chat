@@ -211,18 +211,79 @@ async def chat_completion_tools_handler(
                             tool_result_files.append(item)
                             tool_result.remove(item)
 
-                if isinstance(tool_result, dict) or isinstance(tool_result, list):
+                tool = tools[tool_function_name]
+                tool_id = tool.get("tool_id", "")
+                tool_name = (
+                    f"{tool_id}/{tool_function_name}"
+                    if tool_id
+                    else f"{tool_function_name}"
+                )
+
+                # Handle list results specially when citations are enabled
+                if isinstance(tool_result, list) and (
+                    tool.get("metadata", {}).get("citation", False)
+                    or tool.get("direct", False)
+                ):
+                    # Citation is enabled for this tool and result is a list
+                    for i, item in enumerate(tool_result):
+                        # Check if this is a SearchResult-like object with link, title, snippet
+                        if (
+                            hasattr(item, "link")
+                            and hasattr(item, "title")
+                            and hasattr(item, "snippet")
+                        ):
+                            # This is a SearchResult object
+                            sources.append(
+                                {
+                                    "source": {
+                                        "name": item.title or f"Search Result {i+1}",
+                                        "url": item.link,
+                                    },
+                                    "document": [item.snippet or ""],
+                                    "metadata": [
+                                        {
+                                            "source": item.link,
+                                            "title": item.title,
+                                        }
+                                    ],
+                                }
+                            )
+                        elif isinstance(item, dict) and "link" in item:
+                            # Handle dict-like search results
+                            sources.append(
+                                {
+                                    "source": {
+                                        "name": item.get(
+                                            "title", f"Search Result {i+1}"
+                                        ),
+                                        "url": item.get("link", ""),
+                                    },
+                                    "document": [item.get("snippet", "")],
+                                    "metadata": [
+                                        {
+                                            "source": item.get("link", ""),
+                                            "title": item.get("title", ""),
+                                        }
+                                    ],
+                                }
+                            )
+                        else:
+                            # Fallback for other list items
+                            sources.append(
+                                {
+                                    "source": {
+                                        "name": f"TOOL:{tool_name} Result {i+1}",
+                                    },
+                                    "document": [str(item)],
+                                    "metadata": [
+                                        {"source": f"TOOL:{tool_name} Result {i+1}"}
+                                    ],
+                                }
+                            )
+                elif isinstance(tool_result, dict) or isinstance(tool_result, list):
                     tool_result = json.dumps(tool_result, indent=2)
 
                 if isinstance(tool_result, str):
-                    tool = tools[tool_function_name]
-                    tool_id = tool.get("tool_id", "")
-
-                    tool_name = (
-                        f"{tool_id}/{tool_function_name}"
-                        if tool_id
-                        else f"{tool_function_name}"
-                    )
                     if tool.get("metadata", {}).get("citation", False) or tool.get(
                         "direct", False
                     ):
@@ -887,16 +948,16 @@ async def process_chat_payload(request, form_data, user, metadata, model):
     # If context is not empty, insert it into the messages
     if len(sources) > 0:
         context_string = ""
-        citated_file_idx = {}
+        source_counter = 1
         for _, source in enumerate(sources, 1):
             if "document" in source:
                 for doc_context, doc_meta in zip(
                     source["document"], source["metadata"]
                 ):
-                    file_id = doc_meta.get("file_id")
-                    if file_id not in citated_file_idx:
-                        citated_file_idx[file_id] = len(citated_file_idx) + 1
-                    context_string += f'<source id="{citated_file_idx[file_id]}">{doc_context}</source>\n'
+                    context_string += (
+                        f'<source id="{source_counter}">{doc_context}</source>\n'
+                    )
+                    source_counter += 1
 
         context_string = context_string.strip()
         prompt = get_last_user_message(form_data["messages"])
