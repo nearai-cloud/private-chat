@@ -75,14 +75,17 @@
 				const errorMsg =
 					data?.detail || data?.message || 'No signature data found for this message';
 				errorSignatures[msg.chatCompletionId] = errorMsg;
+				errorSignatures = { ...errorSignatures };
 				return;
 			}
 			messagesSignatures.update((prev) => ({ ...prev, [msg.chatCompletionId]: data }));
 			delete errorSignatures[msg.chatCompletionId];
+			errorSignatures = { ...errorSignatures };
 		} catch (err) {
 			console.error('Error fetching message signature:', err);
 			const errorMsg = err instanceof Error ? err.message : 'Failed to fetch message signature';
 			errorSignatures[msg.chatCompletionId] = errorMsg;
+			errorSignatures = { ...errorSignatures };
 		} finally {
 			loadingSignatures.delete(msg.chatCompletionId);
 			loadingSignatures = loadingSignatures;
