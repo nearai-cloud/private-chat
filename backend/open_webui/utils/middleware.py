@@ -948,16 +948,55 @@ async def process_chat_payload(request, form_data, user, metadata, model):
     # If context is not empty, insert it into the messages
     if len(sources) > 0:
         context_string = ""
-        source_counter = 1
-        for _, source in enumerate(sources, 1):
+
+        # Create URL to ID mapping for web search sources
+        url_to_id = {}
+        url_counter = 1
+
+        # First pass: assign unique IDs to each URL
+        for source in sources:
             if "document" in source:
+                for doc_meta in source.get("metadata", []):
+                    source_url = doc_meta.get("source", "")
+                    if source_url.startswith(("http://", "https://")):
+                        if source_url not in url_to_id:
+                            url_to_id[source_url] = url_counter
+                            url_counter += 1
+
+        # Second pass: assign citation IDs based on URL mapping
+        for source in sources:
+            if "document" in source:
+                source_name = source.get("source", {}).get("name", "")
+                source_url = source.get("source", {}).get("url", "")
+
+                # Check if this is a web search source
+                is_web_search = (
+                    source_url.startswith(("http://", "https://"))
+                    or "Search Result" in source_name
+                    or any(
+                        metadata.get("source", "").startswith(("http://", "https://"))
+                        for metadata in source.get("metadata", [])
+                    )
+                )
+
                 for doc_context, doc_meta in zip(
                     source["document"], source["metadata"]
                 ):
-                    context_string += (
-                        f'<source id="{source_counter}">{doc_context}</source>\n'
-                    )
-                    source_counter += 1
+                    if is_web_search:
+                        # Map RAG chunk to its source URL ID
+                        chunk_source_url = doc_meta.get("source", "")
+                        if chunk_source_url in url_to_id:
+                            citation_id = url_to_id[chunk_source_url]
+                        else:
+                            # Fallback for edge cases
+                            citation_id = 1
+
+                        context_string += (
+                            f'<source id="{citation_id}">{doc_context}</source>\n'
+                        )
+                    else:
+                        # Non-web-search sources get no ID (won't be cited)
+                        context_string += f"{doc_context}\n"
 
         context_string = context_string.strip()
         prompt = get_last_user_message(form_data["messages"])
@@ -992,8 +1031,25 @@ async def process_chat_payload(request, form_data, user, metadata, model):
     # If there are citations, add them to the data_items
     sources = [source for source in sources if source.get("source", {}).get("name", "")]
 
-    if len(sources) > 0:
-        events.append({"sources": sources})
+    # Filter sources to only include web search sources for UI display
+    web_search_sources = []
+    for source in sources:
+        source_name = source.get("source", {}).get("name", "")
+        source_url = source.get("source", {}).get("url", "")
+
+        # Check if this is a web search source
+        if (
+            source_url.startswith(("http://", "https://"))
+            or "Search Result" in source_name
+            or any(
+                metadata.get("source", "").startswith(("http://", "https://"))
+                for metadata in source.get("metadata", [])
+            )
+        ):
+            web_search_sources.append(source)
+
+    if len(web_search_sources) > 0:
+        events.append({"sources": web_search_sources})
 
     if model_knowledge:
         await event_emitter(

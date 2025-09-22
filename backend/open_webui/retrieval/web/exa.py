@@ -62,7 +62,7 @@ def search_exa(
                 )
             )
 
-        log.debug(f"Found {len(results)} results")
+        log.debug(f"Exa Found {len(results)} results")
         return [
             SearchResult(
                 link=result.url,
