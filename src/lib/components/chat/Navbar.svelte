@@ -30,6 +30,7 @@
 
 	import PencilSquare from '../icons/PencilSquare.svelte';
 	import Banner from '../common/Banner.svelte';
+	import AccountButton from './AccountButton.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -66,7 +67,7 @@
 						? 'md:hidden'
 						: ''} mr-2 md:mr-4 pt-0.5 gap-y-3 self-start flex flex-col text-gray-600 dark:text-gray-400"
 				>
-					<Tooltip content="Expand Sidebar">
+					<Tooltip content="Expand Sidebar" autoHide={true}>
 						<button
 							type="button"
 							class="text-white shadow h-8 w-8 cursor-pointer rounded flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-850 dark:bg-[rgba(248,248,248,0.04)]"
@@ -77,7 +78,7 @@
 							<MenuLines className="size-5" />
 						</button>
 					</Tooltip>
-					<Tooltip content={$i18n.t('New Chat')}>
+					<Tooltip content={$i18n.t('New Chat')} autoHide={true}>
 						<button
 							id="new-chat-button"
 							type="button"
@@ -171,31 +172,8 @@
 						</button>
 					</Tooltip> -->
 
-					{#if $user !== undefined && $user !== null}
-						<UserMenu
-							className="max-w-[200px]"
-							role={$user?.role}
-							on:show={(e) => {
-								if (e.detail === 'archived-chat') {
-									showArchivedChats.set(true);
-								}
-							}}
-						>
-							<button
-								class="select-none flex rounded-xl p-1.5 w-full hover:bg-gray-50 dark:hover:bg-gray-850 transition"
-								aria-label="User Menu"
-							>
-								<div class=" self-center">
-									<img
-										src={$user?.profile_image_url}
-										class="size-6 object-cover rounded-full"
-										alt="User profile"
-										draggable="false"
-									/>
-								</div>
-							</button>
-						</UserMenu>
-					{/if}
+					<!-- mobile button -->
+					<!-- <AccountButton buttonClass="md:hidden!" /> -->
 
 					<button
 						on:click={toggleVerifier}
