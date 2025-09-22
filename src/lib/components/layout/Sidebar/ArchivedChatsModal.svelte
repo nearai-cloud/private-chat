@@ -59,6 +59,7 @@
 			await archiveChatById(localStorage.token, chat.id);
 		}
 		chats = await getArchivedChatList(localStorage.token);
+		dispatch('change');
 	};
 
 	$: if (show) {
