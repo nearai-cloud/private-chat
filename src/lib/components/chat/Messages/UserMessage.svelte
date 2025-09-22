@@ -190,7 +190,7 @@
 
 						<div class=" mt-2 mb-1 flex justify-between text-sm font-medium">
 							<div>
-								<button
+								<!-- <button
 									id="save-edit-message-button"
 									class=" px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700 text-gray-700 dark:text-gray-200 transition rounded-3xl"
 									on:click={() => {
@@ -198,7 +198,7 @@
 									}}
 								>
 									{$i18n.t('Save')}
-								</button>
+								</button> -->
 							</div>
 
 							<div class="flex space-x-1.5">

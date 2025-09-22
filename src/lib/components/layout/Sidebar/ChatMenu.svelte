@@ -2,6 +2,7 @@
 	import { DropdownMenu } from 'bits-ui';
 	import { flyAndScale } from '$lib/utils/transitions';
 	import { getContext, createEventDispatcher } from 'svelte';
+	import { toast } from 'svelte-sonner';
 
 	import fileSaver from 'file-saver';
 	const { saveAs } = fileSaver;
@@ -148,6 +149,7 @@
 				pdf.save(`chat-${chat.chat.title}.pdf`);
 			} catch (error) {
 				console.error('Error generating PDF', error);
+				toast.error(`Error generating PDF: ${error}`);
 			}
 		}
 	};

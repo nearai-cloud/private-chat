@@ -6,6 +6,8 @@
 	import { onMount, tick, getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
 	import type { i18n as i18nType, t } from 'i18next';
+	import NearAiIcon from '$lib/components/icons/NearAIGreen2.svelte';
+	import VerifiedIcon from '$lib/components/icons/Verified.svelte';
 
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
@@ -33,6 +35,7 @@
 	import Name from './Name.svelte';
 	import ProfileImage from './ProfileImage.svelte';
 	import Skeleton from './Skeleton.svelte';
+	import MessageSkeleton from './MessageSkeleton.svelte';
 	import Image from '$lib/components/common/Image.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import RateComment from './RateComment.svelte';
@@ -593,7 +596,8 @@
 					($i18n.language === 'dg-DG' ? `/doge.png` : `${WEBUI_BASE_URL}/static/favicon.png`)}
 				className={'size-8'}
 			/> -->
-			<img src="/assets/images/near-icon.svg" class="w-6 h-6 mt-0.5" />
+			<!-- <img src="/assets/images/near-icon.svg" class="w-6 h-6 mt-0.5" /> -->
+			<NearAiIcon className="w-6 h-6 mt-0.5" />
 		</div>
 
 		<div class="flex-auto w-0 pl-1">
@@ -606,7 +610,8 @@
 
 				<!-- Verification Badge -->
 				<div class="flex items-center ml-3">
-					<img src="/assets/images/verified-2.svg" />
+					<!-- <img src="/assets/images/verified-2.svg" /> -->
+					<VerifiedIcon className="h-6" />
 				</div>
 
 				{#if message.timestamp}
@@ -631,7 +636,7 @@
 								<div class="status-description flex items-center gap-2 py-0.5">
 									{#if status?.done === false}
 										<div class="">
-											<Spinner className="size-4" />
+											<Spinner className="size-4 text-[#00EC97]" />
 										</div>
 									{/if}
 
@@ -784,7 +789,10 @@
 						{:else}
 							<div class="w-full flex flex-col relative" id="response-content-container">
 								{#if message.content === '' && !message.error}
-									<Skeleton />
+									<!-- <Skeleton /> -->
+									{#if (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length > 0}{:else}
+										<MessageSkeleton />
+									{/if}
 								{:else if message.content && message.error !== true}
 									<!-- always show message contents even if there's an error -->
 									<!-- unless message.error === true which is legacy error handling, where the error message is stored in message.content -->
@@ -970,7 +978,7 @@
 							{/if}
 
 							{#if message.done}
-								{#if !readOnly}
+								<!-- {#if !readOnly}
 									{#if $user?.role === 'user' ? ($user?.permissions?.chat?.edit ?? true) : true}
 										<Tooltip content={$i18n.t('Edit')} placement="bottom">
 											<button
@@ -998,7 +1006,7 @@
 											</button>
 										</Tooltip>
 									{/if}
-								{/if}
+								{/if} -->
 
 								<Tooltip content={$i18n.t('Copy')} placement="bottom">
 									<button
