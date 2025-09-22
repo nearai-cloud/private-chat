@@ -2,6 +2,7 @@
 	import { v4 as uuidv4 } from 'uuid';
 	import { toast } from 'svelte-sonner';
 	import mermaid from 'mermaid';
+	import { getMessageSignature, type MessageSignature } from '$lib/apis/nearai';
 	import { PaneGroup, Pane, PaneResizer } from 'paneforge';
 
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
@@ -13,6 +14,7 @@
 	import { get, type Unsubscriber, type Writable } from 'svelte/store';
 	import type { i18n as i18nType } from 'i18next';
 	import { WEBUI_BASE_URL } from '$lib/constants';
+	import { messagesSignatures } from '$lib/stores';
 
 	import {
 		chatId,
@@ -138,6 +140,7 @@
 	};
 
 	let taskIds = null;
+	let loadingSignatures: Set<string> = new Set();
 
 	// Chat Input
 	let prompt = '';
@@ -918,6 +921,7 @@
 		}
 
 		taskIds = null;
+		verifyMessageSignature(responseMessageId);
 	};
 
 	const chatActionHandler = async (chatId, actionId, modelId, responseMessageId, event = null) => {
@@ -1931,6 +1935,42 @@
 		}
 	};
 
+	const fetchMessageSignature = async (model: string, chatCompletionId: string) => {
+		if (
+			!chatCompletionId ||
+			!localStorage.token ||
+			!model ||
+			loadingSignatures.has(chatCompletionId)
+		)
+			return;
+
+		loadingSignatures.add(chatCompletionId);
+		loadingSignatures = loadingSignatures; // Trigger reactivity
+
+		try {
+			const data = await getMessageSignature({
+				token: localStorage.token,
+				model,
+				chatCompletionId
+			});
+			messagesSignatures.update((prev) => ({ ...prev, [chatCompletionId]: data }));
+		} catch (err) {
+			console.error('Error fetching message signature:', err);
+			error = err instanceof Error ? err.message : 'Failed to fetch message signature';
+		} finally {
+			loadingSignatures.delete(chatCompletionId);
+			loadingSignatures = loadingSignatures; // Trigger reactivity
+		}
+	};
+
+	const verifyMessageSignature = async (messageId: string) => {
+		if (!history?.messages) return;
+		const message = history.messages[messageId];
+		if (!message?.chatCompletionId || !message.model) return;
+		if (message.role !== 'assistant' || !message.done) return;
+		if ($messagesSignatures[message.chatCompletionId]) return;
+		fetchMessageSignature(message.model, message.chatCompletionId);
+	};
 	let sideClassNames = '';
 	$: {
 		if (!$showSidebar && !showChatVerifier) {
