@@ -15,9 +15,11 @@
 	export let offset = [0, 4];
 	export let allowHTML = true;
 	export let tippyOptions = {};
+	export let autoHide = false;
 
 	let tooltipElement;
 	let tooltipInstance;
+	let timer = null;
 
 	$: if (tooltipElement && content) {
 		if (tooltipInstance) {
@@ -31,7 +33,17 @@
 				...(theme !== '' ? { theme } : { theme: 'dark' }),
 				arrow: false,
 				offset: offset,
-				...tippyOptions
+				...tippyOptions,
+				onShow(instance) {
+					if (autoHide) {
+						if (timer) {
+							clearTimeout(timer);
+						}
+						timer = setTimeout(() => {
+							instance.hide();
+						}, 2000);
+					}
+				}
 			});
 		}
 	} else if (tooltipInstance && content === '') {
@@ -41,6 +53,10 @@
 	}
 
 	onDestroy(() => {
+		if (timer) {
+			clearTimeout(timer);
+			timer = null;
+		}
 		if (tooltipInstance) {
 			tooltipInstance.destroy();
 		}
