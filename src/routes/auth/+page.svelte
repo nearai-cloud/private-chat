@@ -28,6 +28,27 @@
 
 	let ldapUsername = '';
 
+	// Checkbox state for terms and privacy
+	const TERMS_VERSION = 'V1';
+	let agreedTerms = false;
+
+	onMount(() => {
+		agreedTerms = localStorage.getItem('agreedTerms') === TERMS_VERSION;
+	});
+
+	const setAgreedTerms = (value) => {
+		agreedTerms = value;
+		localStorage.setItem('agreedTerms', value ? TERMS_VERSION : 'false');
+	};
+
+	const checkAgreeTerms = () => {
+		if (!agreedTerms) {
+			toast.error('You must agree to the Terms of Service and Privacy Policy to proceed.');
+			return false;
+		}
+		return true;
+	};
+
 	const querystringValue = (key) => {
 		const querystring = window.location.search;
 		const urlParams = new URLSearchParams(querystring);
@@ -214,6 +235,8 @@
 							class=" flex flex-col justify-center"
 							on:submit={(e) => {
 								e.preventDefault();
+								const status = checkAgreeTerms();
+								if (!status) return;
 								submitHandler();
 							}}
 						>
@@ -363,6 +386,8 @@
 									<button
 										class="flex justify-center items-center bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
 										on:click={() => {
+											const status = checkAgreeTerms();
+											if (!status) return;
 											window.location.href = `${WEBUI_BASE_URL}/oauth/google/login`;
 										}}
 									>
@@ -388,6 +413,8 @@
 									<button
 										class="flex justify-center items-center bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
 										on:click={() => {
+											const status = checkAgreeTerms();
+											if (!status) return;
 											window.location.href = `${WEBUI_BASE_URL}/oauth/microsoft/login`;
 										}}
 									>
@@ -413,6 +440,8 @@
 									<button
 										class="flex justify-center items-center bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
 										on:click={() => {
+											const status = checkAgreeTerms();
+											if (!status) return;
 											window.location.href = `${WEBUI_BASE_URL}/oauth/github/login`;
 										}}
 									>
@@ -429,6 +458,8 @@
 									<button
 										class="flex justify-center items-center bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
 										on:click={() => {
+											const status = checkAgreeTerms();
+											if (!status) return;
 											window.location.href = `${WEBUI_BASE_URL}/oauth/oidc/login`;
 										}}
 									>
@@ -477,13 +508,24 @@
 							</div>
 						{/if}
 
-						<p class="text-xs text-app-quaternary-500 text-center pt-10">
-							By signing in, I agree to the
-							<a class="underline" href="/terms">Terms of Service</a>
-							and
-							<a class="underline" href="/privacy">Privacy Policy</a>
-							.
-						</p>
+						<div class="text-xs text-app-quaternary-500 pt-10 flex items-start">
+							<input
+								type="checkbox"
+								checked={agreedTerms}
+								on:change={() => {
+									setAgreedTerms(!agreedTerms);
+								}}
+								class="mr-2 mt-[2px]"
+								id="agreeTerms"
+							/>
+							<label for="agreeTerms" class="inline-block text-left">
+								By signing in, I agree to the
+								<a class="underline" href="/terms">Terms of Service</a>
+								and
+								<a class="underline" href="/privacy">Privacy Policy</a>
+								.
+							</label>
+						</div>
 					</div>
 				{/if}
 			</div>
