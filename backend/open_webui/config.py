@@ -1396,7 +1396,7 @@ QUERY_GENERATION_PROMPT_TEMPLATE = PersistentConfig(
 )
 
 DEFAULT_QUERY_GENERATION_PROMPT_TEMPLATE = """### Task:
-Analyze the chat history to determine the necessity of generating search queries, in English by default. 
+Analyze the chat history to determine the necessity of generating search queries. 
 **Prioritize generating ONE broad and relevant search queries** unless it is absolutely certain that no additional information is required. The aim is to retrieve comprehensive, updated, and valuable information even with minimal uncertainty. If no search is unequivocally needed, return an empty list.
 
 ### Guidelines:
@@ -1406,7 +1406,6 @@ Analyze the chat history to determine the necessity of generating search queries
 - Err on the side of suggesting search queries if there is **any chance** they might provide useful or updated information.
 - Be concise and focused on composing high-quality search queries, avoiding unnecessary elaboration, commentary, or assumptions.
 - Always prioritize providing actionable and broad queries that maximize informational coverage.
-- Unless the user explicitly asks to generate in a specific language, generate in English.
 - Generate only ONE search query.
 
 ### Output:
