@@ -100,7 +100,8 @@
 
 	const handleArchivedChatsChange = async () => {
 		currentChatPage.set(1);
-		await chats.set(await getChatList(localStorage.token, $currentChatPage));
+		const list = await getChatList(localStorage.token, $currentChatPage);
+		await chats.set(list);
 		scrollPaginationEnabled.set(true);
 	};
 </script>
