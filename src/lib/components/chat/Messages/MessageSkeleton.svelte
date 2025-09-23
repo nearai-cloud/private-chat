@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Spinner from '$lib/components/common/Spinner.svelte';
+
+	export let message: string = 'Encrypting & fetching messages ...';
 </script>
 
 <div class="flex items-center py-2 gap-x-2 text-xs">
 	<!-- <div class="size-3.5 bg-[#00EC97] rounded-full animate-msg"></div> -->
 	<Spinner className="size-4 text-[#00EC97]" />
-	<span class="shimmer text-gray-500 dark:text-gray-500 text-base"
-		>Encrypting & fetching messages ...</span
-	>
+	<span class="shimmer text-gray-500 dark:text-gray-500 text-base">{message}</span>
 </div>
 
 <style>

@@ -791,7 +791,18 @@
 							<div class="w-full flex flex-col relative" id="response-content-container">
 								{#if message.content === '' && !message.error}
 									<!-- <Skeleton /> -->
-									{#if !webSearchEnabled}
+									{#if webSearchEnabled}
+										{#if (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length > 0}
+											{@const status = (
+												message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]
+											).at(-1)}
+											{#if status?.description === 'No search query generated'}
+												<MessageSkeleton />
+											{/if}
+										{:else}
+											<MessageSkeleton message="Generating search query" />
+										{/if}
+									{:else}
 										<MessageSkeleton />
 									{/if}
 								{:else if message.content && message.error !== true}
