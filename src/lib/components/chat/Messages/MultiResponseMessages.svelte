@@ -26,6 +26,7 @@
 
 	export let isLastMessage;
 	export let readOnly = false;
+	export let webSearchEnabled;
 
 	export let updateChat: Function;
 	export let editMessage: Function;
@@ -264,6 +265,7 @@
 									{actionMessage}
 									{submitMessage}
 									{continueResponse}
+									{webSearchEnabled}
 									regenerateResponse={async (message) => {
 										regenerateResponse(message);
 										await tick();

@@ -2086,6 +2086,7 @@
 									{mergeResponses}
 									{chatActionHandler}
 									{addMessages}
+									{webSearchEnabled}
 									bottomPadding={files.length > 0}
 								/>
 							</div>

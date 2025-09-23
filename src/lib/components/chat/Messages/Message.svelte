@@ -39,6 +39,8 @@
 	export let addMessages;
 	export let triggerScroll;
 	export let readOnly = false;
+
+	export let webSearchEnabled;
 </script>
 
 <div
@@ -86,6 +88,7 @@
 				{regenerateResponse}
 				{addMessages}
 				{readOnly}
+				{webSearchEnabled}
 			/>
 		{:else}
 			<MultiResponseMessages
@@ -106,6 +109,7 @@
 				{triggerScroll}
 				{addMessages}
 				{readOnly}
+				{webSearchEnabled}
 			/>
 		{/if}
 	{/if}
