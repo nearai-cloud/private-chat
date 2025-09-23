@@ -796,12 +796,25 @@ async def generate_chat_completion(
                 log.error(e)
                 response = await r.text()
 
+            # Check for 413 Payload Too Large error before raising
+            if r.status == 413:
+                # Raise a specific exception for 413 that can be caught upstream
+                raise HTTPException(
+                    status_code=413,
+                    detail="Payload Too Large - request payload exceeds size limit",
+                )
+
             r.raise_for_status()
 
             total_time = time.time() - start_time
 
             return response
     except Exception as e:
+        # Don't catch HTTPException - let it bubble up unchanged
+        if isinstance(e, HTTPException):
+            raise
+
+        # Handle all other exceptions
         log.exception(e)
 
         detail = None
