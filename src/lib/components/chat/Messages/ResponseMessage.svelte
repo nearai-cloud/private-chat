@@ -800,7 +800,7 @@
 												<MessageSkeleton />
 											{/if}
 										{:else}
-											<MessageSkeleton message="Generating search query" />
+											<MessageSkeleton message={$i18n.t('Generating search query')} />
 										{/if}
 									{:else}
 										<MessageSkeleton />
