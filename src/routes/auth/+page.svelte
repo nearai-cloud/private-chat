@@ -508,7 +508,10 @@
 							</div>
 						{/if}
 
-						<label for="agreeTerms" class="text-xs text-app-quaternary-500 pt-10 flex items-start cursor-pointer">
+						<label
+							for="agreeTerms"
+							class="text-xs text-app-quaternary-500 pt-10 flex items-start cursor-pointer"
+						>
 							<input
 								id="agreeTerms"
 								class="sr-only"
@@ -517,20 +520,28 @@
 								on:change={() => {
 									setAgreedTerms(!agreedTerms);
 								}}
+							/>
+							<div
+								class="size-4 mt-0.5 bg-[#00EC97] flex items-center justify-center shadow rounded"
 							>
-							<div class="size-4 mt-0.5 bg-[#00EC97] flex items-center justify-center shadow rounded">
-								<svg class="size-3 mt-[1px] checkmark-transition opacity-0 {agreedTerms ? 'opacity-100!' : ''}" 
-									viewBox="0 0 24 24" 
-									fill="none" 
-									xmlns="http://www.w3.org/2000/svg">
-									<path d="M20 6L9 17L4 12" 
-										stroke="white" 
-										stroke-width="4" 
-										stroke-linecap="round" 
-										stroke-linejoin="round"/>
+								<svg
+									class="size-3 mt-[1px] checkmark-transition opacity-0 {agreedTerms
+										? 'opacity-100!'
+										: ''}"
+									viewBox="0 0 24 24"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<path
+										d="M20 6L9 17L4 12"
+										stroke="white"
+										stroke-width="4"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
 								</svg>
 							</div>
-							
+
 							<div class="inline-block text-left ml-2 flex-1">
 								By signing in, I agree to the
 								<a class="underline" href="/terms">Terms of Service</a>
