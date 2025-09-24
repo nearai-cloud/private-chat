@@ -94,6 +94,8 @@
 	import ChatVerifier from './ChatVerifier.svelte';
 
 	const WEB_SEARCH_STATUS_KEY = 'web-search-enabled-status';
+	const MOBILE_BREAKPOINT = 768;
+	const MediaQueryEvent = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
 
 	export let chatIdProp = '';
 
@@ -118,7 +120,8 @@
 	let eventCallback = null;
 
 	// Chat verification state
-	let showChatVerifier = true;
+	let showChatVerifier = false;
+	let isMobile = false;
 
 	let chatIdUnsubscriber: Unsubscriber | undefined;
 
@@ -148,6 +151,14 @@
 	let chatFiles = [];
 	let files = [];
 	let params = {};
+
+	const setIsMobile = () => {
+		isMobile = window.innerWidth < MOBILE_BREAKPOINT;
+	};
+
+	$: {
+		showChatVerifier = !isMobile;
+	}
 
 	$: {
 		if (webSearchEnabled) {
@@ -417,6 +428,9 @@
 		window.addEventListener('message', onMessageHandler);
 		$socket?.on('chat-events', chatEventHandler);
 
+		setIsMobile();
+		MediaQueryEvent.addEventListener('change', setIsMobile);
+
 		if (!$chatId) {
 			chatIdUnsubscriber = chatId.subscribe(async (value) => {
 				if (!value) {
@@ -475,6 +489,7 @@
 		chatIdUnsubscriber?.();
 		window.removeEventListener('message', onMessageHandler);
 		$socket?.off('chat-events', chatEventHandler);
+		MediaQueryEvent.removeEventListener('change', setIsMobile);
 	});
 
 	// File upload functions
