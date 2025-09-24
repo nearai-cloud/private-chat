@@ -611,7 +611,6 @@
 
 				<!-- Verification Badge -->
 				<div class="flex items-center ml-3">
-					<!-- <img src="/assets/images/verified-2.svg" /> -->
 					<VerifiedIcon className="h-6" />
 				</div>
 
