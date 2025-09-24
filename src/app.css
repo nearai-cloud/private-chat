@@ -176,7 +176,7 @@ select {
 }
 
 .status-description {
-	animation: smoothFadeIn 0.2s forwards;
+	/* animation: smoothFadeIn 0.2s forwards; */
 }
 
 .katex-mathml {
