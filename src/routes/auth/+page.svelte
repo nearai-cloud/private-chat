@@ -522,7 +522,9 @@
 								}}
 							/>
 							<div
-								class="size-4 mt-0.5 bg-[#00EC97] flex items-center justify-center shadow rounded"
+								class="size-4 mt-0.5 {agreedTerms
+									? 'bg-[#00EC97]'
+									: 'bg-gray-50'} flex items-center justify-center shadow rounded"
 							>
 								<svg
 									class="size-3 mt-[1px] checkmark-transition opacity-0 {agreedTerms
