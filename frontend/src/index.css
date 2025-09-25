@@ -1,0 +1,185 @@
+@import 'tailwindcss';
+@reference "tailwindcss";
+
+/* Font faces - will need to be updated with proper font paths */
+@font-face {
+	font-family: 'Inter';
+	src: url('/assets/fonts/Inter-Variable.ttf');
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Archivo';
+	src: url('/assets/fonts/Archivo-Variable.ttf');
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Mona Sans';
+	src: url('/assets/fonts/Mona-Sans.woff2');
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'InstrumentSerif';
+	src: url('/assets/fonts/InstrumentSerif-Regular.ttf');
+	font-display: swap;
+}
+
+@layer base {
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentColor);
+	}
+}
+
+@layer base {
+	html,
+	pre {
+		font-family: -apple-system, BlinkMacSystemFont, 'Inter', ui-sans-serif, system-ui, 'Segoe UI',
+			Roboto, Ubuntu, Cantarell, 'Noto Sans', sans-serif, 'Helvetica Neue', Arial,
+			'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+	}
+
+	pre {
+		white-space: pre-wrap;
+	}
+
+	button {
+		@apply cursor-pointer;
+	}
+
+	/* input::placeholder,
+	textarea::placeholder {
+		color: theme(colors.gray.400);
+	} */
+
+	html,
+	body {
+		font-family: 'Inter', 'sans-serif';
+		word-break: break-word;
+		margin: 0;
+		padding: 0;
+		height: 100vh;
+		overflow: hidden;
+	}
+
+	#root {
+		height: 100vh;
+		overflow: hidden;
+	}
+}
+
+/* Custom utility classes from Svelte project */
+code {
+	overflow-x: auto;
+	width: auto;
+}
+
+.font-secondary {
+	font-family: 'InstrumentSerif', sans-serif;
+}
+
+math {
+	margin-top: 1rem;
+}
+
+input::placeholder {
+	direction: auto;
+}
+
+textarea::placeholder {
+	direction: auto;
+}
+
+.markdown a {
+	@apply underline;
+}
+
+.font-primary {
+	font-family: Inter, 'Archivo', sans-serif;
+}
+
+.drag-region {
+	-webkit-app-region: drag;
+}
+
+.drag-region a,
+.drag-region button {
+	-webkit-app-region: no-drag;
+}
+
+.no-drag-region {
+	-webkit-app-region: no-drag;
+}
+
+li p {
+	display: inline;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+	width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: rgba(156, 163, 175, 0.5);
+	border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: rgba(156, 163, 175, 0.7);
+}
+
+::-webkit-scrollbar-track {
+	background-color: transparent;
+}
+
+/* Loading animation from Svelte */
+.loading {
+	display: inline-block;
+	clip-path: inset(0 1ch 0 0);
+	animation: l 1s steps(3) infinite;
+	letter-spacing: -0.5px;
+}
+
+@keyframes l {
+	to {
+		clip-path: inset(0 -1ch 0 0);
+	}
+}
+
+@keyframes spinner_AtaB {
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* Code block styling */
+pre[class*='language-'] {
+	position: relative;
+	overflow: auto;
+	margin: 5px 0;
+	padding: 1.75rem 0 1.75rem 1rem;
+	border-radius: 10px;
+}
+
+pre[class*='language-'] button {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	font-size: 0.9rem;
+	padding: 0.15rem;
+	background-color: #828282;
+	border: ridge 1px #7b7b7c;
+	border-radius: 5px;
+	text-shadow: #c4c4c4 0 0 2px;
+}
+
+pre[class*='language-'] button:hover {
+	cursor: pointer;
+	background-color: #bcbabb;
+}
