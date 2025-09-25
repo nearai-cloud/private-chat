@@ -28,6 +28,27 @@
 
 	let ldapUsername = '';
 
+	// Checkbox state for terms and privacy
+	const TERMS_VERSION = 'V1';
+	let agreedTerms = false;
+
+	onMount(() => {
+		agreedTerms = localStorage.getItem('agreedTerms') === TERMS_VERSION;
+	});
+
+	const setAgreedTerms = (value) => {
+		agreedTerms = value;
+		localStorage.setItem('agreedTerms', value ? TERMS_VERSION : 'false');
+	};
+
+	const checkAgreeTerms = () => {
+		if (!agreedTerms) {
+			toast.error('You must agree to the Terms of Service and Privacy Policy to proceed.');
+			return false;
+		}
+		return true;
+	};
+
 	const querystringValue = (key) => {
 		const querystring = window.location.search;
 		const urlParams = new URLSearchParams(querystring);
@@ -214,6 +235,8 @@
 							class=" flex flex-col justify-center"
 							on:submit={(e) => {
 								e.preventDefault();
+								const status = checkAgreeTerms();
+								if (!status) return;
 								submitHandler();
 							}}
 						>
@@ -363,6 +386,8 @@
 									<button
 										class="flex justify-center items-center bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
 										on:click={() => {
+											const status = checkAgreeTerms();
+											if (!status) return;
 											window.location.href = `${WEBUI_BASE_URL}/oauth/google/login`;
 										}}
 									>
@@ -388,6 +413,8 @@
 									<button
 										class="flex justify-center items-center bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
 										on:click={() => {
+											const status = checkAgreeTerms();
+											if (!status) return;
 											window.location.href = `${WEBUI_BASE_URL}/oauth/microsoft/login`;
 										}}
 									>
@@ -413,6 +440,8 @@
 									<button
 										class="flex justify-center items-center bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
 										on:click={() => {
+											const status = checkAgreeTerms();
+											if (!status) return;
 											window.location.href = `${WEBUI_BASE_URL}/oauth/github/login`;
 										}}
 									>
@@ -429,6 +458,8 @@
 									<button
 										class="flex justify-center items-center bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
 										on:click={() => {
+											const status = checkAgreeTerms();
+											if (!status) return;
 											window.location.href = `${WEBUI_BASE_URL}/oauth/oidc/login`;
 										}}
 									>
@@ -477,13 +508,50 @@
 							</div>
 						{/if}
 
-						<p class="text-xs text-app-quaternary-500 text-center pt-10">
-							By signing in, I agree to the
-							<a class="underline" href="/terms">Terms of Service</a>
-							and
-							<a class="underline" href="/privacy">Privacy Policy</a>
-							.
-						</p>
+						<label
+							for="agreeTerms"
+							class="text-xs text-app-quaternary-500 pt-10 flex items-start cursor-pointer"
+						>
+							<input
+								id="agreeTerms"
+								class="sr-only"
+								type="checkbox"
+								checked={agreedTerms}
+								on:change={() => {
+									setAgreedTerms(!agreedTerms);
+								}}
+							/>
+							<div
+								class="size-4 mt-0.5 {agreedTerms
+									? 'bg-[#00EC97]'
+									: 'bg-gray-50'} flex items-center justify-center shadow rounded"
+							>
+								<svg
+									class="size-3 mt-[1px] checkmark-transition opacity-0 {agreedTerms
+										? 'opacity-100!'
+										: ''}"
+									viewBox="0 0 24 24"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<path
+										d="M20 6L9 17L4 12"
+										stroke="white"
+										stroke-width="4"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							</div>
+
+							<div class="inline-block text-left ml-2 flex-1">
+								By signing in, I agree to the
+								<a class="underline" href="/terms">Terms of Service</a>
+								and
+								<a class="underline" href="/privacy">Privacy Policy</a>
+								.
+							</div>
+						</label>
 					</div>
 				{/if}
 			</div>

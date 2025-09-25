@@ -427,6 +427,7 @@
 		console.log('mounted');
 		window.addEventListener('message', onMessageHandler);
 		$socket?.on('chat-events', chatEventHandler);
+		const welcomePrompt = sessionStorage.getItem('welcome-prompt');
 
 		setIsMobile();
 		MediaQueryEvent.addEventListener('change', setIsMobile);
@@ -456,6 +457,11 @@
 				files = [];
 				selectedToolIds = [];
 				imageGenerationEnabled = false;
+			}
+		} else {
+			if (welcomePrompt) {
+				prompt = welcomePrompt;
+				sessionStorage.removeItem('welcome-prompt');
 			}
 		}
 

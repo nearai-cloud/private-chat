@@ -44,6 +44,7 @@
 	$: getFilteredPrompts(inputValue);
 
 	const gotoAuth = async () => {
+		sessionStorage.setItem('welcome-prompt', inputValue);
 		await goto(`/auth`);
 	};
 </script>
