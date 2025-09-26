@@ -80,6 +80,15 @@ function katexStart(src, displayMode: boolean) {
 				continue;
 			}
 
+			const prevChar = startIndex > 0 ? indexSrc.charAt(startIndex - 1) : '';
+			const nextChar = indexSrc.charAt(startIndex + delimiter.left.length);
+			if (delimiter.left === '$' && (prevChar === '$' || nextChar === '$')) {
+				continue;
+			}
+			if (delimiter.left === '$$' && (prevChar === '$' || nextChar === '$')) {
+				continue;
+			}
+
 			index = startIndex;
 			startDelimiter = delimiter.left;
 			endDelimiter = delimiter.right;
