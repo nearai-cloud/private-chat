@@ -116,7 +116,7 @@ function katexStart(src, displayMode: boolean) {
 function katexTokenizer(src, tokens, displayMode: boolean) {
 	let ruleReg = displayMode ? blockRule : inlineRule;
 	let type = displayMode ? 'blockKatex' : 'inlineKatex';
-	if (src === '$$$') return;
+	if (src.startsWith('$$$')) return;
 
 	const match = src.match(ruleReg);
 
