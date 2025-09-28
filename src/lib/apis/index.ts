@@ -40,8 +40,8 @@ export const getModels = async (
 				console.log(err);
 				return null;
 			});
-
-		if (res) {
+		
+		if (res && Array.isArray(res?.data) && res?.data.length > 0) {
 			modelsCache.set(cacheKey, res);
 		}
 	}
