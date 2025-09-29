@@ -112,26 +112,27 @@
 
 	const checkOauthCallback = async () => {
 		if (!$page.url.hash) {
-			return;
+			return false;
 		}
 		const hash = $page.url.hash.substring(1);
 		if (!hash) {
-			return;
+			return false;
 		}
 		const params = new URLSearchParams(hash);
 		const token = params.get('token');
 		if (!token) {
-			return;
+			return false;
 		}
 		const sessionUser = await getSessionUser(token).catch((error) => {
 			toast.error(`${error}`);
-			return null;
+			return false;
 		});
 		if (!sessionUser) {
-			return;
+			return false;
 		}
 		localStorage.token = token;
 		await setSessionUser(sessionUser);
+		return true;
 	};
 
 	let onboarding = false;
@@ -164,9 +165,10 @@
 			const redirectPath = querystringValue('redirect') || '/';
 			goto(redirectPath);
 		}
-		await checkOauthCallback();
-
+		const isOauthValid = await checkOauthCallback();
+		if (isOauthValid) return;
 		loaded = true;
+
 		setLogoImage();
 
 		if (($config?.features.auth_trusted_header ?? false) || $config?.features.auth === false) {
