@@ -1,0 +1,45 @@
+name: Deploy to Phala Cloud
+
+on:
+  workflow_run:
+    workflows: ["Create and publish Docker images with specific build args"]
+    types:
+      - completed
+    branches:
+      - main
+      - dev
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  deploy-dev-to-phala:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy Dev Image to Phala Cloud
+        uses: Leechael/phala-deploy-action@v2
+        with:
+          phala-api-key: ${{ secrets.PHALA_CLOUD_API_KEY }}
+          compose-file: "./docker-compose.phala.stg.yaml"
+          vcpu: "2"
+          memory: "4096"
+          disk-size: "80"
+          envs: |
+            NEAR_AI_PRIVATE_CHAT_DOCKER_IMAGE_TAG:cache-linux-amd64-dev
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            GITHUB_CLIENT_ID=${{ secrets.GITHUB_CLIENT_ID }}
+            GITHUB_CLIENT_SECRET=${{ secrets.GITHUB_CLIENT_SECRET }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            NEAR_AI_PRIVATE_CHAT_DOMAIN=${{ secrets.NEAR_AI_PRIVATE_CHAT_DOMAIN }}
+            CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}
+            CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}
+            DSTACK_GATEWAY_DOMAIN: dstack-prod${{ secrets.PHALA_CLOUD_NODE_ID }}.phala.network
+          cvm-name: ${{ secrets.PHALA_CLOUD_CVM_NAME }}
+          app-id: ${{ secrets.PHALA_CLOUD_APP_ID }}
+          node-id: ${{ secrets.PHALA_CLOUD_NODE_ID }}
+          base-image: ""
