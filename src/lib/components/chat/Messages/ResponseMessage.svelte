@@ -593,7 +593,7 @@
 	>
 		<div class={`shrink-0 ltr:mr-2 rtl:ml-2`}>
 			{#if model?.info?.meta?.profile_image_url}
-				<img class="w-6 h-6 mt-0.5 rounded" src="{model?.info?.meta?.profile_image_url}" alt="logo" />
+				<img class="w-6 h-6 mt-0.5 rounded" src={model?.info?.meta?.profile_image_url} alt="logo" />
 			{:else}
 				<NearAiIcon className="w-6 h-6 mt-0.5" />
 			{/if}
@@ -603,7 +603,6 @@
 				className={'size-8'}
 			/> -->
 			<!-- <img src="/assets/images/near-icon.svg" class="w-6 h-6 mt-0.5" /> -->
-			
 		</div>
 
 		<div class="flex-auto w-0 pl-1">
