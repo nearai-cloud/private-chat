@@ -150,10 +150,7 @@ class AuthsTable:
                 db.refresh(auth_result)
                 db.refresh(user_result)
 
-                if auth_result and user_result:
-                    return user_model
-                else:
-                    return None
+                return user_model
 
             except Exception as e:
                 # Ensure rollback on any error
