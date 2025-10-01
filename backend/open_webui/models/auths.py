@@ -138,12 +138,12 @@ class AuthsTable:
                 # Flush to ensure the records are created before calling external services
                 db.flush()
 
-                # Call NEAR AI Cloud API to create customer
-                create_customer_sync(id)
-
                 # Generate data encryption key for the new user (within transaction)
                 get_user_data_encryption_key(id, db)
                 log.info(f"Generated data encryption key for new user: {id}")
+
+                # Call NEAR AI Cloud API to create customer
+                create_customer_sync(id)
 
                 # If everything succeeded, commit the transaction
                 db.commit()
