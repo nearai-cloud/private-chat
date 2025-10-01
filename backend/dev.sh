@@ -4,6 +4,11 @@ export ENABLE_CHAT_ENCRYPTION=true
 export KEY_SERVICE_BASE_URL=https://ef7528d8170e073fcab30444702dbd2b5707a20d-3001.dstack-eth-prod7.phala.network
 export MODELS_CACHE_TTL=3
 
+# NEAR AI Cloud
+export NEAR_AI_CLOUD=${NEAR_AI_CLOUD:-http://localhost:4000}
+export FREE_TIER_BUDGET_ID=${FREE_TIER_BUDGET_ID:-free-tier}
+export NEAR_AI_CLOUD_TOKEN=${NEAR_AI_CLOUD_TOKEN:-sk-1234}
+
 # New Relic
 export ENABLE_OTEL=true
 export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317

@@ -728,6 +728,13 @@ async def generate_chat_completion(
             convert_logit_bias_input_to_json(payload["logit_bias"])
         )
 
+    # Add user ID to the payload for OpenAI-compatible APIs
+    payload["user"] = user.id
+
+    # Trim whitespace from model field
+    if "model" in payload:
+        payload["model"] = payload["model"].strip()
+
     payload = json.dumps(payload)
 
     r = None

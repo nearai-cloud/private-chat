@@ -44,17 +44,26 @@ class UserDataKeyUpdateForm(BaseModel):
 
 class UserDataKeysTable:
     def create_user_data_key(
-        self, user_id: str, encrypted_data_key: str
+        self, user_id: str, encrypted_data_key: str, db=None
     ) -> Optional[UserDataKeyModel]:
         try:
-            with get_db() as db:
+            # Use provided session or create new one
+            if db is not None:
                 user_data_key = UserDataKey(
                     user_id=user_id, encrypted_data_key=encrypted_data_key
                 )
                 db.add(user_data_key)
-                db.commit()
-                db.refresh(user_data_key)
+                db.flush()  # Don't commit, let caller handle it
                 return UserDataKeyModel.model_validate(user_data_key)
+            else:
+                with get_db() as new_db:
+                    user_data_key = UserDataKey(
+                        user_id=user_id, encrypted_data_key=encrypted_data_key
+                    )
+                    new_db.add(user_data_key)
+                    new_db.commit()
+                    new_db.refresh(user_data_key)
+                    return UserDataKeyModel.model_validate(user_data_key)
         except Exception:
             return None
 

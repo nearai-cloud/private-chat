@@ -77,7 +77,7 @@ class UserDataEncryptionService:
 
         return data["decryptedKey"]
 
-    def _get_user_encryption_key(self, user_id: str) -> bytes:
+    def _get_user_encryption_key(self, user_id: str, db=None) -> bytes:
         """Get or create a user's encryption key as bytes for AES-256-GCM."""
         # Check cache first
         if user_id in self._key_cache:
@@ -94,7 +94,7 @@ class UserDataEncryptionService:
             encrypted_key = self._generate_new_data_key()
 
             user_data_key = UserDataKeys.create_user_data_key(
-                user_id=user_id, encrypted_data_key=encrypted_key
+                user_id=user_id, encrypted_data_key=encrypted_key, db=db
             )
 
             if not user_data_key:
@@ -259,9 +259,9 @@ def is_chat_data_encrypted(data: str) -> bool:
         return False
 
 
-def get_user_data_encryption_key(user_id: str) -> str:
+def get_user_data_encryption_key(user_id: str, db=None) -> str:
     """Get a user's data encryption key in hex format (for backward compatibility)."""
-    key_bytes = _get_encryption_service()._get_user_encryption_key(user_id)
+    key_bytes = _get_encryption_service()._get_user_encryption_key(user_id, db)
     return key_bytes.hex()
 
 
