@@ -54,7 +54,10 @@
 >
 	<!-- model selector -->
 	<div class="flex w-full items-center justify-between absolute top-0 left-0 p-4">
-		<DropdownMenu.Root>
+		<div class="flex items-center">
+			<NearAIIcon />
+		</div>
+		<!-- <DropdownMenu.Root>
 			<DropdownMenu.Trigger>
 				<div class="flex items-center cursor-pointer">
 					<NearAIIcon />
@@ -79,7 +82,7 @@
 					</button>
 				</div>
 			</DropdownMenu.Content>
-		</DropdownMenu.Root>
+		</DropdownMenu.Root> -->
 
 		<button
 			type="button"
@@ -182,8 +185,8 @@
 												</button>
 											</Tooltip> -->
 											{#if inputValue === ''}
-												<div class="flex items-center">
-													<Tooltip content={$i18n.t('Voice mode')}>
+												<div class="flex items-center h-8">
+													<!-- <Tooltip content={$i18n.t('Voice mode')}>
 														<button
 															class="bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full p-1.5 self-center"
 															type="button"
@@ -192,7 +195,7 @@
 														>
 															<Headphone className="size-5" />
 														</button>
-													</Tooltip>
+													</Tooltip> -->
 												</div>
 											{:else}
 												<div class="flex items-center">

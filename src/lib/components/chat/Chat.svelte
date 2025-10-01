@@ -157,10 +157,6 @@
 	};
 
 	$: {
-		showChatVerifier = !isMobile;
-	}
-
-	$: {
 		if (webSearchEnabled) {
 			sessionStorage.setItem(WEB_SEARCH_STATUS_KEY, 'true');
 		} else {
