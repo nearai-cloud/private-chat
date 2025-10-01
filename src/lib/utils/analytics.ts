@@ -19,7 +19,7 @@ export function initGa(disableAutoPageView = false) {
 	window.gtag('config', gaId, {
 		send_page_view: !disableAutoPageView,	// enable / disable automatic page view tracking
 		storage: 'none',          // disables cookies & localStorage
-		client_storage: 'none',   // (optional, more explicit)
+		client_storage: 'none',   // explicitly disables client-side storage
 		anonymize_ip: true        // anonymize IP for privacy
 	});
 
