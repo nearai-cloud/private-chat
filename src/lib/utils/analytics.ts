@@ -1,4 +1,4 @@
-export function initGa(disableAutoPageView = false) {
+export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 	const gaId = import.meta.env.VITE_GA_ID;
 
 	if (!gaId) {
@@ -8,26 +8,39 @@ export function initGa(disableAutoPageView = false) {
 
 	if (window.gtag) return;
 
+	Object.defineProperty(document, 'cookie', {
+		configurable: true,
+		set: function (value) {
+			console.log('Cookie set:', value);
+			return value;
+		}
+	});
+
 	// Initialize data layer and gtag function
 	window.dataLayer = window.dataLayer || [];
 	window.gtag = function () {
+		console.log('gtag', arguments);
 		// eslint-disable-next-line prefer-rest-params
 		window.dataLayer!.push(arguments);
 	};
 
 	window.gtag('js', new Date());
 	window.gtag('config', gaId, {
-		send_page_view: !disableAutoPageView,	// enable / disable automatic page view tracking
-		storage: 'none',          // disables cookies & localStorage
-		client_storage: 'none',   // explicitly disables client-side storage
-		anonymize_ip: true        // anonymize IP for privacy
+		send_page_view: !disableAutoPageView, // enable or disable automatic page view tracking
+		storage: 'none', // disables cookies & localStorage
+		client_storage: 'none', // explicitly disables client-side storage
+		anonymize_ip: true, // anonymize IP for privacy
+		client_id: clientId // client ID for the user
 	});
+	console.log('gtag config 1');
 
 	// Load GA script
 	const script = document.createElement('script');
 	script.async = true;
 	script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
 	document.head.appendChild(script);
+
+	console.log('gtag script appended');
 }
 
 /**

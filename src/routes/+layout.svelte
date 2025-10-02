@@ -433,9 +433,12 @@
 		}
 	};
 
-	onMount(async () => {
+	const setupGA = (clientId = '') => {
 		const disableAutoPageView = false;
-		initGa(disableAutoPageView);
+		initGa({
+			disableAutoPageView,
+			clientId
+		});
 		if (disableAutoPageView) {
 			// Set up global page view tracking with selective override for sensitive pages
 			page.subscribe((pageData) => {
@@ -445,6 +448,10 @@
 				}
 			});
 		}
+	};
+
+	onMount(async () => {
+		setupGA();
 
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
@@ -556,6 +563,8 @@
 						toast.error(`${error}`);
 						return null;
 					});
+
+					// setupGA(sessionUser?.id);
 
 					if (sessionUser) {
 						// Save Session User to Store
