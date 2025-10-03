@@ -433,7 +433,8 @@
 		}
 	};
 
-	const setupGA = (clientId = '') => {
+	const setupGA = (clientId = undefined) => {
+		console.log('setupGA', clientId);
 		const disableAutoPageView = false;
 		initGa({
 			disableAutoPageView,
@@ -451,7 +452,7 @@
 	};
 
 	onMount(async () => {
-		setupGA();
+		// setupGA();
 
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();

@@ -6,6 +6,8 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 		return;
 	}
 
+	console.log('initGa', disableAutoPageView, clientId, window.gtag);
+
 	if (window.gtag) return;
 
 	Object.defineProperty(document, 'cookie', {
@@ -27,10 +29,10 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 	window.gtag('js', new Date());
 	window.gtag('config', gaId, {
 		send_page_view: !disableAutoPageView, // enable or disable automatic page view tracking
-		storage: 'none', // disables cookies & localStorage
-		client_storage: 'none', // explicitly disables client-side storage
-		anonymize_ip: true, // anonymize IP for privacy
-		client_id: clientId // client ID for the user
+		// storage: 'none', // disables cookies & localStorage
+		// client_storage: 'none', // explicitly disables client-side storage
+		// anonymize_ip: true, // anonymize IP for privacy
+		// client_id: clientId // client ID for the user
 	});
 	console.log('gtag config 1');
 
