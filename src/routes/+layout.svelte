@@ -434,7 +434,6 @@
 	};
 
 	const setupGA = (clientId = undefined) => {
-		console.log('setupGA', clientId);
 		const disableAutoPageView = false;
 		initGa({
 			disableAutoPageView,
@@ -452,8 +451,6 @@
 	};
 
 	onMount(async () => {
-		setupGA();
-
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
 		}
@@ -565,7 +562,7 @@
 						return null;
 					});
 
-					// setupGA(sessionUser?.id);
+					setupGA(sessionUser?.id);
 
 					if (sessionUser) {
 						// Save Session User to Store
@@ -580,6 +577,8 @@
 						await goto(`/welcome`);
 					}
 				} else {
+					setupGA();
+
 					// Don't redirect if we're already on the auth page
 					// Needed because we pass in tokens from OAuth logins via URL fragments
 					if (
@@ -599,6 +598,7 @@
 				}
 			}
 		} else {
+			setupGA();
 			// Redirect to /error when Backend Not Detected
 			await goto(`/error`);
 		}

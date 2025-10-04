@@ -21,9 +21,8 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 	window.gtag('config', gaId, {
 		send_page_view: !disableAutoPageView, // enable or disable automatic page view tracking
 		anonymize_ip: true, // anonymize IP for privacy
-		// client_id: clientId || 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+		client_id: clientId ?? getTempClientId()
 	});
-	console.log('gtag config');
 
 	// Load GA script
 	const script = document.createElement('script');
@@ -45,27 +44,30 @@ export const ANALYTICS_CONFIG = {
 	}
 };
 
+export function getTempClientId() {
+	if (localStorage.getItem('temp_user_id')) {
+		return localStorage.getItem('temp_user_id');
+	}
+
+	const tempUserId = 'temp-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+	localStorage.setItem('temp_user_id', tempUserId);
+	return tempUserId;
+}
+
+/**
+ * Customize GA cookies to make GA4 work without saving cookies
+ */
 export function customizeGaCookies() {
 	const cookieDesc =
 		Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') ||
 		Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
 
-	// Helper functions to manage localStorage
-	const getLocalCookies = (): Record<string, string> => {
-		const stored = localStorage.getItem('_ga_');
-		return stored ? JSON.parse(stored) : {};
-	};
-
-	const setLocalCookies = (cookies: Record<string, string>) => {
-		localStorage.setItem('_ga_', JSON.stringify(cookies));
-	};
+	const localCookies: Record<string, string> = {};
 
 	Object.defineProperty(document, 'cookie', {
 		configurable: true,
 		get: function () {
 			const cookies = cookieDesc?.get?.call(document);
-			const localCookies = getLocalCookies();
-			console.log('Cookies:', cookies, localCookies);
 
 			// Parse cookies string into object
 			const cookieObj: Record<string, string> = {};
@@ -98,10 +100,7 @@ export function customizeGaCookies() {
 				const cookieName = cookieParts.shift();
 				const cookieValue = cookieParts.join('=');
 
-				const localCookies = getLocalCookies();
 				localCookies[cookieName] = cookieValue;
-				setLocalCookies(localCookies);
-				console.log('Handle GA cookie:', value, localCookies);
 				return value;
 			}
 			// Handle other cookies
