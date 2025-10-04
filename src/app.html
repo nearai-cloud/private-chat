@@ -112,34 +112,6 @@
 
 		<title>NEAR AI Private Chat</title>
 
-		<script async src="https://www.googletagmanager.com/gtag/js?id=G-L1P7R8B8PW"></script>
-		<script>
-			Object.defineProperty(document, 'cookie', {
-				configurable: true,
-				set: function(value) {
-					console.log("Cookie set:", value);
-					return value;
-				}
-			});
-
-		  window.dataLayer = window.dataLayer || [];
-		  function gtag(){
-			console.log('gtag', arguments);
-			window.dataLayer.push(arguments);
-		  }
-		  gtag('js', new Date());
-
-		  // Replace with your Measurement ID
-		  gtag('config', 'G-L1P7R8B8PW', {
-			// storage: 'none',          // disables cookies & localStorage
-			// client_storage: 'none',   // explicitly disables client-side storage
-			// anonymize_ip: true,       // anonymize IP for privacy
-			// client_id: clientId,      // client ID for the user
-		  });
-
-		  console.log('gtag config 2');
-		</script>
-
 		<!-- Crisp Chat Widget -->
 		<script type="text/javascript">
 			window.$crisp = [];

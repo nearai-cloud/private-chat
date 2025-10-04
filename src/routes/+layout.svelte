@@ -452,7 +452,7 @@
 	};
 
 	onMount(async () => {
-		// setupGA();
+		setupGA();
 
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
