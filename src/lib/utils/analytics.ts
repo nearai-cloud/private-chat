@@ -37,14 +37,19 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
  * @returns a temporary clientId
  */
 export function getTempClientId() {
-	const id = localStorage.getItem('temp_client_id');
-	if (id) {
-		return id;
-	}
+	try {
+		const id = localStorage.getItem('temp_client_id');
+		if (id) {
+			return id;
+		}
 
-	const tempClientId = 'temp-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
-	localStorage.setItem('temp_client_id', tempClientId);
-	return tempClientId;
+		const tempClientId = 'temp-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+		localStorage.setItem('temp_client_id', tempClientId);
+		return tempClientId;
+	} catch (error) {
+		console.error('Error getting temp client id', error);
+		return undefined;
+	}
 }
 
 /**
@@ -66,14 +71,9 @@ export function customizeGaCookies() {
 				.join('; ');
 
 			// Concatenate actual cookies with virtual GA cookies
-			const concatenatedCookies =
-				cookies && virtualGaCookies
-					? `${cookies}; ${virtualGaCookies}`
-					: cookies || virtualGaCookies;
-
-			console.log('concatenatedCookies', concatenatedCookies);
-
-			return concatenatedCookies;
+			return cookies && virtualGaCookies
+				? `${cookies}; ${virtualGaCookies}`
+				: cookies || virtualGaCookies;
 		},
 		set: function (value) {
 			// Handle GA cookies specifically
@@ -83,9 +83,6 @@ export function customizeGaCookies() {
 				const cookieValue = cookieParts.join('=');
 
 				virtualGaCookiesObj[cookieName] = cookieValue;
-
-				console.log('virtualGaCookiesObj', virtualGaCookiesObj);
-
 				return value;
 			}
 			// Handle other cookies
