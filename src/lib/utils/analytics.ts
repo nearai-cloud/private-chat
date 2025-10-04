@@ -8,6 +8,7 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 
 	if (window.gtag) return;
 
+	// Customize GA cookies to make GA4 work without saving cookies
 	customizeGaCookies();
 
 	// Initialize data layer and gtag function
@@ -21,7 +22,7 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 	window.gtag('config', gaId, {
 		send_page_view: !disableAutoPageView, // enable or disable automatic page view tracking
 		anonymize_ip: true, // anonymize IP for privacy
-		client_id: clientId ?? getTempClientId()
+		client_id: clientId ?? getTempClientId() // use clientId if provided, otherwise generate a temporary clientId
 	});
 
 	// Load GA script
@@ -29,6 +30,68 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 	script.async = true;
 	script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
 	document.head.appendChild(script);
+}
+
+/**
+ * Generate a temporary clientId
+ * @returns a temporary clientId
+ */
+export function getTempClientId() {
+	const id = localStorage.getItem('temp_client_id');
+	if (id) {
+		return id;
+	}
+
+	const tempClientId = 'temp-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+	localStorage.setItem('temp_client_id', tempClientId);
+	return tempClientId;
+}
+
+/**
+ * Customize GA cookies to make GA4 work without saving cookies
+ */
+export function customizeGaCookies() {
+	const cookieDesc =
+		Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') ||
+		Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
+
+	const virtualGaCookiesObj: Record<string, string> = {};
+
+	Object.defineProperty(document, 'cookie', {
+		configurable: true,
+		get: function () {
+			const cookies = cookieDesc?.get?.call(document);
+			const virtualGaCookies = Object.entries(virtualGaCookiesObj)
+				.map(([name, value]) => `${name}=${value.split(';')[0]}`)
+				.join('; ');
+
+			// Concatenate actual cookies with virtual GA cookies
+			const concatenatedCookies =
+				cookies && virtualGaCookies
+					? `${cookies}; ${virtualGaCookies}`
+					: cookies || virtualGaCookies;
+
+			console.log('concatenatedCookies', concatenatedCookies);
+
+			return concatenatedCookies;
+		},
+		set: function (value) {
+			// Handle GA cookies specifically
+			if (value.startsWith('_ga')) {
+				const cookieParts = value.split('=');
+				const cookieName = cookieParts.shift();
+				const cookieValue = cookieParts.join('=');
+
+				virtualGaCookiesObj[cookieName] = cookieValue;
+
+				console.log('virtualGaCookiesObj', virtualGaCookiesObj);
+
+				return value;
+			}
+			// Handle other cookies
+			return cookieDesc?.set?.call(document, value);
+		}
+	});
 }
 
 /**
@@ -43,71 +106,6 @@ export const ANALYTICS_CONFIG = {
 		'/knowledge/': 'Knowledge'
 	}
 };
-
-export function getTempClientId() {
-	if (localStorage.getItem('temp_user_id')) {
-		return localStorage.getItem('temp_user_id');
-	}
-
-	const tempUserId = 'temp-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
-	localStorage.setItem('temp_user_id', tempUserId);
-	return tempUserId;
-}
-
-/**
- * Customize GA cookies to make GA4 work without saving cookies
- */
-export function customizeGaCookies() {
-	const cookieDesc =
-		Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') ||
-		Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
-
-	const localCookies: Record<string, string> = {};
-
-	Object.defineProperty(document, 'cookie', {
-		configurable: true,
-		get: function () {
-			const cookies = cookieDesc?.get?.call(document);
-
-			// Parse cookies string into object
-			const cookieObj: Record<string, string> = {};
-			if (cookies) {
-				cookies.split(';').forEach((cookie: string) => {
-					const [name, value] = cookie.trim().split('=');
-					if (name && value) {
-						cookieObj[name] = value;
-					}
-				});
-			}
-
-			// Merge with localCookies
-			const mergedCookies = { ...cookieObj, ...localCookies };
-
-			// Convert back to cookie string format
-			return Object.entries(mergedCookies)
-				.map(([name, value]) => `${name}=${value}`)
-				.join('; ');
-		},
-		set: function (value) {
-			// Handle GA cookies specifically
-			if (
-				value.includes('_ga') ||
-				value.includes('_gid') ||
-				value.includes('_gat') ||
-				value.includes('_gcl_')
-			) {
-				const cookieParts = value.split('=');
-				const cookieName = cookieParts.shift();
-				const cookieValue = cookieParts.join('=');
-
-				localCookies[cookieName] = cookieValue;
-				return value;
-			}
-			// Handle other cookies
-			return cookieDesc?.set?.call(document, value);
-		}
-	});
-}
 
 /**
  * Sanitize a given title based on the path
