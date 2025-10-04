@@ -8,8 +8,8 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 
 	if (window.gtag) return;
 
-	// Customize GA cookies to make GA4 work without saving cookies
-	customizeGaCookies();
+	// Setup virtual GA cookies to make GA4 work without saving cookies
+	setupVirtualGaCookies();
 
 	// Initialize data layer and gtag function
 	window.dataLayer = window.dataLayer || [];
@@ -53,9 +53,9 @@ export function getTempClientId() {
 }
 
 /**
- * Customize GA cookies to make GA4 work without saving cookies
+ * Set up virtual GA cookies to make GA4 work without saving cookies
  */
-export function customizeGaCookies() {
+export function setupVirtualGaCookies() {
 	const cookieDesc =
 		Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') ||
 		Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
