@@ -6,8 +6,6 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 		return;
 	}
 
-	console.log('initGa', disableAutoPageView, clientId, window.gtag);
-
 	if (window.gtag) return;
 
 	customizeGaCookies();
@@ -15,29 +13,23 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 	// Initialize data layer and gtag function
 	window.dataLayer = window.dataLayer || [];
 	window.gtag = function () {
-		console.log('gtag', arguments);
 		// eslint-disable-next-line prefer-rest-params
 		window.dataLayer!.push(arguments);
 	};
 
 	window.gtag('js', new Date());
 	window.gtag('config', gaId, {
-		send_page_view: !disableAutoPageView // enable or disable automatic page view tracking
-		// anonymize_ip: true, // anonymize IP for privacy
-		// allow_google_signals: false, // disables Google signals
-		// allow_ad_personalization_signals: false, // disables ad personalization
-		// Force session-based tracking without persistence
+		send_page_view: !disableAutoPageView, // enable or disable automatic page view tracking
+		anonymize_ip: true, // anonymize IP for privacy
 		// client_id: clientId || 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
 	});
-	console.log('gtag config 1');
+	console.log('gtag config');
 
 	// Load GA script
 	const script = document.createElement('script');
 	script.async = true;
 	script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
 	document.head.appendChild(script);
-
-	console.log('gtag script appended');
 }
 
 /**
@@ -58,12 +50,21 @@ export function customizeGaCookies() {
 		Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') ||
 		Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
 
-	const localCookies: Record<string, string> = {};
+	// Helper functions to manage localStorage
+	const getLocalCookies = (): Record<string, string> => {
+		const stored = localStorage.getItem('_ga_');
+		return stored ? JSON.parse(stored) : {};
+	};
+
+	const setLocalCookies = (cookies: Record<string, string>) => {
+		localStorage.setItem('_ga_', JSON.stringify(cookies));
+	};
 
 	Object.defineProperty(document, 'cookie', {
 		configurable: true,
 		get: function () {
 			const cookies = cookieDesc?.get?.call(document);
+			const localCookies = getLocalCookies();
 			console.log('Cookies:', cookies, localCookies);
 
 			// Parse cookies string into object
@@ -86,7 +87,7 @@ export function customizeGaCookies() {
 				.join('; ');
 		},
 		set: function (value) {
-			// Block GA cookies specifically
+			// Handle GA cookies specifically
 			if (
 				value.includes('_ga') ||
 				value.includes('_gid') ||
@@ -97,11 +98,13 @@ export function customizeGaCookies() {
 				const cookieName = cookieParts.shift();
 				const cookieValue = cookieParts.join('=');
 
+				const localCookies = getLocalCookies();
 				localCookies[cookieName] = cookieValue;
-				console.log('Blocked GA cookie:', value, localCookies);
-				return value; // Don't set the cookie
+				setLocalCookies(localCookies);
+				console.log('Handle GA cookie:', value, localCookies);
+				return value;
 			}
-			// Allow other cookies
+			// Handle other cookies
 			return cookieDesc?.set?.call(document, value);
 		}
 	});
