@@ -8,9 +8,6 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 
 	if (window.gtag) return;
 
-	// Setup virtual GA cookies to make GA4 work without saving cookies
-	setupVirtualGaCookies();
-
 	// Initialize data layer and gtag function
 	window.dataLayer = window.dataLayer || [];
 	window.gtag = function () {
@@ -19,6 +16,13 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 	};
 
 	window.gtag('js', new Date());
+
+	// Deny GA cookies
+	window.gtag('consent', 'default', {
+		ad_storage: 'denied',
+		analytics_storage: 'denied'
+	});
+
 	window.gtag('config', gaId, {
 		send_page_view: !disableAutoPageView, // enable or disable automatic page view tracking
 		anonymize_ip: true, // anonymize IP for privacy
@@ -50,50 +54,6 @@ export function getTempClientId() {
 		console.error('Error getting temp client id', error);
 		return undefined;
 	}
-}
-
-/**
- * Set up virtual GA cookies to make GA4 work without saving cookies
- */
-export function setupVirtualGaCookies() {
-	const cookieDesc =
-		Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') ||
-		Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
-
-	const virtualGaCookiesObj: Record<string, string> = {};
-
-	Object.defineProperty(document, 'cookie', {
-		configurable: true,
-		get: function () {
-			const cookies = cookieDesc?.get?.call(document);
-			const virtualGaCookies = Object.entries(virtualGaCookiesObj)
-				.map(([name, value]) => `${name}=${value.split(';')[0]}`)
-				.join('; ');
-
-			// Concatenate actual cookies with virtual GA cookies
-			return cookies && virtualGaCookies
-				? `${cookies}; ${virtualGaCookies}`
-				: cookies || virtualGaCookies;
-		},
-		set: function (value) {
-			// Handle GA cookies specifically
-			if (
-				value.startsWith('_ga') ||
-				value.startsWith('_gid') ||
-				value.startsWith('_gat') ||
-				value.startsWith('_gcl_')
-			) {
-				const cookieParts = value.split('=');
-				const cookieName = cookieParts.shift();
-				const cookieValue = cookieParts.join('=');
-
-				virtualGaCookiesObj[cookieName] = cookieValue;
-				return value;
-			}
-			// Handle other cookies
-			return cookieDesc?.set?.call(document, value);
-		}
-	});
 }
 
 /**
