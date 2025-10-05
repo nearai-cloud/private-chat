@@ -77,7 +77,12 @@ export function setupVirtualGaCookies() {
 		},
 		set: function (value) {
 			// Handle GA cookies specifically
-			if (value.startsWith('_ga')) {
+			if (
+				value.startsWith('_ga') ||
+				value.startsWith('_gid') ||
+				value.startsWith('_gat') ||
+				value.startsWith('_gcl_')
+			) {
 				const cookieParts = value.split('=');
 				const cookieName = cookieParts.shift();
 				const cookieValue = cookieParts.join('=');
