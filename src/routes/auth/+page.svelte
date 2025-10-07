@@ -548,9 +548,11 @@
 
 							<div class="inline-block text-left ml-2 flex-1">
 								By signing in, I agree to the
-								<a class="underline" href="/terms">Terms of Service</a>
+								<a class="underline hover:text-blue-300" href="/terms">Terms of Service</a>
+								,
+								<a class="underline hover:text-blue-300" href="/privacy">Privacy Policy</a>
 								and
-								<a class="underline" href="/privacy">Privacy Policy</a>
+								<a class="underline hover:text-blue-300" href="/privacy/cookie">Cookie Policy</a>
 								.
 							</div>
 						</label>
