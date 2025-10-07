@@ -1,3 +1,5 @@
+import sha256 from 'js-sha256';
+
 export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 	const gaId = import.meta.env.VITE_GA_ID;
 
@@ -19,10 +21,14 @@ export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 	};
 
 	window.gtag('js', new Date());
+
+	// use clientId if provided, otherwise generate a temporary clientId
+	const rawClientId = clientId ?? getTempClientId();
+	const hashedClientId = sha256(rawClientId);
 	window.gtag('config', gaId, {
 		send_page_view: !disableAutoPageView, // enable or disable automatic page view tracking
 		anonymize_ip: true, // anonymize IP for privacy
-		client_id: clientId ?? getTempClientId() // use clientId if provided, otherwise generate a temporary clientId
+		client_id: hashedClientId
 	});
 
 	// Load GA script
