@@ -29,7 +29,7 @@
 	let ldapUsername = '';
 
 	// Checkbox state for terms and privacy
-	const TERMS_VERSION = 'V1';
+	const TERMS_VERSION = 'V2';
 	let agreedTerms = false;
 
 	onMount(() => {
