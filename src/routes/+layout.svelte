@@ -433,9 +433,12 @@
 		}
 	};
 
-	onMount(async () => {
+	const setupGA = (clientId = undefined) => {
 		const disableAutoPageView = false;
-		initGa(disableAutoPageView);
+		initGa({
+			disableAutoPageView,
+			clientId
+		});
 		if (disableAutoPageView) {
 			// Set up global page view tracking with selective override for sensitive pages
 			page.subscribe((pageData) => {
@@ -445,7 +448,9 @@
 				}
 			});
 		}
+	};
 
+	onMount(async () => {
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
 		}
@@ -557,6 +562,8 @@
 						return null;
 					});
 
+					setupGA(sessionUser?.id);
+
 					if (sessionUser) {
 						// Save Session User to Store
 						$socket.emit('user-join', { auth: { token: sessionUser.token } });
@@ -570,6 +577,8 @@
 						await goto(`/welcome`);
 					}
 				} else {
+					setupGA();
+
 					// Don't redirect if we're already on the auth page
 					// Needed because we pass in tokens from OAuth logins via URL fragments
 					if (
@@ -583,6 +592,7 @@
 				}
 			}
 		} else {
+			setupGA();
 			// Redirect to /error when Backend Not Detected
 			await goto(`/error`);
 		}

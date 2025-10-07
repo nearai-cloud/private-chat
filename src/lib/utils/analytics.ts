@@ -1,4 +1,6 @@
-export function initGa(disableAutoPageView = false) {
+import sha256 from 'js-sha256';
+
+export function initGa({ disableAutoPageView = false, clientId = undefined }) {
 	const gaId = import.meta.env.VITE_GA_ID;
 
 	if (!gaId) {
@@ -8,6 +10,9 @@ export function initGa(disableAutoPageView = false) {
 
 	if (window.gtag) return;
 
+	// Setup virtual GA cookies to make GA4 work without saving cookies
+	setupVirtualGaCookies();
+
 	// Initialize data layer and gtag function
 	window.dataLayer = window.dataLayer || [];
 	window.gtag = function () {
@@ -16,8 +21,14 @@ export function initGa(disableAutoPageView = false) {
 	};
 
 	window.gtag('js', new Date());
+
+	// use clientId if provided, otherwise generate a temporary clientId
+	const rawClientId = clientId ?? getTempClientId();
+	const hashedClientId = sha256(rawClientId);
 	window.gtag('config', gaId, {
-		send_page_view: !disableAutoPageView
+		send_page_view: !disableAutoPageView, // enable or disable automatic page view tracking
+		anonymize_ip: true, // anonymize IP for privacy
+		client_id: hashedClientId
 	});
 
 	// Load GA script
@@ -25,6 +36,70 @@ export function initGa(disableAutoPageView = false) {
 	script.async = true;
 	script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
 	document.head.appendChild(script);
+}
+
+/**
+ * Generate a temporary clientId
+ * @returns a temporary clientId
+ */
+export function getTempClientId() {
+	try {
+		const id = localStorage.getItem('temp_client_id');
+		if (id) {
+			return id;
+		}
+
+		const tempClientId = 'temp-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+		localStorage.setItem('temp_client_id', tempClientId);
+		return tempClientId;
+	} catch (error) {
+		console.error('Error getting temp client id', error);
+		return undefined;
+	}
+}
+
+/**
+ * Set up virtual GA cookies to make GA4 work without saving cookies
+ */
+export function setupVirtualGaCookies() {
+	const cookieDesc =
+		Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') ||
+		Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
+
+	const virtualGaCookiesObj: Record<string, string> = {};
+
+	Object.defineProperty(document, 'cookie', {
+		configurable: true,
+		get: function () {
+			const cookies = cookieDesc?.get?.call(document);
+			const virtualGaCookies = Object.entries(virtualGaCookiesObj)
+				.map(([name, value]) => `${name}=${value.split(';')[0]}`)
+				.join('; ');
+
+			// Concatenate actual cookies with virtual GA cookies
+			return cookies && virtualGaCookies
+				? `${cookies}; ${virtualGaCookies}`
+				: cookies || virtualGaCookies;
+		},
+		set: function (value) {
+			// Handle GA cookies specifically
+			if (
+				value.startsWith('_ga') ||
+				value.startsWith('_gid') ||
+				value.startsWith('_gat') ||
+				value.startsWith('_gcl_')
+			) {
+				const cookieParts = value.split('=');
+				const cookieName = cookieParts.shift();
+				const cookieValue = cookieParts.join('=');
+
+				virtualGaCookiesObj[cookieName] = cookieValue;
+				return value;
+			}
+			// Handle other cookies
+			return cookieDesc?.set?.call(document, value);
+		}
+	});
 }
 
 /**
