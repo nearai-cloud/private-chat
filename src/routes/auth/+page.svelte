@@ -43,7 +43,7 @@
 
 	const checkAgreeTerms = () => {
 		if (!agreedTerms) {
-			toast.error('You must agree to the Terms of Service and Privacy Policy to proceed.');
+			toast.error('You must agree to the Terms of Service, Privacy Policy, and Cookie Policy to proceed.');
 			return false;
 		}
 		return true;
