@@ -23,16 +23,19 @@
 			title="NEAR AI Private Chat"
 			href="/opensearch.xml"
 		/>
-		<link
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-			rel="stylesheet"
-		/>
 		<script src="/static/loader.js" defer></script>
 
 		<script>
 			function resizeIframe(obj) {
 				obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
 			}
+			window.addEventListener('load', function () {
+				const link = document.createElement('link');
+				link.rel = 'stylesheet';
+				link.href =
+					'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
+				document.head.appendChild(link);
+			});
 		</script>
 
 		<script>
