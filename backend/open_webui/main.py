@@ -336,7 +336,7 @@ from sqlalchemy import text
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import Response, StreamingResponse
+from starlette.responses import Response, StreamingResponse, FileResponse
 
 if SAFE_MODE:
     print("SAFE MODE ENABLED")
@@ -349,6 +349,33 @@ log.setLevel(SRC_LOG_LEVELS["MAIN"])
 
 class SPAStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):
+        try:
+            gzip_path = f"{path}.gz"
+            full_gzip_path = os.path.join(self.directory, gzip_path)
+            if (
+                os.path.exists(full_gzip_path)
+                and os.path.isfile(full_gzip_path)
+            ):
+                mime_type, _ = mimetypes.guess_type(path)
+                if not mime_type:
+                    mime_type = "application/octet-stream"
+
+                accept_encoding = dict(scope.get("headers", [])).get(
+                    b"accept-encoding", b""
+                ).decode().lower()
+
+                if "gzip" in accept_encoding:
+                    return FileResponse(
+                        full_gzip_path,
+                        media_type=mime_type,
+                        headers={
+                            "Content-Encoding": "gzip",
+                            "Vary": "Accept-Encoding"
+                        }
+                    )
+        except Exception:
+            pass
+
         try:
             return await super().get_response(path, scope)
         except (HTTPException, StarletteHTTPException) as ex:

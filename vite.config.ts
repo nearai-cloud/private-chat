@@ -1,6 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-
+import compression from 'vite-plugin-compression';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 // /** @type {import('vite').Plugin} */
@@ -28,7 +28,19 @@ export default defineConfig({
 					dest: 'wasm'
 				}
 			]
-		})
+		}),
+		compression({
+			ext: '.gz',
+			algorithm: 'gzip',
+			threshold: 10240,
+			deleteOriginFile: false,
+			compressionOptions: { level: 6 },
+			filter: (file) => {
+				return !['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.json', '.map'].some(ext => 
+					file.endsWith(ext)
+				);
+			}
+		}),
 	],
 	define: {
 		APP_VERSION: JSON.stringify(process.env.npm_package_version),
