@@ -1,12 +1,8 @@
 <script lang="ts">
-	import { DropdownMenu } from 'bits-ui';
 	import { onMount } from 'svelte';
-	import InputMenu from '$lib/components/chat/MessageInput/InputMenu.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Bolt from '$lib/components/icons/Bolt.svelte';
-	import Headphone from '$lib/components/icons/Headphone.svelte';
 	import NearAIIcon from '$lib/components/icons/NearAIGreen.svelte';
-	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import { getContext } from 'svelte';
 	import Fuse from 'fuse.js';
 	import { allPrompts } from './data';

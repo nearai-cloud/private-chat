@@ -2,6 +2,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import compression from 'vite-plugin-compression';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+// import { visualizer } from 'rollup-plugin-visualizer';
 
 // /** @type {import('vite').Plugin} */
 // const viteServerConfig = {
@@ -24,7 +25,6 @@ export default defineConfig({
 			targets: [
 				{
 					src: 'node_modules/onnxruntime-web/dist/*.jsep.*',
-
 					dest: 'wasm'
 				}
 			]
@@ -41,15 +41,27 @@ export default defineConfig({
 				);
 			}
 		})
+		// visualizer({
+		// 	open: true,
+		// 	gzipSize: true,
+		// 	brotliSize: true,
+		// 	filename: 'stats.html'
+		// })
 	],
 	define: {
 		APP_VERSION: JSON.stringify(process.env.npm_package_version),
 		APP_BUILD_HASH: JSON.stringify(process.env.APP_BUILD_HASH || 'dev-build')
 	},
 	build: {
-		sourcemap: true
+		sourcemap: true,
+		chunkSizeWarningLimit: 1500
 	},
 	worker: {
 		format: 'es'
+	},
+	optimizeDeps: {
+		esbuildOptions: {
+			target: ['es2020', 'edge88', 'firefox78', 'chrome87']
+		}
 	}
 });
