@@ -36,11 +36,11 @@ export default defineConfig({
 			deleteOriginFile: false,
 			compressionOptions: { level: 6 },
 			filter: (file) => {
-				return !['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.json', '.map'].some(ext => 
+				return !['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.json', '.map'].some((ext) =>
 					file.endsWith(ext)
 				);
 			}
-		}),
+		})
 	],
 	define: {
 		APP_VERSION: JSON.stringify(process.env.npm_package_version),
