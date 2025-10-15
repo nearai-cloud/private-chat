@@ -44,10 +44,11 @@ export type GetModelAttestationReportParams = {
 };
 
 export type ModelAttestationReport = {
-	signing_address: Address;
-	nvidia_payload: string;
-	intel_quote: string;
-	all_attestations: Array<{
+	gateway_attestation: {
+		quote: string;
+		event_log: string;
+	};
+	model_attestations: Array<{
 		signing_address: Address;
 		nvidia_payload: string;
 		intel_quote: string;
