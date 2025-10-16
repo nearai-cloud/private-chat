@@ -369,7 +369,9 @@ class SPAStaticFiles(StaticFiles):
                     "Vary": "Accept-Encoding",
                 }
                 if not path.endswith(".html"):
-                    custom_headers["Cache-Control"] = "public, max-age=31536000, immutable"
+                    custom_headers["Cache-Control"] = (
+                        "public, max-age=31536000, immutable"
+                    )
 
                 if "gzip" in accept_encoding:
                     return FileResponse(
@@ -386,7 +388,9 @@ class SPAStaticFiles(StaticFiles):
             else:
                 response = await super().get_response(path, scope)
                 if hasattr(response, "headers"):
-                    response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+                    response.headers["Cache-Control"] = (
+                        "public, max-age=31536000, immutable"
+                    )
                 return response
         except (HTTPException, StarletteHTTPException) as ex:
             if ex.status_code == 404:
