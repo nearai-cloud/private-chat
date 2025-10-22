@@ -12,7 +12,11 @@ export const getModelAttestationReport = async ({
 			Accept: 'application/json'
 		}
 	});
-	return res.json();
+	const data = await res.json();
+	if (!data.model_attestations) {
+		data.model_attestations = data.all_attestations || [];
+	}
+	return data;
 };
 
 export const getMessageSignature = async ({
