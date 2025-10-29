@@ -12,7 +12,11 @@ export const getModelAttestationReport = async ({
 			Accept: 'application/json'
 		}
 	});
-	return res.json();
+	const data = await res.json();
+	if (!data.model_attestations) {
+		data.model_attestations = data.all_attestations || [];
+	}
+	return data;
 };
 
 export const getMessageSignature = async ({
@@ -44,10 +48,11 @@ export type GetModelAttestationReportParams = {
 };
 
 export type ModelAttestationReport = {
-	signing_address: Address;
-	nvidia_payload: string;
-	intel_quote: string;
-	all_attestations: Array<{
+	gateway_attestation: {
+		quote: string;
+		event_log: string;
+	};
+	model_attestations: Array<{
 		signing_address: Address;
 		nvidia_payload: string;
 		intel_quote: string;
