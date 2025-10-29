@@ -336,7 +336,7 @@ from sqlalchemy import text
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import Response, StreamingResponse
+from starlette.responses import Response, StreamingResponse, FileResponse
 
 if SAFE_MODE:
     print("SAFE MODE ENABLED")
@@ -350,7 +350,48 @@ log.setLevel(SRC_LOG_LEVELS["MAIN"])
 class SPAStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):
         try:
-            return await super().get_response(path, scope)
+            gzip_path = f"{path}.gz"
+            full_gzip_path = os.path.join(self.directory, gzip_path)
+            if os.path.exists(full_gzip_path) and os.path.isfile(full_gzip_path):
+                mime_type, _ = mimetypes.guess_type(path)
+                if not mime_type:
+                    mime_type = "application/octet-stream"
+
+                accept_encoding = (
+                    dict(scope.get("headers", []))
+                    .get(b"accept-encoding", b"")
+                    .decode()
+                    .lower()
+                )
+
+                custom_headers = {
+                    "Content-Encoding": "gzip",
+                    "Vary": "Accept-Encoding",
+                }
+                if not path.endswith(".html"):
+                    custom_headers["Cache-Control"] = (
+                        "public, max-age=31536000, immutable"
+                    )
+
+                if "gzip" in accept_encoding:
+                    return FileResponse(
+                        full_gzip_path,
+                        media_type=mime_type,
+                        headers=custom_headers,
+                    )
+        except Exception:
+            pass
+
+        try:
+            if path.endswith(".html"):
+                return await super().get_response(path, scope)
+            else:
+                response = await super().get_response(path, scope)
+                if hasattr(response, "headers"):
+                    response.headers["Cache-Control"] = (
+                        "public, max-age=31536000, immutable"
+                    )
+                return response
         except (HTTPException, StarletteHTTPException) as ex:
             if ex.status_code == 404:
                 if path.endswith(".js"):
