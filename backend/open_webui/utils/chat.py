@@ -3,13 +3,14 @@ import inspect
 import json
 import logging
 import random
+import re
 import sys
 import time
 import uuid
 from typing import Any, Optional
 
 from aiocache import cached
-from fastapi import Request, status
+from fastapi import HTTPException, Request, status
 from open_webui.env import BYPASS_MODEL_ACCESS_CONTROL, GLOBAL_LOG_LEVEL, SRC_LOG_LEVELS
 from open_webui.functions import generate_function_chat_completion
 from open_webui.models.functions import Functions
@@ -39,6 +40,87 @@ from starlette.responses import JSONResponse, Response, StreamingResponse
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MAIN"])
+
+
+def reduce_search_results_in_files(form_data: dict) -> dict:
+    """
+    Reduce web search results in form_data by removing half of the <source> tags from message content.
+
+    Args:
+        form_data: The chat completion form data containing messages with search results
+
+    Returns:
+        Modified form_data with reduced search results
+    """
+    try:
+        reduced_count = 0
+
+        # Check messages for <source> tags
+        if "messages" in form_data:
+            messages = form_data["messages"]
+
+            for i, msg in enumerate(messages):
+                if (
+                    isinstance(msg, dict)
+                    and "content" in msg
+                    and isinstance(msg["content"], str)
+                ):
+                    content = msg["content"]
+
+                    # Find all <source> tags
+                    source_pattern = r"<source[^>]*>.*?</source>"
+                    sources = re.findall(source_pattern, content, re.DOTALL)
+
+                    if len(sources) > 1:
+                        # Keep only half of the sources
+                        sources_to_keep = max(1, len(sources) // 2)
+
+                        # Remove the sources we don't want to keep
+                        sources_to_remove = sources[sources_to_keep:]
+
+                        # Remove each source from content
+                        new_content = content
+                        for source_to_remove in sources_to_remove:
+                            # Escape special regex characters in the source content
+                            escaped_source = re.escape(source_to_remove)
+                            new_content = re.sub(
+                                escaped_source, "", new_content, count=1
+                            )
+
+                        # Clean up extra whitespace
+                        new_content = re.sub(r"\n\s*\n\s*\n", "\n\n", new_content)
+                        new_content = new_content.strip()
+
+                        msg["content"] = new_content
+                        reduced_count += len(sources_to_remove)
+
+                        log.warning(
+                            f"Removed {len(sources_to_remove)} sources from message {i}"
+                        )
+
+        # Also check metadata.files if they exist
+        if "metadata" in form_data and "files" in form_data["metadata"]:
+            files = form_data["metadata"]["files"]
+            if files is not None and isinstance(files, list):
+                for i, file in enumerate(files):
+                    if (
+                        isinstance(file, dict)
+                        and file.get("type") == "web_search"
+                        and "docs" in file
+                    ):
+                        original_count = len(file["docs"])
+                        if original_count > 1:
+                            reduced_file_count = max(1, original_count // 2)
+                            file["docs"] = file["docs"][:reduced_file_count]
+                            reduced_count += original_count - reduced_file_count
+
+        if reduced_count > 0:
+            log.warning(f"Successfully reduced {reduced_count} search results")
+
+        return form_data
+    except Exception as e:
+        log.error(f"Error reducing search results: {e}")
+        return form_data
 
 
 async def generate_direct_chat_completion(
@@ -262,14 +344,45 @@ async def generate_chat_completion(
 
                 return result
         else:
-            result = await generate_openai_chat_completion(
-                request=request,
-                form_data=form_data,
-                user=user,
-                bypass_filter=bypass_filter,
-            )
+            # Attempt OpenAI chat completion with retry logic for 413 errors
+            max_retries = 1
+            retry_count = 0
+            last_exception = None
 
-            return result
+            while retry_count <= max_retries:
+                try:
+                    result = await generate_openai_chat_completion(
+                        request=request,
+                        form_data=form_data,
+                        user=user,
+                        bypass_filter=bypass_filter,
+                    )
+                    return result
+                except HTTPException as e:
+                    last_exception = e
+                    if e.status_code == 413:
+                        if retry_count < max_retries:
+                            log.warning(
+                                f"Received 413 error, attempting retry {retry_count + 1}/{max_retries + 1} with reduced search results"
+                            )
+                            retry_count += 1
+
+                            # Reduce search results in form_data by half
+                            form_data = reduce_search_results_in_files(form_data)
+
+                            continue  # Retry with reduced payload
+                        else:
+                            log.warning(
+                                f"Received 413 error, max retries ({max_retries + 1}) reached"
+                            )
+                            break
+                    else:
+                        # Different error, re-raise immediately
+                        break
+
+            # If we exit the loop, re-raise the last exception
+            if last_exception:
+                raise last_exception
 
 
 chat_completion = generate_chat_completion

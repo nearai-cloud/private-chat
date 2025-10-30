@@ -211,18 +211,79 @@ async def chat_completion_tools_handler(
                             tool_result_files.append(item)
                             tool_result.remove(item)
 
-                if isinstance(tool_result, dict) or isinstance(tool_result, list):
+                tool = tools[tool_function_name]
+                tool_id = tool.get("tool_id", "")
+                tool_name = (
+                    f"{tool_id}/{tool_function_name}"
+                    if tool_id
+                    else f"{tool_function_name}"
+                )
+
+                # Handle list results specially when citations are enabled
+                if isinstance(tool_result, list) and (
+                    tool.get("metadata", {}).get("citation", False)
+                    or tool.get("direct", False)
+                ):
+                    # Citation is enabled for this tool and result is a list
+                    for i, item in enumerate(tool_result):
+                        # Check if this is a SearchResult-like object with link, title, snippet
+                        if (
+                            hasattr(item, "link")
+                            and hasattr(item, "title")
+                            and hasattr(item, "snippet")
+                        ):
+                            # This is a SearchResult object
+                            sources.append(
+                                {
+                                    "source": {
+                                        "name": item.title or f"Search Result {i+1}",
+                                        "url": item.link,
+                                    },
+                                    "document": [item.snippet or ""],
+                                    "metadata": [
+                                        {
+                                            "source": item.link,
+                                            "title": item.title,
+                                        }
+                                    ],
+                                }
+                            )
+                        elif isinstance(item, dict) and "link" in item:
+                            # Handle dict-like search results
+                            sources.append(
+                                {
+                                    "source": {
+                                        "name": item.get(
+                                            "title", f"Search Result {i+1}"
+                                        ),
+                                        "url": item.get("link", ""),
+                                    },
+                                    "document": [item.get("snippet", "")],
+                                    "metadata": [
+                                        {
+                                            "source": item.get("link", ""),
+                                            "title": item.get("title", ""),
+                                        }
+                                    ],
+                                }
+                            )
+                        else:
+                            # Fallback for other list items
+                            sources.append(
+                                {
+                                    "source": {
+                                        "name": f"TOOL:{tool_name} Result {i+1}",
+                                    },
+                                    "document": [str(item)],
+                                    "metadata": [
+                                        {"source": f"TOOL:{tool_name} Result {i+1}"}
+                                    ],
+                                }
+                            )
+                elif isinstance(tool_result, dict) or isinstance(tool_result, list):
                     tool_result = json.dumps(tool_result, indent=2)
 
                 if isinstance(tool_result, str):
-                    tool = tools[tool_function_name]
-                    tool_id = tool.get("tool_id", "")
-
-                    tool_name = (
-                        f"{tool_id}/{tool_function_name}"
-                        if tool_id
-                        else f"{tool_function_name}"
-                    )
                     if tool.get("metadata", {}).get("citation", False) or tool.get(
                         "direct", False
                     ):
@@ -276,12 +337,19 @@ async def chat_web_search_handler(
     request: Request, form_data: dict, extra_params: dict, user
 ):
     event_emitter = extra_params["__event_emitter__"]
+    # Update status message based on whether query generation is enabled
+    status_description = (
+        "Generating search query"
+        if request.app.state.config.ENABLE_SEARCH_QUERY_GENERATION
+        else "Preparing search"
+    )
+
     await event_emitter(
         {
             "type": "status",
             "data": {
                 "action": "web_search",
-                "description": "Generating search query",
+                "description": status_description,
                 "done": False,
             },
         }
@@ -291,36 +359,46 @@ async def chat_web_search_handler(
     user_message = get_last_user_message(messages)
 
     queries = []
-    try:
-        res = await generate_queries(
-            request,
-            {
-                "model": form_data["model"],
-                "messages": messages,
-                "prompt": user_message,
-                "type": "web_search",
-            },
-            user,
-        )
 
-        response = res["choices"][0]["message"]["content"]
-
+    # Check if query generation is enabled before calling generate_queries
+    if request.app.state.config.ENABLE_SEARCH_QUERY_GENERATION:
         try:
-            bracket_start = response.find("{")
-            bracket_end = response.rfind("}") + 1
+            res = await generate_queries(
+                request,
+                {
+                    "model": form_data["model"],
+                    "messages": messages,
+                    "prompt": user_message,
+                    "type": "web_search",
+                },
+                user,
+            )
 
-            if bracket_start == -1 or bracket_end == -1:
-                raise Exception("No JSON object found in the response")
+            response = res["choices"][0]["message"]["content"]
 
-            response = response[bracket_start:bracket_end]
-            queries = json.loads(response)
-            queries = queries.get("queries", [])
+            try:
+                bracket_start = response.find("{")
+                bracket_end = response.rfind("}") + 1
+
+                if bracket_start == -1 or bracket_end == -1:
+                    raise Exception("No JSON object found in the response")
+
+                response = response[bracket_start:bracket_end]
+                queries = json.loads(response)
+                queries = queries.get("queries", [])
+            except Exception as e:
+                queries = [response]
+
         except Exception as e:
-            queries = [response]
-
-    except Exception as e:
-        log.exception(e)
+            log.exception(e)
+            queries = [user_message]
+    else:
+        # If query generation is disabled, use user message directly
+        log.debug("Search query generation is disabled, using user message directly")
         queries = [user_message]
+
+    # limit the number of queries to 1
+    queries = queries[:1]
 
     if len(queries) == 0:
         await event_emitter(
@@ -870,16 +948,55 @@ async def process_chat_payload(request, form_data, user, metadata, model):
     # If context is not empty, insert it into the messages
     if len(sources) > 0:
         context_string = ""
-        citated_file_idx = {}
-        for _, source in enumerate(sources, 1):
+
+        # Create URL to ID mapping for web search sources
+        url_to_id = {}
+        url_counter = 1
+
+        # First pass: assign unique IDs to each URL
+        for source in sources:
             if "document" in source:
+                for doc_meta in source.get("metadata", []):
+                    source_url = doc_meta.get("source", "")
+                    if source_url.startswith(("http://", "https://")):
+                        if source_url not in url_to_id:
+                            url_to_id[source_url] = url_counter
+                            url_counter += 1
+
+        # Second pass: assign citation IDs based on URL mapping
+        for source in sources:
+            if "document" in source:
+                source_name = source.get("source", {}).get("name", "")
+                source_url = source.get("source", {}).get("url", "")
+
+                # Check if this is a web search source
+                is_web_search = (
+                    source_url.startswith(("http://", "https://"))
+                    or "Search Result" in source_name
+                    or any(
+                        metadata.get("source", "").startswith(("http://", "https://"))
+                        for metadata in source.get("metadata", [])
+                    )
+                )
+
                 for doc_context, doc_meta in zip(
                     source["document"], source["metadata"]
                 ):
-                    file_id = doc_meta.get("file_id")
-                    if file_id not in citated_file_idx:
-                        citated_file_idx[file_id] = len(citated_file_idx) + 1
-                    context_string += f'<source id="{citated_file_idx[file_id]}">{doc_context}</source>\n'
+                    if is_web_search:
+                        # Map RAG chunk to its source URL ID
+                        chunk_source_url = doc_meta.get("source", "")
+                        if chunk_source_url in url_to_id:
+                            citation_id = url_to_id[chunk_source_url]
+                        else:
+                            # Fallback for edge cases
+                            citation_id = 1
+
+                        context_string += (
+                            f'<source id="{citation_id}">{doc_context}</source>\n'
+                        )
+                    else:
+                        # Non-web-search sources get no ID (won't be cited)
+                        context_string += f"{doc_context}\n"
 
         context_string = context_string.strip()
         prompt = get_last_user_message(form_data["messages"])
@@ -914,8 +1031,25 @@ async def process_chat_payload(request, form_data, user, metadata, model):
     # If there are citations, add them to the data_items
     sources = [source for source in sources if source.get("source", {}).get("name", "")]
 
-    if len(sources) > 0:
-        events.append({"sources": sources})
+    # Filter sources to only include web search sources for UI display
+    web_search_sources = []
+    for source in sources:
+        source_name = source.get("source", {}).get("name", "")
+        source_url = source.get("source", {}).get("url", "")
+
+        # Check if this is a web search source
+        if (
+            source_url.startswith(("http://", "https://"))
+            or "Search Result" in source_name
+            or any(
+                metadata.get("source", "").startswith(("http://", "https://"))
+                for metadata in source.get("metadata", [])
+            )
+        ):
+            web_search_sources.append(source)
+
+    if len(web_search_sources) > 0:
+        events.append({"sources": web_search_sources})
 
     if model_knowledge:
         await event_emitter(
