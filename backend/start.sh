@@ -22,6 +22,23 @@ HOST="${HOST:-0.0.0.0}"
 # Set log level to WARNING for privacy (suppresses INFO and DEBUG messages)
 export GLOBAL_LOG_LEVEL="${GLOBAL_LOG_LEVEL:-WARNING}"
 
+# NEAR AI Cloud
+if [ -z "$NEAR_AI_CLOUD" ]; then
+    echo "Error: NEAR_AI_CLOUD environment variable is not set"
+    exit 1
+fi
+if [ -z "$FREE_TIER_BUDGET_ID" ]; then
+    echo "Error: FREE_TIER_BUDGET_ID environment variable is not set"
+    exit 1
+fi
+if [ -z "$NEAR_AI_CLOUD_TOKEN" ]; then
+    echo "Error: NEAR_AI_CLOUD_TOKEN environment variable is not set"
+    exit 1
+fi
+export NEAR_AI_CLOUD
+export FREE_TIER_BUDGET_ID
+export NEAR_AI_CLOUD_TOKEN
+
 if test "$WEBUI_SECRET_KEY $WEBUI_JWT_SECRET_KEY" = " "; then
   echo "Loading WEBUI_SECRET_KEY from file, not provided as an environment variable."
 
