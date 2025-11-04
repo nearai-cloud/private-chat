@@ -315,6 +315,7 @@ class OAuthManager:
             if user.role != determined_role:
                 Users.update_user_role_by_id(user.id, determined_role)
 
+        is_new_user = False
         if not user:
             user_count = Users.get_num_users()
 
@@ -386,6 +387,7 @@ class OAuthManager:
                     role=role,
                     oauth_sub=provider_sub,
                 )
+                is_new_user = True
 
                 if auth_manager_config.WEBHOOK_URL:
                     post_webhook(
@@ -434,5 +436,5 @@ class OAuthManager:
                 secure=WEBUI_AUTH_COOKIE_SECURE,
             )
         # Redirect back to the frontend with the JWT token
-        redirect_url = f"{request.base_url}auth#token={jwt_token}"
+        redirect_url = f"{request.base_url}auth#token={jwt_token}&provider={provider}new_user={str(is_new_user).lower()}"
         return RedirectResponse(url=redirect_url, headers=response.headers)

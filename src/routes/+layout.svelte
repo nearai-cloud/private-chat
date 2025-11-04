@@ -48,6 +48,8 @@
 	import NotificationToast from '$lib/components/NotificationToast.svelte';
 	import AppSidebar from '$lib/components/app/AppSidebar.svelte';
 	import { chatCompletion } from '$lib/apis/openai';
+	import { afterNavigate } from '$app/navigation';
+	import { posthogPageView, posthogSignupStarted } from '$lib/utils/posthog';
 
 	setContext('i18n', i18n);
 
@@ -450,7 +452,17 @@
 		}
 	};
 
+	afterNavigate((props) => {
+		if (props.to?.route?.id === '/auth') {
+			posthogSignupStarted();
+			return;
+		}
+		posthogPageView();
+	});
+
 	onMount(async () => {
+		posthogPageView();
+
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
 		}
