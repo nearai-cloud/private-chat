@@ -2,6 +2,7 @@
 	import { v4 as uuidv4 } from 'uuid';
 	import { toast } from 'svelte-sonner';
 	import mermaid from 'mermaid';
+	import { getMessageSignature, type MessageSignature } from '$lib/apis/nearai';
 	import { PaneGroup, Pane, PaneResizer } from 'paneforge';
 
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
@@ -13,6 +14,8 @@
 	import { get, type Unsubscriber, type Writable } from 'svelte/store';
 	import type { i18n as i18nType } from 'i18next';
 	import { WEBUI_BASE_URL } from '$lib/constants';
+	import AccountButton from './AccountButton.svelte';
+	import { messagesSignatures } from '$lib/stores';
 
 	import {
 		chatId,
@@ -91,6 +94,8 @@
 	import ChatVerifier from './ChatVerifier.svelte';
 
 	const WEB_SEARCH_STATUS_KEY = 'web-search-enabled-status';
+	const MOBILE_BREAKPOINT = 768;
+	const MediaQueryEvent = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
 
 	export let chatIdProp = '';
 
@@ -115,7 +120,8 @@
 	let eventCallback = null;
 
 	// Chat verification state
-	let showChatVerifier = true;
+	let showChatVerifier = false;
+	let isMobile = false;
 
 	let chatIdUnsubscriber: Unsubscriber | undefined;
 
@@ -138,12 +144,21 @@
 	};
 
 	let taskIds = null;
+	let loadingSignatures: Set<string> = new Set();
 
 	// Chat Input
 	let prompt = '';
 	let chatFiles = [];
 	let files = [];
 	let params = {};
+
+	const setIsMobile = () => {
+		isMobile = window.innerWidth < MOBILE_BREAKPOINT;
+	};
+
+	$: {
+		showChatVerifier = !isMobile;
+	}
 
 	$: {
 		if (webSearchEnabled) {
@@ -412,6 +427,10 @@
 		console.log('mounted');
 		window.addEventListener('message', onMessageHandler);
 		$socket?.on('chat-events', chatEventHandler);
+		const welcomePrompt = sessionStorage.getItem('welcome-prompt');
+
+		setIsMobile();
+		MediaQueryEvent.addEventListener('change', setIsMobile);
 
 		if (!$chatId) {
 			chatIdUnsubscriber = chatId.subscribe(async (value) => {
@@ -438,6 +457,11 @@
 				files = [];
 				selectedToolIds = [];
 				imageGenerationEnabled = false;
+			}
+		} else {
+			if (welcomePrompt) {
+				prompt = welcomePrompt;
+				sessionStorage.removeItem('welcome-prompt');
 			}
 		}
 
@@ -471,6 +495,7 @@
 		chatIdUnsubscriber?.();
 		window.removeEventListener('message', onMessageHandler);
 		$socket?.off('chat-events', chatEventHandler);
+		MediaQueryEvent.removeEventListener('change', setIsMobile);
 	});
 
 	// File upload functions
@@ -918,6 +943,7 @@
 		}
 
 		taskIds = null;
+		verifyMessageSignature(responseMessageId);
 	};
 
 	const chatActionHandler = async (chatId, actionId, modelId, responseMessageId, event = null) => {
@@ -1930,6 +1956,55 @@
 			}
 		}
 	};
+
+	const fetchMessageSignature = async (model: string, chatCompletionId: string) => {
+		if (
+			!chatCompletionId ||
+			!localStorage.token ||
+			!model ||
+			loadingSignatures.has(chatCompletionId)
+		)
+			return;
+
+		loadingSignatures.add(chatCompletionId);
+		loadingSignatures = loadingSignatures; // Trigger reactivity
+
+		try {
+			const data = await getMessageSignature({
+				token: localStorage.token,
+				model,
+				chatCompletionId
+			});
+			messagesSignatures.update((prev) => ({ ...prev, [chatCompletionId]: data }));
+		} catch (err) {
+			console.error('Error fetching message signature:', err);
+			error = err instanceof Error ? err.message : 'Failed to fetch message signature';
+		} finally {
+			loadingSignatures.delete(chatCompletionId);
+			loadingSignatures = loadingSignatures; // Trigger reactivity
+		}
+	};
+
+	const verifyMessageSignature = async (messageId: string) => {
+		if (!history?.messages) return;
+		const message = history.messages[messageId];
+		if (!message?.chatCompletionId || !message.model) return;
+		if (message.role !== 'assistant' || !message.done) return;
+		if ($messagesSignatures[message.chatCompletionId]) return;
+		fetchMessageSignature(message.model, message.chatCompletionId);
+	};
+	let sideClassNames = '';
+	$: {
+		if (!$showSidebar && !showChatVerifier) {
+			sideClassNames = '';
+		} else {
+			let w = $showSidebar ? 260 : 0;
+			if (showChatVerifier) {
+				w += 320;
+			}
+			sideClassNames = `md:max-w-[calc(100%-${w}px)]`;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -1963,21 +2038,8 @@
 	}}
 />
 
-<ChatVerifier
-	{history}
-	token={localStorage.token}
-	chatId={$chatId}
-	{selectedModels}
-	bind:expanded={showChatVerifier}
-	on:toggle={(e) => {
-		showChatVerifier = e.detail.expanded;
-	}}
-/>
-
 <div
-	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
-		? '  md:max-w-[calc(100%-260px)]'
-		: ' '} w-full max-w-full flex flex-col"
+	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {sideClassNames} w-full max-w-full flex flex-col"
 	id="chat-container"
 >
 	{#if !loading}
@@ -2012,6 +2074,7 @@
 					{history}
 					title={$chatTitle}
 					bind:selectedModels
+					bind:showChatVerifier
 					shareEnabled={!!history.currentId}
 					{initNewChat}
 				/>
@@ -2044,12 +2107,16 @@
 									{mergeResponses}
 									{chatActionHandler}
 									{addMessages}
+									{webSearchEnabled}
 									bottomPadding={files.length > 0}
 								/>
 							</div>
 						</div>
 
-						<div class=" pb-[1rem]">
+						<div class="pb-[1rem] flex items-center {$showSidebar ? '' : 'md:pl-2.5'}">
+							{#if !$showSidebar}
+								<AccountButton buttonClass="hidden md:flex! size-10.5!" iconClass="size-7.5!" />
+							{/if}
 							<MessageInput
 								{history}
 								{taskIds}
@@ -2103,7 +2170,13 @@
 							</div>
 						</div>
 					{:else}
-						<div class="overflow-auto w-full h-full flex items-center">
+						<div class="overflow-auto w-full h-full flex items-end">
+							{#if !$showSidebar}
+								<AccountButton
+									buttonClass="hidden md:flex! size-10.5! ml-2.5! mb-9.5!"
+									iconClass="size-7.5!"
+								/>
+							{/if}
 							<Placeholder
 								{history}
 								{selectedModels}
@@ -2174,3 +2247,14 @@
 		</div>
 	{/if}
 </div>
+
+<ChatVerifier
+	{history}
+	token={localStorage.token}
+	chatId={$chatId}
+	{selectedModels}
+	bind:expanded={showChatVerifier}
+	on:toggle={(e) => {
+		showChatVerifier = e.detail.expanded;
+	}}
+/>

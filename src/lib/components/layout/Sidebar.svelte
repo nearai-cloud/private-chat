@@ -474,7 +474,7 @@
 		? 'md:relative w-[260px] max-w-[260px]'
 		: '-translate-x-[260px] w-[0px]'} {$isApp
 		? `ml-[4.5rem] md:ml-0 `
-		: 'transition-width duration-200 ease-in-out'}  shrink-0 bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-200 text-sm fixed z-50 top-0 left-0 overflow-x-hidden
+		: 'transition-width duration-200 ease-in-out'} shrink-0 bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-200 text-sm fixed z-50 top-0 left-0 overflow-x-hidden
         "
 	data-state={$showSidebar}
 >
@@ -656,9 +656,6 @@
 				collapsible={!search}
 				className="px-2 mt-0.5"
 				name={$i18n.t('Chats')}
-				onAdd={() => {
-					createFolder();
-				}}
 				onAddLabel={$i18n.t('New Folder')}
 				on:import={(e) => {
 					importChatHandler(e.detail);

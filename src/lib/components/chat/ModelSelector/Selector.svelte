@@ -564,7 +564,7 @@
 											</svg>
 										</div>
 									</Tooltip>
-								{:else if item.model.owned_by === 'openai'}
+									<!-- {:else if item.model.owned_by === 'openai'}
 									<Tooltip content={`${'External'}`}>
 										<div class="translate-y-[1px]">
 											<svg
@@ -585,7 +585,7 @@
 												/>
 											</svg>
 										</div>
-									</Tooltip>
+									</Tooltip> -->
 								{/if}
 
 								{#if item.model?.info?.meta?.description}

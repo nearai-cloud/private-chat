@@ -339,19 +339,40 @@ class ChatTableEncryptionProxy(ChatTable):
     def get_archived_chat_list_by_user_id(
         self,
         user_id: str,
-        filter: Optional[dict] = None,
         skip: int = 0,
         limit: int = 50,
     ) -> list[ChatModel]:
         """Override to decrypt chat data after retrieving."""
-        results = super().get_archived_chat_list_by_user_id(
-            user_id, filter, skip, limit
-        )
-        return (
-            self._decrypt_chat_models_list(results)
-            if self._encryption_enabled
-            else results
-        )
+        if not self._encryption_enabled:
+            return super().get_archived_chat_list_by_user_id(user_id, skip, limit)
+
+        try:
+            with get_db() as db:
+                all_chats = (
+                    db.query(Chat)
+                    .filter_by(user_id=user_id, archived=True)
+                    .order_by(Chat.updated_at.desc())
+                )
+
+                chat_models = []
+                for chat_record in all_chats:
+                    chat_model = self._create_chat_model_from_db_record(chat_record)
+                    if chat_model is not None:  # Skip corrupted/undecryptable chats
+                        chat_models.append(chat_model)
+
+                return chat_models
+
+        except Exception as e:
+            log.error(f"Error in get_archived_chat_list_by_user_id: {e}")
+            # Fallback: try parent method but handle potential validation errors
+            try:
+                results = super().get_archived_chat_list_by_user_id(
+                    user_id, skip, limit
+                )
+                return self._decrypt_chat_models_list(results)
+            except Exception as fallback_error:
+                log.error(f"Fallback also failed: {fallback_error}")
+                return []
 
     def get_chats(self, skip: int = 0, limit: int = 50) -> list[ChatModel]:
         """Override to decrypt chat data after retrieving."""
@@ -574,3 +595,25 @@ class ChatTableEncryptionProxy(ChatTable):
             return super().update_shared_chat_by_chat_id(chat_id)
 
         raise NotImplementedError("Updating shared chats is not supported")
+
+    def toggle_chat_archive_by_id(self, id: str) -> Optional[ChatModel]:
+        """Override to handle encrypted chat archiving."""
+        if not self._encryption_enabled:
+            return super().toggle_chat_archive_by_id(id)
+
+        try:
+            with get_db() as db:
+                chat_item = db.get(Chat, id)
+                if not chat_item:
+                    return None
+
+                chat_item.archived = not chat_item.archived
+                chat_item.updated_at = int(time.time())
+                db.commit()
+                db.refresh(chat_item)
+
+                return self._create_chat_model_from_db_record(chat_item)
+
+        except Exception as e:
+            log.error(f"Error in encrypted toggle_chat_archive_by_id: {e}")
+            return None
