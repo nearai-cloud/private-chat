@@ -218,7 +218,7 @@
 				'exportmessages',
 				'chatactivity'
 			],
-			display: false
+			display: true
 		},
 		{
 			id: 'account',
