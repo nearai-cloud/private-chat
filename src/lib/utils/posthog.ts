@@ -35,7 +35,7 @@ export function posthogPageView() {
 }
 
 export function posthogSignupStarted() {
-	// console.log('PostHog signup started tracked', window.location.href);
+	console.log('PostHog signup started tracked', window.location.href);
 	posthogTrack('signup_started', {
 		entry_point: 'anonymous_message_attempt',
 		page_url: window.location.href

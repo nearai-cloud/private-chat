@@ -453,10 +453,6 @@
 	};
 
 	afterNavigate((props) => {
-		if (props.to?.route?.id === '/auth') {
-			posthogSignupStarted();
-			return;
-		}
 		posthogPageView();
 	});
 
