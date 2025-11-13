@@ -1,8 +1,8 @@
 import { sha256 } from 'js-sha256';
 
 export function initPosthog() {
-	const POSTHOG_KEY = import.meta.env.POSTHOG_ID;
-	const POSTHOG_HOST = import.meta.env.POSTHOG_HOST || 'https://us.i.posthog.com';
+	const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_ID;
+	const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
 
 	if (!POSTHOG_KEY || !POSTHOG_HOST) {
 		console.warn('PostHog ID or Host is not set.');
