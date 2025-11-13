@@ -39,8 +39,9 @@
 				token,
 				model
 			});
-			nvidiaPayload = JSON.parse(attestationData?.nvidia_payload || '{}');
-			intelQuote = attestationData?.intel_quote;
+			const firstAttestation = attestationData.model_attestations[0] || {};
+			nvidiaPayload = JSON.parse(firstAttestation?.nvidia_payload || '{}');
+			intelQuote = firstAttestation?.intel_quote;
 		} catch (err) {
 			console.error('Error fetching attestation report:', err);
 			error = err instanceof Error ? err.message : 'Failed to fetch attestation report';
@@ -79,11 +80,6 @@
 	$: if (autoVerify) {
 		dispatch('statusUpdate', verificationStatus);
 	}
-
-	// Computed values for display
-	$: evidenceListText = attestationData?.nvidia_payload
-		? `[{"certificate": "${attestationData.nvidia_payload.substring(0, 100)}..."}]`
-		: '';
 
 	// Fetch data when component mounts or model changes
 	$: if ((show || autoVerify) && model && token) {
