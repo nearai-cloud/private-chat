@@ -1114,17 +1114,6 @@ export const extractFrontmatter = (content) => {
 	return frontmatter;
 };
 
-// Function to determine the best matching language
-export const bestMatchingLanguage = (supportedLanguages, preferredLanguages, defaultLocale) => {
-	const languages = supportedLanguages.map((lang) => lang.code);
-
-	const match = preferredLanguages
-		.map((prefLang) => languages.find((lang) => lang.startsWith(prefLang)))
-		.find(Boolean);
-
-	return match || defaultLocale;
-};
-
 // Get the date in the format YYYY-MM-DD
 export const getFormattedDate = () => {
 	const date = new Date();
