@@ -43,7 +43,6 @@
 
 	import { WEBUI_BASE_URL, WEBUI_HOSTNAME } from '$lib/constants';
 	import i18n, { initI18n, getLanguages, changeLanguage } from '$lib/i18n';
-	import { bestMatchingLanguage } from '$lib/utils';
 	import { getAllTags, getChatList } from '$lib/apis/chats';
 	import NotificationToast from '$lib/components/NotificationToast.svelte';
 	import AppSidebar from '$lib/components/app/AppSidebar.svelte';
@@ -56,6 +55,16 @@
 	let loaded = false;
 
 	const BREAKPOINT = 768;
+
+	const bestMatchingLanguage = (supportedLanguages, preferredLanguages, defaultLocale) => {
+		const languages = supportedLanguages.map((lang) => lang.code);
+
+		const match = preferredLanguages
+			.map((prefLang) => languages.find((lang) => lang.startsWith(prefLang)))
+			.find(Boolean);
+
+		return match || defaultLocale;
+	};
 
 	const setupSocket = async (enableWebsocket) => {
 		const _socket = io(`${WEBUI_BASE_URL}` || undefined, {
