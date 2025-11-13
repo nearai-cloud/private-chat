@@ -9,6 +9,7 @@
 	import { fade, slide } from 'svelte/transition';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import { userSignOut } from '$lib/apis/auths';
+	import { posthogReset } from '$lib/utils/posthog';
 
 	const i18n = getContext('i18n');
 
@@ -159,6 +160,7 @@
 				on:click={async () => {
 					await userSignOut();
 					user.set(null);
+					posthogReset();
 
 					localStorage.removeItem('token');
 					location.href = '/auth';
