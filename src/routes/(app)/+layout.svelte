@@ -40,7 +40,6 @@
 	let version;
 
 	onMount(async () => {
-		console.log('App mounted');
 		if ($user === undefined || $user === null) {
 			// await goto('/auth');
 			await goto(`/welcome`);
