@@ -1,4 +1,5 @@
 import logging
+import time
 from dataclasses import dataclass
 from typing import Optional
 
@@ -34,6 +35,7 @@ def search_exa(
         filter_list (Optional[list[str]]): List of domains to filter results by
     """
     log.debug("Searching with Exa")
+    start_time = time.time()
 
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
@@ -62,7 +64,9 @@ def search_exa(
                 )
             )
 
-        log.debug(f"Found {len(results)} results")
+        elapsed_time = time.time() - start_time
+        print(f"Exa search completed in {elapsed_time:.2f} sec")
+        log.debug(f"Exa Found {len(results)} results in {elapsed_time:.2f} seconds")
         return [
             SearchResult(
                 link=result.url,

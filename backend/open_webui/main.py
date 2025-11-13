@@ -4,6 +4,17 @@ import json
 import logging
 import mimetypes
 import os
+
+# Monkey patch to completely disable ChromaDB telemetry
+try:
+    import chromadb.telemetry.product.posthog
+
+    def noop_capture(*args, **kwargs):
+        pass
+
+    chromadb.telemetry.product.posthog.Posthog.capture = noop_capture
+except ImportError:
+    pass
 import random
 import shutil
 import sys
