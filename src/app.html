@@ -77,30 +77,6 @@
 					}),
 					(e.__SV = 1));
 			})(document, window.posthog || []);
-			posthog.init('phc_glaMeuuO1gLFSB2U9y27MchidXEmSnFOQLB8cceyVSb', {
-				api_host: 'https://us.i.posthog.com',
-				person_profiles: 'always',
-				autocapture: false,
-				capture_pageview: false,
-				persistence: 'localStorage+cookie',
-				cookie_expiration: 90,
-				cross_subdomain_cookie: true,
-				cookie_domain: '.near.ai',
-				respect_dnt: true,
-				opt_out_capturing_by_default: false,
-				disable_session_recording: true,
-				session_recording: {
-					recordCanvas: false,
-					recordCrossOriginIframes: false,
-					maskAllInputs: true
-				}
-			});
-
-			// Respect Global Privacy Control (required by our cookie policy)
-			if (navigator.globalPrivacyControl === true) {
-				posthog.opt_out_capturing();
-				console.log('GPC signal detected - PostHog tracking disabled');
-			}
 		</script>
 
 		<script>

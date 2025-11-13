@@ -138,7 +138,6 @@
 		if (!token) {
 			return false;
 		}
-		console.log('OAuth token received:', isNewUser, provider, token);
 		const sessionUser = await getSessionUser(token).catch((error) => {
 			toast.error(`${error}`);
 			return false;

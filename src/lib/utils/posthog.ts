@@ -1,5 +1,44 @@
 import { sha256 } from 'js-sha256';
 
+export function initPosthog() {
+	const POSTHOG_KEY = import.meta.env.POSTHOG_ID;
+	const POSTHOG_HOST = import.meta.env.POSTHOG_HOST || 'https://us.i.posthog.com';
+
+	if (!POSTHOG_KEY || !POSTHOG_HOST) {
+		console.warn('PostHog ID or Host is not set.');
+		return;
+	}
+
+	if (typeof window.posthog === 'undefined') {
+		console.warn('PostHog library is not loaded.');
+		return;
+	}
+	window.posthog.init(POSTHOG_KEY, {
+		api_host: POSTHOG_HOST,
+		person_profiles: 'always',
+		autocapture: false,
+		capture_pageview: false,
+		persistence: 'localStorage+cookie',
+		cookie_expiration: 90,
+		cross_subdomain_cookie: true,
+		cookie_domain: '.near.ai',
+		respect_dnt: true,
+		opt_out_capturing_by_default: false,
+		disable_session_recording: true,
+		session_recording: {
+			recordCanvas: false,
+			recordCrossOriginIframes: false,
+			maskAllInputs: true
+		}
+	});
+
+	// Respect Global Privacy Control (required by our cookie policy)
+	if ((window.navigator as any).globalPrivacyControl === true) {
+		window.posthog.opt_out_capturing();
+		console.log('GPC signal detected - PostHog tracking disabled');
+	}
+}
+
 export function posthogTrack(event: string, properties?: Record<string, any>) {
 	try {
 		if (typeof window.posthog === 'undefined') {

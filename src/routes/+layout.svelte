@@ -49,13 +49,14 @@
 	import AppSidebar from '$lib/components/app/AppSidebar.svelte';
 	import { chatCompletion } from '$lib/apis/openai';
 	import { afterNavigate } from '$app/navigation';
-	import { posthogPageView, posthogSignupStarted } from '$lib/utils/posthog';
+	import { posthogPageView, initPosthog } from '$lib/utils/posthog';
 
 	setContext('i18n', i18n);
 
 	const bc = new BroadcastChannel('active-tab-channel');
 
 	let loaded = false;
+	let posthogInitialized = false;
 
 	const BREAKPOINT = 768;
 
@@ -453,11 +454,16 @@
 	};
 
 	afterNavigate((props) => {
+		if (!posthogInitialized) {
+			initPosthog();
+			posthogInitialized = true;
+		}
 		posthogPageView();
 	});
 
 	onMount(async () => {
-		posthogPageView();
+		initPosthog();
+		posthogInitialized = true;
 
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
