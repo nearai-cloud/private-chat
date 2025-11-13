@@ -15,6 +15,12 @@
 
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import OnBoarding from '$lib/components/OnBoarding.svelte';
+	import {
+		posthogEmailLogin,
+		posthogEmailSignup,
+		posthogOauthLogin,
+		posthogOauthSignup
+	} from '$lib/utils/posthog';
 
 	const i18n = getContext('i18n');
 
@@ -79,7 +85,9 @@
 			toast.error(`${error}`);
 			return null;
 		});
-
+		if (sessionUser) {
+			posthogEmailLogin(sessionUser.id);
+		}
 		await setSessionUser(sessionUser);
 	};
 
@@ -91,6 +99,9 @@
 			}
 		);
 
+		if (sessionUser) {
+			posthogEmailSignup(sessionUser.id, email);
+		}
 		await setSessionUser(sessionUser);
 	};
 
@@ -122,6 +133,8 @@
 		}
 		const params = new URLSearchParams(hash);
 		const token = params.get('token');
+		const provider = params.get('provider') || 'oauth';
+		const isNewUser = params.get('new_user') === 'true';
 		if (!token) {
 			return false;
 		}
@@ -134,6 +147,13 @@
 		}
 		localStorage.token = token;
 		await setSessionUser(sessionUser);
+
+		if (isNewUser) {
+			posthogOauthSignup(sessionUser.id, provider);
+		} else {
+			posthogOauthLogin(sessionUser.id, provider);
+		}
+
 		return true;
 	};
 

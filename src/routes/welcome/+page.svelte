@@ -8,6 +8,7 @@
 	import { allPrompts } from './data';
 	import { arraysEqual } from './utils';
 	import { goto, preloadCode } from '$app/navigation';
+	import { posthogSignupStarted } from '$lib/utils/posthog';
 
 	const i18n: any = getContext('i18n');
 
@@ -41,6 +42,7 @@
 
 	const gotoAuth = async () => {
 		sessionStorage.setItem('welcome-prompt', inputValue);
+		posthogSignupStarted();
 		await goto(`/auth`);
 	};
 </script>
