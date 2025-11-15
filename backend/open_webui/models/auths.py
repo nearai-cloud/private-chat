@@ -1,13 +1,16 @@
 import logging
 import uuid
+import time
 from typing import Optional
 
-from open_webui.internal.db import Base, get_db
-from open_webui.models.users import UserModel, Users
+from open_webui.internal.db import Base, get_db, JSONField
+from open_webui.models.users import UserModel, Users, User
 from open_webui.env import SRC_LOG_LEVELS
 from pydantic import BaseModel
-from sqlalchemy import Boolean, Column, String, Text
+from sqlalchemy import Boolean, Column, String, Text, BigInteger
 from open_webui.utils.auth import verify_password
+from open_webui.utils.near_ai_cloud import create_customer_sync
+from open_webui.utils.user_encryption import get_user_data_encryption_key
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MODELS"])
@@ -105,27 +108,55 @@ class AuthsTable:
         oauth_sub: Optional[str] = None,
     ) -> Optional[UserModel]:
         with get_db() as db:
-            log.info("insert_new_auth")
+            try:
+                id = str(uuid.uuid4())
 
-            id = str(uuid.uuid4())
+                # Create auth record
+                auth = AuthModel(
+                    **{"id": id, "email": email, "password": password, "active": True}
+                )
+                auth_result = Auth(**auth.model_dump())
+                db.add(auth_result)
 
-            auth = AuthModel(
-                **{"id": id, "email": email, "password": password, "active": True}
-            )
-            result = Auth(**auth.model_dump())
-            db.add(result)
+                # Create user record in the same transaction
+                user_model = UserModel(
+                    **{
+                        "id": id,
+                        "name": name,
+                        "email": email,
+                        "role": role,
+                        "profile_image_url": profile_image_url,
+                        "last_active_at": int(time.time()),
+                        "created_at": int(time.time()),
+                        "updated_at": int(time.time()),
+                        "oauth_sub": oauth_sub,
+                    }
+                )
+                user_result = User(**user_model.model_dump())
+                db.add(user_result)
 
-            user = Users.insert_new_user(
-                id, name, email, profile_image_url, role, oauth_sub
-            )
+                # Flush to ensure the records are created before calling external services
+                db.flush()
 
-            db.commit()
-            db.refresh(result)
+                # Generate data encryption key for the new user (within transaction)
+                get_user_data_encryption_key(id, db)
+                log.info(f"Generated data encryption key for new user: {id}")
 
-            if result and user:
-                return user
-            else:
-                return None
+                # Call NEAR AI Cloud API to create customer
+                create_customer_sync(id)
+
+                # If everything succeeded, commit the transaction
+                db.commit()
+                db.refresh(auth_result)
+                db.refresh(user_result)
+
+                return user_model
+
+            except Exception as e:
+                # Ensure rollback on any error
+                db.rollback()
+                log.exception(f"Error in insert_new_auth: {str(e)}")
+                raise
 
     def authenticate_user(self, email: str, password: str) -> Optional[UserModel]:
         log.info(f"authenticate_user: {email}")
