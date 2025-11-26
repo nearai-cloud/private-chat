@@ -383,15 +383,7 @@ class SPAStaticFiles(StaticFiles):
             pass
 
         try:
-            if path.endswith(".html"):
-                return await super().get_response(path, scope)
-            else:
-                response = await super().get_response(path, scope)
-                if hasattr(response, "headers"):
-                    response.headers["Cache-Control"] = (
-                        "public, max-age=31536000, immutable"
-                    )
-                return response
+            return await super().get_response(path, scope)
         except (HTTPException, StarletteHTTPException) as ex:
             if ex.status_code == 404:
                 if path.endswith(".js"):
