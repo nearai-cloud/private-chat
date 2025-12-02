@@ -369,9 +369,7 @@ class SPAStaticFiles(StaticFiles):
                     "Vary": "Accept-Encoding",
                 }
                 if not path.endswith(".html"):
-                    custom_headers["Cache-Control"] = (
-                        "public, max-age=86400"
-                    )
+                    custom_headers["Cache-Control"] = "public, max-age=86400"
 
                 if "gzip" in accept_encoding:
                     return FileResponse(
