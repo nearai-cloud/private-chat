@@ -95,6 +95,11 @@ export function setupVirtualGaCookies() {
 
 				virtualGaCookiesObj[cookieName] = cookieValue;
 				return value;
+			} else if (
+				// Don't save PostHog cookies used by Crisp Chat
+				value.startsWith('ph_phc_')
+			) {
+				return value;
 			}
 			// Handle other cookies
 			return cookieDesc?.set?.call(document, value);
