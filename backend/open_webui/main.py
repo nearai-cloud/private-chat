@@ -861,6 +861,14 @@ class RedirectMiddleware(BaseHTTPMiddleware):
                 redirect_url = f"/?{encoded_video_id}"
                 return RedirectResponse(url=redirect_url)
 
+            # Redirect root path to /?v=1 to bypass cache issue
+            if path == "/":
+                if "v" not in query_params or query_params.get("v", [None])[0] != "1":
+                    return RedirectResponse(url="/?v=1", status_code=302)
+            elif:
+                # Redirect to https://private.near.ai (301 = permanent redirect)
+                return RedirectResponse(url="https://private.near.ai", status_code=301)
+
         # Proceed with the normal flow of other requests
         response = await call_next(request)
         return response
