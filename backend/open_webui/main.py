@@ -381,16 +381,7 @@ class SPAStaticFiles(StaticFiles):
             pass
 
         try:
-            # return await super().get_response(path, scope)
-            if path.endswith(".html"):
-                return await super().get_response(path, scope)
-            else:
-                response = await super().get_response(path, scope)
-                if hasattr(response, "headers"):
-                    response.headers["Cache-Control"] = (
-                        "public, max-age=31536000, immutable"
-                    )
-                return response
+            return await super().get_response(path, scope)
         except (HTTPException, StarletteHTTPException) as ex:
             if ex.status_code == 404:
                 if path.endswith(".js"):
@@ -870,42 +861,42 @@ class RedirectMiddleware(BaseHTTPMiddleware):
                 redirect_url = f"/?{encoded_video_id}"
                 return RedirectResponse(url=redirect_url)
 
-            # # Redirect root path to /?v=1 to bypass cache issue
-            # if path == "/":
-            #     if "v" not in query_params or query_params.get("v", [None])[0] != "1":
-            #         # Redirect to /?v=1 if v=1 is not present
-            #         return RedirectResponse(url="/?v=1", status_code=302)
-            #     else:
-            #         # If v=1 is present, redirect to https://private.near.ai
-            #         return RedirectResponse(
-            #             url="https://private.near.ai", status_code=301
-            #         )
+            # Redirect root path to /?v=1 to bypass cache issue
+            if path == "/":
+                if "v" not in query_params or query_params.get("v", [None])[0] != "1":
+                    # Redirect to /?v=1 if v=1 is not present
+                    return RedirectResponse(url="/?v=1", status_code=302)
+                else:
+                    # If v=1 is present, redirect to https://private.near.ai
+                    return RedirectResponse(
+                        url="https://private.near.ai", status_code=301
+                    )
 
-            # # Redirect all other paths to https://private.near.ai
-            # # Exclude API, static, websocket, oauth, health, and other system paths
-            # excluded_paths = [
-            #     "/api/",
-            #     "/openai/",
-            #     "/ollama/",
-            #     "/static/",
-            #     "/cache/",
-            #     "/ws/",
-            #     "/oauth/",
-            #     "/health",
-            #     "/manifest.json",
-            #     "/opensearch.xml",
-            #     "/docs",
-            #     "/openapi.json",
-            # ]
+            # Redirect all other paths to https://private.near.ai
+            # Exclude API, static, websocket, oauth, health, and other system paths
+            excluded_paths = [
+                "/api/",
+                "/openai/",
+                "/ollama/",
+                "/static/",
+                "/cache/",
+                "/ws/",
+                "/oauth/",
+                "/health",
+                "/manifest.json",
+                "/opensearch.xml",
+                "/docs",
+                "/openapi.json",
+            ]
 
-            # # Check if path should be excluded from redirect
-            # should_exclude = any(
-            #     path.startswith(excluded) for excluded in excluded_paths
-            # )
+            # Check if path should be excluded from redirect
+            should_exclude = any(
+                path.startswith(excluded) for excluded in excluded_paths
+            )
 
-            # if not should_exclude:
-            #     # Redirect to https://private.near.ai (301 = permanent redirect)
-            #     return RedirectResponse(url="https://private.near.ai", status_code=301)
+            if not should_exclude:
+                # Redirect to https://private.near.ai (301 = permanent redirect)
+                return RedirectResponse(url="https://private.near.ai", status_code=301)
 
         # Proceed with the normal flow of other requests
         response = await call_next(request)
