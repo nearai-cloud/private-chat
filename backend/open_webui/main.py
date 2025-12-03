@@ -863,14 +863,7 @@ class RedirectMiddleware(BaseHTTPMiddleware):
 
             # Redirect root path to /?v=1 to bypass cache issue
             if path == "/":
-                if "v" not in query_params or query_params.get("v", [None])[0] != "1":
-                    # Redirect to /?v=1 if v=1 is not present
-                    return RedirectResponse(url="/?v=1", status_code=302)
-                else:
-                    # If v=1 is present, redirect to https://private.near.ai
-                    return RedirectResponse(
-                        url="https://private.near.ai", status_code=301
-                    )
+                return RedirectResponse(url="/new-private-chat", status_code=302)
 
             # Redirect all other paths to https://private.near.ai
             # Exclude API, static, websocket, oauth, health, and other system paths
