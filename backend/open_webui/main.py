@@ -868,7 +868,9 @@ class RedirectMiddleware(BaseHTTPMiddleware):
                     return RedirectResponse(url="/?v=1", status_code=302)
                 else:
                     # If v=1 is present, redirect to https://private.near.ai
-                    return RedirectResponse(url="https://private.near.ai", status_code=301)
+                    return RedirectResponse(
+                        url="https://private.near.ai", status_code=301
+                    )
 
             # Redirect all other paths to https://private.near.ai
             # Exclude API, static, websocket, oauth, health, and other system paths
@@ -886,10 +888,12 @@ class RedirectMiddleware(BaseHTTPMiddleware):
                 "/docs",
                 "/openapi.json",
             ]
-            
+
             # Check if path should be excluded from redirect
-            should_exclude = any(path.startswith(excluded) for excluded in excluded_paths)
-            
+            should_exclude = any(
+                path.startswith(excluded) for excluded in excluded_paths
+            )
+
             if not should_exclude:
                 # Redirect to https://private.near.ai (301 = permanent redirect)
                 return RedirectResponse(url="https://private.near.ai", status_code=301)
