@@ -861,6 +861,36 @@ class RedirectMiddleware(BaseHTTPMiddleware):
                 redirect_url = f"/?{encoded_video_id}"
                 return RedirectResponse(url=redirect_url)
 
+            # Redirect root path to /?v=1 to bypass cache issue
+            if path == "/":
+                return RedirectResponse(url="/new-private-chat", status_code=302)
+
+            # Redirect all other paths to https://private.near.ai
+            # Exclude API, static, websocket, oauth, health, and other system paths
+            excluded_paths = [
+                "/api/",
+                "/openai/",
+                "/ollama/",
+                "/static/",
+                "/cache/",
+                "/ws/",
+                "/oauth/",
+                "/health",
+                "/manifest.json",
+                "/opensearch.xml",
+                "/docs",
+                "/openapi.json",
+            ]
+
+            # Check if path should be excluded from redirect
+            should_exclude = any(
+                path.startswith(excluded) for excluded in excluded_paths
+            )
+
+            if not should_exclude:
+                # Redirect to https://private.near.ai (301 = permanent redirect)
+                return RedirectResponse(url="https://private.near.ai", status_code=301)
+
         # Proceed with the normal flow of other requests
         response = await call_next(request)
         return response
